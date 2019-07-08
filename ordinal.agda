@@ -97,6 +97,11 @@ osuc record { lv = lx ; ord = ox } = record { lv = lx ; ord = OSuc lx ox }
 osuc-lveq : {n : Level} { x : Ordinal {n} } → lv x ≡ lv ( osuc x )
 osuc-lveq {n} = refl
 
+osucc : {n : Level} {ox oy : Ordinal {n}} → oy o< ox  → osuc oy o< osuc ox
+osucc {n} {ox} {oy} (case1 x) = case1 x
+osucc {n} {ox} {oy} (case2 x) with d<→lv x
+... | refl = case2 (s< x)
+
 nat-<> : { x y : Nat } → x < y → y < x → ⊥
 nat-<>  (s≤s x<y) (s≤s y<x) = nat-<> x<y y<x
 
@@ -113,9 +118,17 @@ nat-≡< refl lt = nat-<≡ lt
 =→¬< {Zero} ()
 =→¬< {Suc x} (s≤s lt) = =→¬< lt
 
-o<¬≡ : {n : Level } ( ox oy : Ordinal {n}) → ox ≡ oy  → ox o< oy  → ⊥
-o<¬≡ ox ox refl (case1 lt) =  =→¬< lt
-o<¬≡ ox ox refl (case2 (s< lt)) = trio<≡ refl lt
+case12-⊥ : {n : Level} {x y : Ordinal {suc n}} → lv x < lv y → ord x d< ord y → ⊥
+case12-⊥ {x} {y} lt1 lt2 with d<→lv lt2
+... | refl = nat-≡< refl lt1
+
+case21-⊥ : {n : Level} {x y : Ordinal {suc n}} → lv x < lv y → ord y d< ord x → ⊥
+case21-⊥ {x} {y} lt1 lt2 with d<→lv lt2
+... | refl = nat-≡< refl lt1
+
+o<¬≡ : {n : Level } { ox oy : Ordinal {n}} → ox ≡ oy  → ox o< oy  → ⊥
+o<¬≡ {_} {ox} {ox} refl (case1 lt) =  =→¬< lt
+o<¬≡ {_} {ox} {ox} refl (case2 (s< lt)) = trio<≡ refl lt
 
 ¬x<0 : {n : Level} →  { x  : Ordinal {suc n} } → ¬ ( x o< o∅ {suc n} )
 ¬x<0 {n} {x} (case1 ())
@@ -165,6 +178,12 @@ maxαd x y | tri< a ¬b ¬c = y
 maxαd x y | tri≈ ¬a b ¬c = x
 maxαd x y | tri> ¬a ¬b c = x
 
+minαd : {n : Level} → { lx : Nat } → OrdinalD {n} lx  →  OrdinalD  lx  →  OrdinalD  lx
+minαd x y with triOrdd x y
+minαd x y | tri< a ¬b ¬c = x
+minαd x y | tri≈ ¬a b ¬c = y
+minαd x y | tri> ¬a ¬b c = x
+
 _o≤_ : {n : Level} → Ordinal → Ordinal → Set (suc n)
 a o≤ b  = (a ≡ b)  ∨ ( a o< b )
 
@@ -205,11 +224,23 @@ trio< record { lv = .(lv b) ; ord = x } b | tri≈ ¬a refl ¬c | tri≈ ¬a₁ 
    lemma1 (case1 x) = ¬a x
    lemma1 (case2 x) = ≡→¬d< x
 
-maxα : {n : Level} →  Ordinal {n} →  Ordinal  → Ordinal
-maxα x y with <-cmp (lv x) (lv y)
-maxα x y | tri< a ¬b ¬c = x
-maxα x y | tri> ¬a ¬b c = y
-maxα x y | tri≈ ¬a refl ¬c = record { lv = lv x ; ord = maxαd (ord x) (ord y) }
+maxα : {n : Level} →  Ordinal {suc n} →  Ordinal  → Ordinal
+maxα x y with trio< x y
+maxα x y | tri< a ¬b ¬c = y
+maxα x y | tri> ¬a ¬b c = x
+maxα x y | tri≈ ¬a refl ¬c = x
+
+minα : {n : Level} →  Ordinal {suc n} →  Ordinal  → Ordinal
+minα {n} x y with trio< {n} x  y
+minα x y | tri< a ¬b ¬c = x
+minα x y | tri> ¬a ¬b c = y
+minα x y | tri≈ ¬a refl ¬c = x
+
+min1 : {n : Level} →  {x y z : Ordinal {suc n} } → z o< x → z o< y → z o< minα x y
+min1 {n} {x} {y} {z} z<x z<y with trio< {n} x y
+min1 {n} {x} {y} {z} z<x z<y | tri< a ¬b ¬c = z<x
+min1 {n} {x} {y} {z} z<x z<y | tri≈ ¬a refl ¬c = z<x
+min1 {n} {x} {y} {z} z<x z<y | tri> ¬a ¬b c = z<y
 
 --
 --  max ( osuc x , osuc y )
@@ -290,3 +321,15 @@ TransFinite caseΦ caseOSuc record { lv = lv ; ord = (Φ (lv)) } = caseΦ lv
 TransFinite caseΦ caseOSuc record { lv = lx ; ord = (OSuc lx ox) } = 
       caseOSuc lx ox (TransFinite caseΦ caseOSuc  record { lv = lx ; ord = ox })
 
+--  (¬ (∀ y → ¬ ( ψ y ))) → (ψ y → p )  → p
+--      may be we can prove this...
+postulate 
+ TransFiniteExists : {n : Level} → { ψ : Ordinal {n} → Set n } 
+  → (exists : ¬ (∀ y → ¬ ( ψ y ) ))
+  → {p : Set n} ( P : { y : Ordinal {n} } →  ψ y → p )
+  → p
+
+-- TransFiniteExists {n} {ψ} exists {p} P = ⊥-elim ( exists lemma ) where
+--     lemma : (y : Ordinal {n} ) → ¬ ψ y
+--     lemma y ψy = ( TransFinite {n} {{!!}} {!!} {!!} y ) ψy
+   

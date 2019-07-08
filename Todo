@@ -1,0 +1,6 @@
+Mon Jul  8 19:43:37 JST 2019
+
+    ordinal-definable.agda assumes all ZF Set are ordinals, that it too restrictive
+
+    remove ord-Ord  and prove with some assuption in HOD.agda
+        union, power set, replace, inifinite

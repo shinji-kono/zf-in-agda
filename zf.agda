@@ -15,11 +15,15 @@ data  _∨_  {n m : Level} (A  : Set n) ( B : Set m ) : Set (n ⊔ m) where
    case1 : A → A ∨ B
    case2 : B → A ∨ B
 
-_⇔_ : {n : Level } → ( A B : Set n )  → Set  n
+_⇔_ : {n m : Level } → ( A : Set n ) ( B : Set m )  → Set (n ⊔ m)
 _⇔_ A B =  ( A → B ) ∧ ( B → A )
+
 
 open import Relation.Nullary
 open import Relation.Binary
+
+contra-position : {n m : Level } {A : Set n} {B : Set m} → (A → B) → ¬ B → ¬ A 
+contra-position {n} {m} {A} {B}  f ¬b a = ¬b ( f a ) 
 
 infixr  130 _∧_
 infixr  140 _∨_
@@ -33,7 +37,7 @@ record IsZF {n m : Level }
      (_,_ : ( A B : ZFSet  ) → ZFSet)
      (Union : ( A : ZFSet  ) → ZFSet)
      (Power : ( A : ZFSet  ) → ZFSet)
-     (Select : ZFSet → ( ZFSet → Set m ) → ZFSet )
+     (Select :  (X : ZFSet  ) → ( ψ : (x : ZFSet ) → Set m ) → ZFSet ) 
      (Replace : ZFSet → ( ZFSet → ZFSet ) → ZFSet )
      (infinite : ZFSet)
        : Set (suc (n ⊔ m)) where
@@ -73,7 +77,11 @@ record IsZF {n m : Level }
      infinity :  ∀( X x : ZFSet  ) → x ∈ infinite →  ( x ∪ ｛ x ｝) ∈ infinite 
      selection : { ψ : ZFSet → Set m } → ∀ { X y : ZFSet  } →  ( ( y ∈ X ) ∧ ψ y ) ⇔ (y ∈  Select X ψ ) 
      -- replacement : ∀ x ∀ y ∀ z ( ( ψ ( x , y ) ∧ ψ ( x , z ) ) → y = z ) → ∀ X ∃ A ∀ y ( y ∈ A ↔ ∃ x ∈ X ψ ( x , y ) )
-     replacement : {ψ : ZFSet → ZFSet} → ∀ ( X x : ZFSet  ) →  ( ψ x ∈  Replace X ψ )  
+     replacement← : {ψ : ZFSet → ZFSet} → ∀ ( X x : ZFSet  ) → x ∈ X → ψ x ∈  Replace X ψ 
+     replacement→ : {ψ : ZFSet → ZFSet} → ∀ ( X x : ZFSet  ) →  ( lt : x ∈  Replace X ψ ) → ¬ ( ∀ (y : ZFSet)  →  ¬ ( x ≈ ψ y ) )
+   -- -- ∀ z [ ∀ x ( x ∈ z  → ¬ ( x ≈ ∅ ) )  ∧ ∀ x ∀ y ( x , y ∈ z ∧ ¬ ( x ≈ y )  → x ∩ y ≈ ∅  ) → ∃ u ∀ x ( x ∈ z → ∃ t ( u ∩ x) ≈ ｛ t ｝) ]
+   -- axiom-of-choice : Set (suc n) 
+   -- axiom-of-choice = ?
 
 record ZF {n m : Level } : Set (suc (n ⊔ m)) where
   infixr  210 _,_
@@ -88,7 +96,7 @@ record ZF {n m : Level } : Set (suc (n ⊔ m)) where
      _,_ : ( A B : ZFSet  ) → ZFSet
      Union : ( A : ZFSet  ) → ZFSet
      Power : ( A : ZFSet  ) → ZFSet
-     Select : ZFSet → ( ZFSet → Set m ) → ZFSet
+     Select :  (X : ZFSet  ) → ( ψ : (x : ZFSet ) → Set m ) → ZFSet 
      Replace : ZFSet → ( ZFSet → ZFSet ) → ZFSet
      infinite : ZFSet
      isZF : IsZF ZFSet _∋_ _≈_ ∅ _,_ Union Power Select Replace infinite 
