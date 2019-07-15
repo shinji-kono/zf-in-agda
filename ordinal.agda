@@ -324,9 +324,9 @@ TransFinite caseΦ caseOSuc record { lv = lx ; ord = (OSuc lx ox) } =
 --  (¬ (∀ y → ¬ ( ψ y ))) → (ψ y → p )  → p
 --      may be we can prove this...
 postulate 
- TransFiniteExists : {n : Level} → { ψ : Ordinal {n} → Set n } 
+ TransFiniteExists : {n m l : Level} → ( ψ : Ordinal {n} → Set m ) 
   → (exists : ¬ (∀ y → ¬ ( ψ y ) ))
-  → {p : Set n} ( P : { y : Ordinal {n} } →  ψ y → p )
+  → {p : Set l} ( P : { y : Ordinal {n} } →  ψ y → p )
   → p
 
 -- TransFiniteExists {n} {ψ} exists {p} P = ⊥-elim ( exists lemma ) where

@@ -337,7 +337,6 @@ Ord→ZF {n}  = record {
     isZF = record {
            isEquivalence  = record { refl = eq-refl ; sym = eq-sym; trans = eq-trans }
        ;   pair  = pair
-       ;   union-u = λ _ z _ → csuc z
        ;   union→ = union→
        ;   union← = union←
        ;   empty = empty
@@ -347,7 +346,7 @@ Ord→ZF {n}  = record {
        ;   minimul = minimul
        ;   regularity = regularity
        ;   infinity∅ = infinity∅
-       ;   infinity = λ _ → infinity
+       ;   infinity = infinity
        ;   selection = λ {ψ} {X} {y} → selection {ψ} {X} {y}
        ;   replacement← = replacement←
        ;   replacement→ = replacement→
@@ -404,8 +403,9 @@ Ord→ZF {n}  = record {
              lemma : {oX ou ooy : Ordinal {suc n}} →  ou ≡ ooy  → ou o< oX   → ooy  o< oX
              lemma refl lt = lt
          union→ X y u xx | tri> ¬a ¬b c = ordtrans {suc n} {osuc ( od→ord y )} {od→ord u} {od→ord X} c ( c<→o< (proj1 xx )) 
-         union← :  (X z : OD) (X∋z : Union X ∋ z) → (X ∋ csuc z) ∧ (csuc z ∋ z )
-         union← X z X∋z = record { proj1 = def-subst {suc n} {_} {_} {X} {od→ord (csuc z )} (o<→c< X∋z) oiso (sym diso) ; proj2 = union-lemma-u X∋z } 
+         union← :  (X z : OD) (X∋z : Union X ∋ z) →  ¬  ( (u : OD ) → ¬ ((X ∋  u) ∧ (u ∋ z ))) -- (X ∋ csuc z) ∧ (csuc z ∋ z )
+         union← X z X∋z not = not (csuc z) 
+             record { proj1 = def-subst {suc n} {_} {_} {X} {od→ord (csuc z )} (o<→c< X∋z) oiso (sym diso) ; proj2 = union-lemma-u X∋z } 
          ψiso :  {ψ : OD {suc n} → Set (suc n)} {x y : OD {suc n}} → ψ x → x ≡ y   → ψ y
          ψiso {ψ} t refl = t
          selection : {ψ : OD → Set (suc n)} {X y : OD} → ((X ∋ y) ∧ ψ y) ⇔ (Select X ψ ∋ y)

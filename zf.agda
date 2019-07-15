@@ -46,9 +46,8 @@ record IsZF {n m : Level }
      -- ∀ x ∀ y ∃ z(x ∈ z ∧ y ∈ z)
      pair : ( A B : ZFSet  ) →  ( (A , B)  ∋ A ) ∧ ( (A , B)  ∋ B  )
      -- ∀ x ∃ y ∀ z (z ∈ y ⇔ ∃ u ∈ x  ∧ (z ∈ u))
-     union-u : ( X z : ZFSet  ) → Union X ∋ z → ZFSet
      union→ : ( X z u : ZFSet ) → ( X ∋ u ) ∧ (u ∋ z ) → Union X ∋ z
-     union← : ( X z : ZFSet ) → (X∋z : Union X ∋ z ) → (X ∋ union-u X z X∋z)  ∧ (union-u X z X∋z ∋ z )
+     union← : ( X z : ZFSet ) → (X∋z : Union X ∋ z ) →  ¬  ( (u : ZFSet ) → ¬ ((X ∋  u) ∧ (u ∋ z )))
   _∈_ : ( A B : ZFSet  ) → Set m
   A ∈ B = B ∋ A
   _⊆_ : ( A B : ZFSet  ) → ∀{ x : ZFSet } →  Set m
@@ -74,7 +73,7 @@ record IsZF {n m : Level }
      regularity : ∀( x : ZFSet  ) → (not : ¬ (x ≈ ∅)) → (  minimul x not  ∈ x ∧  (  minimul x not  ∩ x  ≈ ∅ ) )
      -- infinity : ∃ A ( ∅ ∈ A ∧ ∀ x ∈ A ( x ∪ { x } ∈ A ) )
      infinity∅ :  ∅ ∈ infinite
-     infinity :  ∀( X x : ZFSet  ) → x ∈ infinite →  ( x ∪ ｛ x ｝) ∈ infinite 
+     infinity :  ∀( x : ZFSet  ) → x ∈ infinite →  ( x ∪ ｛ x ｝) ∈ infinite 
      selection : { ψ : ZFSet → Set m } → ∀ { X y : ZFSet  } →  ( ( y ∈ X ) ∧ ψ y ) ⇔ (y ∈  Select X ψ ) 
      -- replacement : ∀ x ∀ y ∀ z ( ( ψ ( x , y ) ∧ ψ ( x , z ) ) → y = z ) → ∀ X ∃ A ∀ y ( y ∈ A ↔ ∃ x ∈ X ψ ( x , y ) )
      replacement← : {ψ : ZFSet → ZFSet} → ∀ ( X x : ZFSet  ) → x ∈ X → ψ x ∈  Replace X ψ 
