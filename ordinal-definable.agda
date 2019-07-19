@@ -351,12 +351,15 @@ Ord→ZF {n}  = record {
        ;   replacement← = replacement←
        ;   replacement→ = replacement→
      } where
+
          pair : (A B : OD {suc n} ) → ((A , B) ∋ A) ∧  ((A , B) ∋ B)
          proj1 (pair A B ) = omax-x {n} (od→ord A) (od→ord B)
          proj2 (pair A B ) = omax-y {n} (od→ord A) (od→ord B)
+
          empty : (x : OD {suc n} ) → ¬  (od∅ ∋ x)
          empty x (case1 ())
          empty x (case2 ())
+
          ---
          --- ZFSubset A x =  record { def = λ y → def A y ∧  def x y }                   subset of A
          --- Power X = ord→od ( sup-o ( λ x → od→ord ( ZFSubset A (ord→od x )) ) )       Power X is a sup of all subset of A
@@ -365,8 +368,8 @@ Ord→ZF {n}  = record {
          --    then ZFSubset A ≡ t or ZFSubset A ∋ t. In the former case ZFSubset A ∋ x implies A ∋ x
          --    In case of later, ZFSubset A ∋ t and t ∋ x implies ZFSubset A ∋ x by transitivity
          --
-         power→ : (A t : OD) → Power A ∋ t → {x : OD} → t ∋ x → A ∋ x
-         power→ A t P∋t {x} t∋x = proj1 lemma-s where
+         power→ : (A t : OD) → Power A ∋ t → {x : OD} → t ∋ x → ¬ ¬ (A ∋ x)
+         power→ A t P∋t {x} t∋x = double-neg (proj1 lemma-s) where
               minsup :  OD
               minsup =  ZFSubset A ( ord→od ( sup-x (λ x → od→ord ( ZFSubset A (ord→od x))))) 
               lemma-t : csuc minsup ∋ t
@@ -391,6 +394,7 @@ Ord→ZF {n}  = record {
               lemma1 = subst (λ k → od→ord (ZFSubset A k) ≡ od→ord t ) (sym oiso) (==→o≡1 (lemma-eq))
               lemma :  od→ord (ZFSubset A (ord→od (od→ord t)) ) o< sup-o (λ x → od→ord (ZFSubset A (ord→od x)))
               lemma = sup-o<   
+
          union-lemma-u : {X z : OD {suc n}} → (U>z : Union X ∋ z ) → csuc z ∋ z
          union-lemma-u {X} {z} U>z = lemma <-osuc where
              lemma : {oz ooz : Ordinal {suc n}} → oz o< ooz → def (ord→od ooz) oz
@@ -406,6 +410,7 @@ Ord→ZF {n}  = record {
          union← :  (X z : OD) (X∋z : Union X ∋ z) →  ¬  ( (u : OD ) → ¬ ((X ∋  u) ∧ (u ∋ z ))) -- (X ∋ csuc z) ∧ (csuc z ∋ z )
          union← X z X∋z not = not (csuc z) 
              record { proj1 = def-subst {suc n} {_} {_} {X} {od→ord (csuc z )} (o<→c< X∋z) oiso (sym diso) ; proj2 = union-lemma-u X∋z } 
+
          ψiso :  {ψ : OD {suc n} → Set (suc n)} {x y : OD {suc n}} → ψ x → x ≡ y   → ψ y
          ψiso {ψ} t refl = t
          selection : {ψ : OD → Set (suc n)} {X y : OD} → ((X ∋ y) ∧ ψ y) ⇔ (Select X ψ ∋ y)
@@ -413,6 +418,7 @@ Ord→ZF {n}  = record {
               proj1 = λ cond → record { proj1 = proj1 cond ; proj2 = ψiso {ψ} (proj2 cond) (sym oiso)  }
             ; proj2 = λ select → record { proj1 = proj1 select  ; proj2 =  ψiso {ψ} (proj2 select) oiso  }
            }
+
          replacement← : {ψ : OD → OD} (X x : OD) →  X ∋ x → Replace X ψ ∋ ψ x
          replacement← {ψ} X x lt = record { proj1 =  sup-c< ψ {x} ; proj2 = lemma } where
              lemma : def (in-codomain X ψ) (od→ord (ψ x))
@@ -426,8 +432,7 @@ Ord→ZF {n}  = record {
                 lemma3 {y} eq = subst (λ k  → ord→od (od→ord x) == k ) oiso (o≡→== eq )
             lemma :  ( (y : OD) → ¬ (x == ψ y)) → ( (y : Ordinal) → ¬ def X y ∧ (ord→od (od→ord x) == ψ (Ord y)) )
             lemma not y not2 = not (Ord y) (subst (λ k → k == ψ (Ord y)) oiso  ( proj2 not2 ))
-         ∅-iso :  {x : OD} → ¬ (x == od∅) → ¬ ((ord→od (od→ord x)) == od∅) 
-         ∅-iso {x} neq = subst (λ k → ¬ k) (=-iso {n} ) neq  
+
          minimul : (x : OD {suc n} ) → ¬ (x == od∅ )→ OD {suc n} 
          minimul x  not = od∅   
          regularity :  (x : OD) (not : ¬ (x == od∅)) →
@@ -439,9 +444,11 @@ Ord→ZF {n}  = record {
             lemma (case2 ())
             reg : {y : Ordinal} → def (Select (minimul x not) (λ x₂ → (minimul x not ∋ x₂) ∧ (x ∋ x₂))) y → def od∅ y
             reg {y} t = ⊥-elim ( ¬x<0 (proj1 (proj2 t )) )
+
          extensionality : {A B : OD {suc n}} → ((z : OD) → (A ∋ z) ⇔ (B ∋ z)) → A == B
          eq→ (extensionality {A} {B} eq ) {x} d = def-iso {suc n} {A} {B} (sym diso) (proj1 (eq (ord→od x))) d  
          eq← (extensionality {A} {B} eq ) {x} d = def-iso {suc n} {B} {A} (sym diso) (proj2 (eq (ord→od x))) d  
+
          xx-union : {x  : OD {suc n}} → (x , x) ≡ record { def = λ z → z o< osuc (od→ord x) }
          xx-union {x} = cong ( λ k → record { def = λ z → z o< k } ) (omxx (od→ord x))
          xxx-union : {x  : OD {suc n}} → (x , (x , x)) ≡ record { def = λ z → z o< osuc (osuc (od→ord x))}

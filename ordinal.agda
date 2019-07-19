@@ -313,7 +313,7 @@ OrdPreorder {n} = record { Carrier = Ordinal
      }
  }
 
-TransFinite : {n : Level} → { ψ : Ordinal {n} → Set n }
+TransFinite : {n m : Level} → { ψ : Ordinal {n} → Set m }
   → ( ∀ (lx : Nat ) → ψ ( record { lv = lx ; ord = Φ lx } ) )
   → ( ∀ (lx : Nat ) → (x : OrdinalD lx )  → ψ ( record { lv = lx ; ord = x } ) → ψ ( record { lv = lx ; ord = OSuc lx x } ) )
   →  ∀ (x : Ordinal)  → ψ x
@@ -321,15 +321,20 @@ TransFinite caseΦ caseOSuc record { lv = lv ; ord = (Φ (lv)) } = caseΦ lv
 TransFinite caseΦ caseOSuc record { lv = lx ; ord = (OSuc lx ox) } = 
       caseOSuc lx ox (TransFinite caseΦ caseOSuc  record { lv = lx ; ord = ox })
 
+-- we cannot prove this in intutonistic logic 
 --  (¬ (∀ y → ¬ ( ψ y ))) → (ψ y → p )  → p
---      may be we can prove this...
-postulate 
- TransFiniteExists : {n m l : Level} → ( ψ : Ordinal {n} → Set m ) 
+-- postulate 
+--  TransFiniteExists : {n m l : Level} → ( ψ : Ordinal {n} → Set m ) 
+--   → (exists : ¬ (∀ y → ¬ ( ψ y ) ))
+--   → {p : Set l} ( P : { y : Ordinal {n} } →  ψ y → p )
+--   → p
+--
+-- Instead we prove
+--
+TransFiniteExists : {n m l : Level} → ( ψ : Ordinal {n} → Set m ) 
+  → {p : Set l} ( P : { y : Ordinal {n} } →  ψ y → ¬ p )
   → (exists : ¬ (∀ y → ¬ ( ψ y ) ))
-  → {p : Set l} ( P : { y : Ordinal {n} } →  ψ y → p )
-  → p
+  → ¬ p
+TransFiniteExists {n} {m} {l} ψ {p} P = contra-position ( λ p y ψy → P {y} ψy p ) 
 
--- TransFiniteExists {n} {ψ} exists {p} P = ⊥-elim ( exists lemma ) where
---     lemma : (y : Ordinal {n} ) → ¬ ψ y
---     lemma y ψy = ( TransFinite {n} {{!!}} {!!} {!!} y ) ψy
    

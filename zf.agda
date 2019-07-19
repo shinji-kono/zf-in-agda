@@ -25,6 +25,9 @@ open import Relation.Binary
 contra-position : {n m : Level } {A : Set n} {B : Set m} → (A → B) → ¬ B → ¬ A 
 contra-position {n} {m} {A} {B}  f ¬b a = ¬b ( f a ) 
 
+double-neg : {n  : Level } {A : Set n} → A → ¬ ¬ A
+double-neg A notnot = notnot A
+
 infixr  130 _∧_
 infixr  140 _∨_
 infixr  150 _⇔_
@@ -64,7 +67,7 @@ record IsZF {n m : Level }
   field
      empty :  ∀( x : ZFSet  ) → ¬ ( ∅ ∋ x )
      -- power : ∀ X ∃ A ∀ t ( t ∈ A ↔ t ⊆ X ) )
-     power→ : ∀( A t : ZFSet  ) → Power A ∋ t → ∀ {x}  →  _⊆_ t A {x} 
+     power→ : ∀( A t : ZFSet  ) → Power A ∋ t → ∀ {x}  →  t ∋ x → ¬ ¬ ( A ∋ x ) -- _⊆_ t A {x} 
      power← : ∀( A t : ZFSet  ) → ( ∀ {x}  →  _⊆_ t A {x})  → Power A ∋ t 
      -- extensionality : ∀ z ( z ∈ x ⇔ z ∈ y ) ⇒ ∀ w ( x ∈ w ⇔ y ∈ w )
      extensionality :  { A B : ZFSet  } → ( (z : ZFSet) → ( A ∋ z ) ⇔ (B ∋ z)  ) → A ≈ B

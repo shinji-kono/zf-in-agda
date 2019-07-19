@@ -18,7 +18,6 @@ record OD {n : Level}  : Set (suc n) where
     def : (x : Ordinal {n} ) → Set n
 
 open OD
-open import Data.Unit
 
 open Ordinal
 open _∧_
@@ -57,8 +56,8 @@ postulate
   -- OD can be iso to a subset of Ordinal ( by means of Godel Set )
   od→ord : {n : Level} → OD {n} → Ordinal {n}
   ord→od : {n : Level} → Ordinal {n} → OD {n} 
-  c<→o<  : {n : Level} {x y : OD {n} }      → def y ( od→ord x ) → od→ord x o< od→ord y
-  oiso   : {n : Level} {x : OD {n}}     → ord→od ( od→ord x ) ≡ x
+  c<→o<  : {n : Level} {x y : OD {n} }   → def y ( od→ord x ) → od→ord x o< od→ord y
+  oiso   : {n : Level} {x : OD {n}}      → ord→od ( od→ord x ) ≡ x
   diso   : {n : Level} {x : Ordinal {n}} → od→ord ( ord→od x ) ≡ x
   -- we should prove this in agda, but simply put here
   ==→o≡ : {n : Level} →  { x y : OD {suc n} } → (x == y) → x ≡ y
@@ -69,9 +68,10 @@ postulate
   sup-o  : {n : Level } → ( Ordinal {n} → Ordinal {n}) →  Ordinal {n}
   sup-o< : {n : Level } → { ψ : Ordinal {n} →  Ordinal {n}} → ∀ {x : Ordinal {n}} →  ψ x  o<  sup-o ψ 
   -- contra-position of mimimulity of supermum required in Power Set Axiom
-  sup-x  : {n : Level } → ( Ordinal {n} → Ordinal {n}) →  Ordinal {n}
-  sup-lb : {n : Level } → { ψ : Ordinal {n} →  Ordinal {n}} → {z : Ordinal {n}}  →  z o< sup-o ψ → z o< osuc (ψ (sup-x ψ))
+  -- sup-x  : {n : Level } → ( Ordinal {n} → Ordinal {n}) →  Ordinal {n}
+  -- sup-lb : {n : Level } → { ψ : Ordinal {n} →  Ordinal {n}} → {z : Ordinal {n}}  →  z o< sup-o ψ → z o< osuc (ψ (sup-x ψ))
   -- sup-lb : {n : Level } → ( ψ : Ordinal {n} →  Ordinal {n}) → ( ∀ {x : Ordinal {n}} →  ψx  o<  z ) →  z o< osuc ( sup-o ψ ) 
+  -- mimimul and x∋minimul is a weaker form of Axiom of choice
   minimul : {n : Level } → (x : OD {suc n} ) → ¬ (x == od∅ )→ OD {suc n} 
   -- this should be ¬ (x == od∅ )→ ∃ ox → x ∋ Ord ox  ( minimum of x )
   x∋minimul : {n : Level } → (x : OD {suc n} ) → ( ne : ¬ (x == od∅ ) ) → def x ( od→ord ( minimul x ne ) )
@@ -202,6 +202,11 @@ is-o∅ {n} record { lv = Zero ; ord = (Φ .0) } = yes refl
 is-o∅ {n} record { lv = Zero ; ord = (OSuc .0 ord₁) } = no ( λ () )
 is-o∅ {n} record { lv = (Suc lv₁) ; ord = ord } = no (λ())
 
+OrdP : {n : Level} →  ( x : Ordinal {suc n} ) ( y : OD {suc n} ) → Dec ( Ord x ∋ y )
+OrdP {n} x y with trio< x (od→ord y)
+OrdP {n} x y | tri< a ¬b ¬c = no ¬c
+OrdP {n} x y | tri≈ ¬a refl ¬c = no ( o<¬≡ refl )
+OrdP {n} x y | tri> ¬a ¬b c = yes c
 
 -- open import Relation.Binary.HeterogeneousEquality as HE using (_≅_ ) 
 -- postulate f-extensionality : { n : Level}  → Relation.Binary.PropositionalEquality.Extensionality (suc n) (suc (suc n))
@@ -228,8 +233,9 @@ L {n}  record { lv = lx ; ord = (OSuc lv ox) } = Def ( L {n} ( record { lv = lx 
 L {n}  record { lv = (Suc lx) ; ord = (Φ (Suc lx)) } = -- Union ( L α )
     cseq ( Ord (od→ord (L {n}  (record { lv = lx ; ord = Φ lx }))))
 
--- L0 :  {n : Level} → (α : Ordinal {suc n}) → α o< β → L (osuc α) ∋ L α
+-- L0 :  {n : Level} → (α : Ordinal {suc n}) → L (osuc α) ∋ L α
 -- L1 :  {n : Level} → (α β : Ordinal {suc n}) → α o< β → ∀ (x : OD {suc n})  → L α ∋ x → L β ∋ x 
+
 
 OD→ZF : {n : Level} → ZF {suc (suc n)} {suc n}
 OD→ZF {n}  = record { 
@@ -299,7 +305,7 @@ OD→ZF {n}  = record {
          proj1 (pair A B ) = omax-x {n} (od→ord A) (od→ord B)
          proj2 (pair A B ) = omax-y {n} (od→ord A) (od→ord B)
 
-         empty : (x : OD {suc n} ) → ¬  (od∅ ∋ x)
+         empty : {n : Level } (x : OD {suc n} ) → ¬  (od∅ ∋ x)
          empty x (case1 ())
          empty x (case2 ())
 
@@ -315,15 +321,13 @@ OD→ZF {n}  = record {
          ⊆→o< {x} {y}  lt | tri> ¬a ¬b c with lt (ord→od y) (o<-subst c (sym diso) refl )
          ... | ttt = ⊥-elim ( o<¬≡ refl (o<-subst ttt diso refl ))
 
-         union-u : {X z : OD {suc n}} → (U>z : Union X ∋ z ) → OD {suc n}
-         union-u {X} {z} U>z = ord→od ( osuc ( od→ord z ) )
          union→ :  (X z u : OD) → (X ∋ u) ∧ (u ∋ z) → Union X ∋ z
          union→ X z u xx not = ⊥-elim ( not (od→ord u) ( record { proj1 = proj1 xx
               ; proj2 = subst ( λ k → def k (od→ord z)) (sym oiso) (proj2 xx) } ))
-
          union← :  (X z : OD) (X∋z : Union X ∋ z) →  ¬  ( (u : OD ) → ¬ ((X ∋  u) ∧ (u ∋ z )))
-         union← X z UX∋z =  TransFiniteExists _ UX∋z
-             ( λ {y} xx not → not (ord→od y) (record { proj1 = subst ( λ k → def X k ) (sym diso) (proj1 xx ) ; proj2 = proj2 xx } ))
+         union← X z UX∋z =  TransFiniteExists _ lemma UX∋z where
+              lemma : {y : Ordinal} → def X y ∧ def (ord→od y) (od→ord z) → ¬ ((u : OD) → ¬ (X ∋ u) ∧ (u ∋ z))
+              lemma {y} xx not = not (ord→od y) record { proj1 = subst ( λ k → def X k ) (sym diso) (proj1 xx ) ; proj2 = proj2 xx } 
 
          ψiso :  {ψ : OD {suc n} → Set (suc n)} {x y : OD {suc n}} → ψ x → x ≡ y   → ψ y
          ψiso {ψ} t refl = t
@@ -354,29 +358,12 @@ OD→ZF {n}  = record {
          --- ZFSubset A x =  record { def = λ y → def A y ∧  def x y }                   subset of A
          --- Power X = ord→od ( sup-o ( λ x → od→ord ( ZFSubset A (ord→od x )) ) )       Power X is a sup of all subset of A
          --
-         --  if Power A ∋ t, from a propertiy of minimum sup there is osuc ZFSubset A ∋ t 
-         --    then ZFSubset A ≡ t or ZFSubset A ∋ t. In the former case ZFSubset A ∋ x implies A ∋ x
-         --    In case of later, ZFSubset A ∋ t and t ∋ x implies A ∋ x by transitivity of Ordinals
          --
          ∩-≡ :  { a b : OD {suc n} } → ({x : OD {suc n} } → (a ∋ x → b ∋ x)) → a == ( b ∩ a )
          ∩-≡ {a} {b} inc = record {
             eq→ = λ {x} x<a → record { proj2 = x<a ;
                  proj1 = def-subst {suc n} {_} {_} {b} {x} (inc (def-subst {suc n} {_} {_} {a} {_} x<a refl (sym diso) )) refl diso  } ;
             eq← = λ {x} x<a∩b → proj2 x<a∩b }
-         -- ord-power→ : (a : Ordinal ) ( t : OD) → Def (Ord a) ∋ t → {x : OD} → t ∋ x → Ord a ∋ x
-         -- ord-power→ a t P∋t {x} t∋x with osuc-≡<  (sup-lb  P∋t )
-         -- ... | case1 eq = proj1 (def-subst t∋x (sym (subst₂ (λ j k → j ≡ k ) oiso oiso ( cong (λ k → ord→od k) (sym eq) ))) refl )  
-         -- ... | case2 lt = lemma3 where
-         --      sp =  sup-x (λ x → od→ord ( ZFSubset (Ord a) (ord→od x)))
-         --      minsup :  OD
-         --      minsup =  ZFSubset (Ord a) ( ord→od ( sup-x (λ x → od→ord ( ZFSubset (Ord a) (ord→od x))))) 
-         --      Ltx :   {n : Level} → {x t : OD {suc n}} → t ∋ x → Ord (od→ord t) ∋ x
-         --      Ltx {n} {x} {t} lt = c<→o< lt
-         --      -- lemma1 hold because a subset of ordinals is ordinal
-         --      lemma1 : od→ord t o< od→ord minsup → minsup ∋ Ord (od→ord t)
-         --      lemma1 lt = {!!}
-         --      lemma3 : od→ord x o< a
-         --      lemma3 = otrans (proj1 (lemma1 lt)) (c<→o< {suc n} {x} {Ord (od→ord t)} (Ltx t∋x) )
          -- 
          -- we have t ∋ x → A ∋ x means t is a subset of A, that is ZFSubset A t == t
          -- Power A is a sup of ZFSubset A t, so Power A ∋ t
@@ -395,22 +382,27 @@ OD→ZF {n}  = record {
               lemma :  od→ord (ZFSubset (Ord a) (ord→od (od→ord t)) ) o< sup-o (λ x → od→ord (ZFSubset (Ord a) (ord→od x)))
               lemma = sup-o<   
 
+         -- double-neg-eilm : {n  : Level } {A : Set n} → ¬ ¬ A → A
+         -- double-neg-eilm {n} {A} notnot = ⊥-elim (notnot (λ A → {!!} ))
          -- 
          -- Every set in OD is a subset of Ordinals
          -- 
          -- Power A = Replace (Def (Ord (od→ord A))) ( λ y → A ∩ y )
-         power→ :  ( A t : OD) → Power A ∋ t → {x : OD} → t ∋ x → A ∋ x
-         power→ A t P∋t {x} t∋x = TransFiniteExists _ -- (λ y → (t ==  (A ∩ ord→od y)))
-                 lemma4 lemma5  where
+
+         -- we have oly double negation form because of the replacement axiom
+         --
+         power→ :  ( A t : OD) → Power A ∋ t → {x : OD} → t ∋ x → ¬ ¬ (A ∋ x)
+         power→ A t P∋t {x} t∋x = TransFiniteExists _ lemma5 lemma4 where
               a = od→ord A
               lemma2 : ¬ ( (y : OD) → ¬ (t ==  (A ∩ y)))
               lemma2 = replacement→ (Def (Ord (od→ord A))) t P∋t
-              lemma3 : (y : OD) → t == ( A ∩ y ) → A ∋ x
-              lemma3 y eq = proj1 (eq→ eq t∋x)
+              lemma3 : (y : OD) → t == ( A ∩ y ) → ¬ ¬ (A ∋ x)
+              lemma3 y eq not = not (proj1 (eq→ eq t∋x))
               lemma4 : ¬ ((y : Ordinal) → ¬ (t == (A ∩ ord→od y)))
               lemma4 not = lemma2 ( λ y not1 → not (od→ord y) (subst (λ k → t == ( A ∩ k )) (sym oiso) not1 ))
-              lemma5 : {y : Ordinal} → t == (A ∩ ord→od y) → def A (od→ord x)
-              lemma5 {y} eq = lemma3 (ord→od y) eq
+              lemma5 : {y : Ordinal} → t == (A ∩ ord→od y) →  ¬ ¬  (def A (od→ord x))
+              lemma5 {y} eq not = (lemma3 (ord→od y) eq) not
+
          power← :  (A t : OD) → ({x : OD} → (t ∋ x → A ∋ x)) → Power A ∋ t
          power← A t t→A = record { proj1 = lemma1 ; proj2 = lemma2 } where 
               a = od→ord A
@@ -436,8 +428,6 @@ OD→ZF {n}  = record {
                   lemma6 : od→ord t ≡ od→ord (A ∩ ord→od (od→ord t)) 
                   lemma6 = cong ( λ k → od→ord k ) (==→o≡ (subst (λ k → t == (A ∩ k)) (sym oiso) ( ∩-≡ t→A  )))
 
-         ∅-iso :  {x : OD} → ¬ (x == od∅) → ¬ ((ord→od (od→ord x)) == od∅) 
-         ∅-iso {x} neq = subst (λ k → ¬ k) (=-iso {n} ) neq  
          regularity :  (x : OD) (not : ¬ (x == od∅)) →
             (x ∋ minimul x not) ∧ (Select (minimul x not) (λ x₁ → (minimul x not ∋ x₁) ∧ (x ∋ x₁)) == od∅)
          proj1 (regularity x not ) = x∋minimul x not
@@ -453,7 +443,6 @@ OD→ZF {n}  = record {
          extensionality : {A B : OD {suc n}} → ((z : OD) → (A ∋ z) ⇔ (B ∋ z)) → A == B
          eq→ (extensionality {A} {B} eq ) {x} d = def-iso {suc n} {A} {B} (sym diso) (proj1 (eq (ord→od x))) d  
          eq← (extensionality {A} {B} eq ) {x} d = def-iso {suc n} {B} {A} (sym diso) (proj2 (eq (ord→od x))) d  
-
 
          infinity∅ : infinite  ∋ od∅ {suc n}
          infinity∅ = def-subst {suc n} {_} {_} {infinite} {od→ord (od∅ {suc n})} iφ refl lemma where
@@ -477,4 +466,60 @@ OD→ZF {n}  = record {
          choice-func X {x} not X∋x = minimul x not
          choice : (X : OD {suc n} ) → {A : OD } → ( X∋A : X ∋ A ) → (not : ¬ ( A == od∅ )) → A ∋ choice-func X not X∋A 
          choice X {A} X∋A not = x∋minimul A not
+
+         -- another form of regularity 
+         --
+         -- {-# TERMINATING #-}
+         ε-induction : {n m : Level} { ψ : OD {suc n} → Set m}
+             → ( {x : OD {suc n} } → ({ y : OD {suc n} } →  x ∋ y → ψ y ) → ψ x )
+             → (x : OD {suc n} ) → ψ x
+         ε-induction {n} {m} {ψ} ind x = subst (λ k → ψ k ) oiso (ε-induction-ord (lv (osuc (od→ord x))) (ord (osuc (od→ord x)))  <-osuc) where
+            ε-induction-ord : (lx : Nat) ( ox : OrdinalD {suc n} lx ) {ly : Nat} {oy : OrdinalD {suc n} ly }
+                → (ly < lx) ∨ (oy d< ox  ) → ψ (ord→od (record { lv = ly ; ord = oy } ) )
+            ε-induction-ord Zero (Φ 0)  (case1 ())
+            ε-induction-ord Zero (Φ 0)  (case2 ())
+            ε-induction-ord lx  (OSuc lx ox) {ly} {oy} y<x = 
+                ind {ord→od (record { lv = ly ; ord = oy })} ( λ {y} lt → subst (λ k → ψ k ) oiso (ε-induction-ord lx ox (lemma y lt ))) where
+                    lemma :  (y : OD) → ord→od record { lv = ly ; ord = oy } ∋ y → od→ord y o< record { lv = lx ; ord = ox }
+                    lemma y lt with osuc-≡< y<x
+                    lemma y lt | case1 refl = o<-subst (c<→o< lt) refl diso
+                    lemma y lt | case2 lt1 = ordtrans  (o<-subst (c<→o< lt) refl diso) lt1  
+            ε-induction-ord (Suc lx) (Φ (Suc lx)) {ly} {oy} (case1 y<sox ) =                    
+                ind {ord→od (record { lv = ly ; ord = oy })} ( λ {y} lt → lemma y lt )  where  
+                    lemma0 : { lx ly : Nat } → ly < Suc lx  → lx < ly → ⊥
+                    lemma0 {Suc lx} {Suc ly} (s≤s lt1) (s≤s lt2) = lemma0 lt1 lt2
+                    lemma1 : {n : Level } {ly : Nat} {oy : OrdinalD {suc n} ly} → lv (od→ord (ord→od (record { lv = ly ; ord = oy }))) ≡ ly
+                    lemma1 {n} {ly} {oy} = let open ≡-Reasoning in begin
+                            lv (od→ord (ord→od (record { lv = ly ; ord = oy })))
+                         ≡⟨ cong ( λ k → lv k ) diso ⟩
+                            lv (record { lv = ly ; ord = oy })
+                         ≡⟨⟩
+                            ly
+                         ∎
+                    lemma2 : { lx : Nat } → lx < Suc lx  
+                    lemma2 {Zero} = s≤s z≤n
+                    lemma2 {Suc lx} = s≤s (lemma2 {lx})
+                    --                         lx    Suc lx      (1) z(a) <lx by case1
+                    --                 ly(1)   ly(2)             (2) z(b) <lx by case1
+                    --           z(a)  z(b)    z(c)                  z(c) <lx by case2 ( ly==z==x)
+                    --
+                    lemma :  (z : OD) → ord→od record { lv = ly ; ord = oy } ∋ z → ψ z
+                    lemma z lt with  c<→o< {suc n} {z} {ord→od (record { lv = ly ; ord = oy })} lt
+                    lemma z lt | case1 lz<ly with <-cmp lx ly
+                    lemma z lt | case1 lz<ly | tri< a ¬b ¬c = ⊥-elim ( lemma0 y<sox a) -- can't happen
+                    lemma z lt | case1 lz<ly | tri≈ ¬a refl ¬c =     -- (1)
+                          subst (λ k → ψ k ) oiso (ε-induction-ord lx (Φ lx) {_} {ord (od→ord z)} (case1 (subst (λ k → lv (od→ord z) < k ) lemma1 lz<ly ) ))
+                    lemma z lt | case1 lz<ly | tri> ¬a ¬b c =       -- z(a)
+                          subst (λ k → ψ k ) oiso (ε-induction-ord lx (Φ lx) {_} {ord (od→ord z)} (case1 (<-trans lz<ly (subst (λ k → k < lx ) (sym lemma1) c))))
+                    lemma z lt | case2 lz=ly with <-cmp lx ly
+                    lemma z lt | case2 lz=ly | tri< a ¬b ¬c = ⊥-elim ( lemma0 y<sox a) -- can't happen
+                    lemma z lt | case2 lz=ly | tri> ¬a ¬b c with d<→lv lz=ly       -- z(b)
+                    ... | eq = subst (λ k → ψ k ) oiso (ε-induction-ord lx (Φ lx) {_} {ord (od→ord z)} (case1 (subst (λ k → k < lx ) (trans (sym lemma1)(sym eq) ) c )))
+                    lemma z lt | case2 lz=ly | tri≈ ¬a refl ¬c with d<→lv lz=ly    -- z(c)
+                    ... | eq = lemma6 {ly} {Φ lx} {oy} refl (sym (subst (λ k → lv (od→ord z) ≡  k) lemma1 eq)) where
+                          lemma5 : (ox : OrdinalD lx) → (lv (od→ord z) < lx) ∨ (ord (od→ord z) d< ox) → ψ z
+                          lemma5 ox lt = subst (λ k → ψ k ) oiso (ε-induction-ord lx ox lt )
+                          lemma6 : { ly : Nat } { ox : OrdinalD {suc n} lx } { oy : OrdinalD {suc n} ly }  →
+                               lx ≡ ly → ly ≡ lv (od→ord z)  →  ψ z 
+                          lemma6 {ly} {ox} {oy} refl refl = lemma5 (OSuc lx (ord (od→ord z)) ) (case2 s<refl)
 
