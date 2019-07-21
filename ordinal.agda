@@ -224,6 +224,12 @@ trio< record { lv = .(lv b) ; ord = x } b | tri≈ ¬a refl ¬c | tri≈ ¬a₁ 
    lemma1 (case1 x) = ¬a x
    lemma1 (case2 x) = ≡→¬d< x
 
+xo<ab : {n : Level} {oa ob : Ordinal {suc n}} → ( {ox : Ordinal {suc n}} → ox o< oa  → ox o< ob ) → oa o< osuc ob
+xo<ab {n}  {oa} {ob} a→b with trio< oa ob
+xo<ab {n}  {oa} {ob} a→b | tri< a ¬b ¬c = ordtrans a <-osuc
+xo<ab {n}  {oa} {ob} a→b | tri≈ ¬a refl ¬c = <-osuc
+xo<ab {n}  {oa} {ob} a→b | tri> ¬a ¬b c = ⊥-elim ( o<¬≡ refl (a→b c )  )
+
 maxα : {n : Level} →  Ordinal {suc n} →  Ordinal  → Ordinal
 maxα x y with trio< x y
 maxα x y | tri< a ¬b ¬c = y
@@ -337,4 +343,3 @@ TransFiniteExists : {n m l : Level} → ( ψ : Ordinal {n} → Set m )
   → ¬ p
 TransFiniteExists {n} {m} {l} ψ {p} P = contra-position ( λ p y ψy → P {y} ψy p ) 
 
-   

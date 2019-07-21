@@ -1,5 +1,5 @@
 open import Level
-module HOD where
+module OD where
 
 open import zf
 open import ordinal
@@ -45,7 +45,7 @@ eq-trans x=y y=z = record { eq→ = λ t → eq→ y=z ( eq→ x=y  t) ; eq← =
 eq→ ( ⇔→== {n} {x} {y}  eq ) {z} m = proj1 eq m 
 eq← ( ⇔→== {n} {x} {y}  eq ) {z} m = proj2 eq m 
 
--- Ordinal in OD ( and ZFSet )
+-- Ordinal in OD ( and ZFSet ) Transitive Set
 Ord : { n : Level } → ( a : Ordinal {n} ) → OD {n}
 Ord {n} a = record { def = λ y → y o< a }  
 
@@ -382,8 +382,7 @@ OD→ZF {n}  = record {
               lemma :  od→ord (ZFSubset (Ord a) (ord→od (od→ord t)) ) o< sup-o (λ x → od→ord (ZFSubset (Ord a) (ord→od x)))
               lemma = sup-o<   
 
-         -- double-neg-eilm : {n  : Level } {A : Set n} → ¬ ¬ A → A
-         -- double-neg-eilm {n} {A} notnot = ⊥-elim (notnot (λ A → {!!} ))
+         -- double-neg-eilm : {n  : Level } {A : Set n} → ¬ ¬ A → A      -- we don't have this in intutionistic logic
          -- 
          -- Every set in OD is a subset of Ordinals
          -- 
@@ -460,7 +459,7 @@ OD→ZF {n}  = record {
                     ≡ od→ord (Union (x , (x , x)))
                lemma = cong (λ k → od→ord (Union ( k , ( k , k ) ))) oiso 
 
-         -- Axiom of choice ( is equivalent to existence of minimul )
+         -- Axiom of choice ( is equivalent to the existence of minimul in our case )
          -- ∀ X [ ∅ ∉ X → (∃ f : X → ⋃ X ) → ∀ A ∈ X ( f ( A ) ∈ A ) ] 
          choice-func : (X : OD {suc n} ) → {x : OD } → ¬ ( x == od∅ ) → ( X ∋ x ) → OD
          choice-func X {x} not X∋x = minimul x not
@@ -469,7 +468,6 @@ OD→ZF {n}  = record {
 
          -- another form of regularity 
          --
-         -- {-# TERMINATING #-}
          ε-induction : {n m : Level} { ψ : OD {suc n} → Set m}
              → ( {x : OD {suc n} } → ({ y : OD {suc n} } →  x ∋ y → ψ y ) → ψ x )
              → (x : OD {suc n} ) → ψ x
@@ -486,6 +484,14 @@ OD→ZF {n}  = record {
                     lemma y lt | case2 lt1 = ordtrans  (o<-subst (c<→o< lt) refl diso) lt1  
             ε-induction-ord (Suc lx) (Φ (Suc lx)) {ly} {oy} (case1 y<sox ) =                    
                 ind {ord→od (record { lv = ly ; ord = oy })} ( λ {y} lt → lemma y lt )  where  
+                    --
+                    --     if lv of z if less than x Ok
+                    --     else lv z = lv x. We can create OSuc of z which is larger than z and less than x in lemma
+                    --
+                    --                         lx    Suc lx      (1) lz(a) <lx by case1
+                    --                 ly(1)   ly(2)             (2) lz(b) <lx by case1
+                    --           lz(a) lz(b)   lz(c)                 lz(c) <lx by case2 ( ly==lz==lx)
+                    --
                     lemma0 : { lx ly : Nat } → ly < Suc lx  → lx < ly → ⊥
                     lemma0 {Suc lx} {Suc ly} (s≤s lt1) (s≤s lt2) = lemma0 lt1 lt2
                     lemma1 : {n : Level } {ly : Nat} {oy : OrdinalD {suc n} ly} → lv (od→ord (ord→od (record { lv = ly ; ord = oy }))) ≡ ly
@@ -496,30 +502,24 @@ OD→ZF {n}  = record {
                          ≡⟨⟩
                             ly
                          ∎
-                    lemma2 : { lx : Nat } → lx < Suc lx  
-                    lemma2 {Zero} = s≤s z≤n
-                    lemma2 {Suc lx} = s≤s (lemma2 {lx})
-                    --                         lx    Suc lx      (1) z(a) <lx by case1
-                    --                 ly(1)   ly(2)             (2) z(b) <lx by case1
-                    --           z(a)  z(b)    z(c)                  z(c) <lx by case2 ( ly==z==x)
-                    --
                     lemma :  (z : OD) → ord→od record { lv = ly ; ord = oy } ∋ z → ψ z
                     lemma z lt with  c<→o< {suc n} {z} {ord→od (record { lv = ly ; ord = oy })} lt
                     lemma z lt | case1 lz<ly with <-cmp lx ly
                     lemma z lt | case1 lz<ly | tri< a ¬b ¬c = ⊥-elim ( lemma0 y<sox a) -- can't happen
-                    lemma z lt | case1 lz<ly | tri≈ ¬a refl ¬c =     -- (1)
+                    lemma z lt | case1 lz<ly | tri≈ ¬a refl ¬c =    -- ly(1)
                           subst (λ k → ψ k ) oiso (ε-induction-ord lx (Φ lx) {_} {ord (od→ord z)} (case1 (subst (λ k → lv (od→ord z) < k ) lemma1 lz<ly ) ))
-                    lemma z lt | case1 lz<ly | tri> ¬a ¬b c =       -- z(a)
+                    lemma z lt | case1 lz<ly | tri> ¬a ¬b c =       -- lz(a)
                           subst (λ k → ψ k ) oiso (ε-induction-ord lx (Φ lx) {_} {ord (od→ord z)} (case1 (<-trans lz<ly (subst (λ k → k < lx ) (sym lemma1) c))))
                     lemma z lt | case2 lz=ly with <-cmp lx ly
                     lemma z lt | case2 lz=ly | tri< a ¬b ¬c = ⊥-elim ( lemma0 y<sox a) -- can't happen
-                    lemma z lt | case2 lz=ly | tri> ¬a ¬b c with d<→lv lz=ly       -- z(b)
-                    ... | eq = subst (λ k → ψ k ) oiso (ε-induction-ord lx (Φ lx) {_} {ord (od→ord z)} (case1 (subst (λ k → k < lx ) (trans (sym lemma1)(sym eq) ) c )))
-                    lemma z lt | case2 lz=ly | tri≈ ¬a refl ¬c with d<→lv lz=ly    -- z(c)
-                    ... | eq = lemma6 {ly} {Φ lx} {oy} refl (sym (subst (λ k → lv (od→ord z) ≡  k) lemma1 eq)) where
+                    lemma z lt | case2 lz=ly | tri> ¬a ¬b c with d<→lv lz=ly        -- lz(b)
+                    ... | eq = subst (λ k → ψ k ) oiso
+                         (ε-induction-ord lx (Φ lx) {_} {ord (od→ord z)} (case1 (subst (λ k → k < lx ) (trans (sym lemma1)(sym eq) ) c )))
+                    lemma z lt | case2 lz=ly | tri≈ ¬a lx=ly ¬c with d<→lv lz=ly    -- lz(c)
+                    ... | eq = lemma6 {ly} {Φ lx} {oy} lx=ly (sym (subst (λ k → lv (od→ord z) ≡  k) lemma1 eq)) where
                           lemma5 : (ox : OrdinalD lx) → (lv (od→ord z) < lx) ∨ (ord (od→ord z) d< ox) → ψ z
                           lemma5 ox lt = subst (λ k → ψ k ) oiso (ε-induction-ord lx ox lt )
                           lemma6 : { ly : Nat } { ox : OrdinalD {suc n} lx } { oy : OrdinalD {suc n} ly }  →
-                               lx ≡ ly → ly ≡ lv (od→ord z)  →  ψ z 
+                               lx ≡ ly → ly ≡ lv (od→ord z)  → ψ z 
                           lemma6 {ly} {ox} {oy} refl refl = lemma5 (OSuc lx (ord (od→ord z)) ) (case2 s<refl)
 
