@@ -17,9 +17,6 @@ record Ordinal {n : Level} : Set n where
      lv : Nat
      ord : OrdinalD {n} lv
 
---
---    Φ (Suc lv) < ℵ lv < OSuc (Suc lv) (ℵ lv) < OSuc ... < OSuc (Suc lv) (Φ (Suc lv)) < OSuc ...  < ℵ (Suc lv)
---
 data _d<_ {n : Level} :   {lx ly : Nat} → OrdinalD {n} lx  →  OrdinalD {n} ly  → Set n where
    Φ<  : {lx : Nat} → {x : OrdinalD {n} lx}  →  Φ lx d< OSuc lx x
    s<  : {lx : Nat} → {x y : OrdinalD {n} lx}  →  x d< y  → OSuc  lx x d< OSuc  lx y
@@ -300,8 +297,6 @@ proj2 (osuc2 {n} x y) (case1 lt) = case1 lt
 proj2 (osuc2 {n} x y) (case2 lt) with d<→lv lt
 ... | refl = case2 (s< lt)
 
--- omax≡ (omax x x ) (osuc x) (omxx x)
-
 OrdTrans : {n : Level} → Transitive {suc n} _o≤_
 OrdTrans (case1 refl) (case1 refl) = case1 refl
 OrdTrans (case1 refl) (case2 lt2) = case2 lt2
@@ -327,7 +322,7 @@ TransFinite caseΦ caseOSuc record { lv = lv ; ord = (Φ (lv)) } = caseΦ lv
 TransFinite caseΦ caseOSuc record { lv = lx ; ord = (OSuc lx ox) } = 
       caseOSuc lx ox (TransFinite caseΦ caseOSuc  record { lv = lx ; ord = ox })
 
--- we cannot prove this in intutonistic logic 
+-- we cannot prove this in intutionistic logic 
 --  (¬ (∀ y → ¬ ( ψ y ))) → (ψ y → p )  → p
 -- postulate 
 --  TransFiniteExists : {n m l : Level} → ( ψ : Ordinal {n} → Set m ) 

@@ -71,10 +71,11 @@ postulate
   -- sup-x  : {n : Level } → ( Ordinal {n} → Ordinal {n}) →  Ordinal {n}
   -- sup-lb : {n : Level } → { ψ : Ordinal {n} →  Ordinal {n}} → {z : Ordinal {n}}  →  z o< sup-o ψ → z o< osuc (ψ (sup-x ψ))
   -- sup-lb : {n : Level } → ( ψ : Ordinal {n} →  Ordinal {n}) → ( ∀ {x : Ordinal {n}} →  ψx  o<  z ) →  z o< osuc ( sup-o ψ ) 
-  -- mimimul and x∋minimul is a weaker form of Axiom of choice
+  -- mimimul and x∋minimul is an Axiom of choice
   minimul : {n : Level } → (x : OD {suc n} ) → ¬ (x == od∅ )→ OD {suc n} 
   -- this should be ¬ (x == od∅ )→ ∃ ox → x ∋ Ord ox  ( minimum of x )
   x∋minimul : {n : Level } → (x : OD {suc n} ) → ( ne : ¬ (x == od∅ ) ) → def x ( od→ord ( minimul x ne ) )
+  -- 
   minimul-1 : {n : Level } → (x : OD {suc n} ) → ( ne : ¬ (x == od∅ ) ) → (y : OD {suc n}) → ¬ ( def (minimul x ne) (od→ord y)) ∧ (def x (od→ord  y) )
 
 _∋_ : { n : Level } → ( a x : OD {n} ) → Set n
@@ -292,13 +293,14 @@ OD→ZF {n}  = record {
        ;   power→ = power→  
        ;   power← = power← 
        ;   extensionality = extensionality
-       ;   minimul = minimul
-       ;   regularity = regularity
+       ;   ε-induction = ε-induction
        ;   infinity∅ = infinity∅
        ;   infinity = infinity
        ;   selection = λ {X} {ψ} {y} → selection {X} {ψ} {y}
        ;   replacement← = replacement←
        ;   replacement→ = replacement→
+       ;   choice-func = choice-func
+       ;   choice = choice
      } where
 
          pair : (A B : OD {suc n} ) → ((A , B) ∋ A) ∧  ((A , B) ∋ B)
