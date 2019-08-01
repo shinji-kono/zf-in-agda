@@ -13,6 +13,7 @@ data OrdinalD {n : Level} :  (lv : Nat) → Set n where
    OSuc : (lv : Nat) → OrdinalD {n} lv → OrdinalD lv
 
 record Ordinal {n : Level} : Set n where
+   constructor ordinal  
    field
      lv : Nat
      ord : OrdinalD {n} lv
@@ -111,9 +112,21 @@ nat-≡< refl lt = nat-<≡ lt
 ¬a≤a : {la : Nat} → Suc la ≤ la → ⊥
 ¬a≤a  (s≤s lt) = ¬a≤a  lt
 
+a<sa : {la : Nat} → la < Suc la 
+a<sa {Zero} = s≤s z≤n
+a<sa {Suc la} = s≤s a<sa 
+
 =→¬< : {x : Nat  } → ¬ ( x < x )
 =→¬< {Zero} ()
 =→¬< {Suc x} (s≤s lt) = =→¬< lt
+
+<-∨ : { x y : Nat } → x < Suc y → ( (x ≡ y ) ∨ (x < y) )
+<-∨ {Zero} {Zero} (s≤s z≤n) = case1 refl
+<-∨ {Zero} {Suc y} (s≤s lt) = case2 (s≤s z≤n)
+<-∨ {Suc x} {Zero} (s≤s ())
+<-∨ {Suc x} {Suc y} (s≤s lt) with <-∨ {x} {y} lt
+<-∨ {Suc x} {Suc y} (s≤s lt) | case1 eq = case1 (cong (λ k → Suc k ) eq)
+<-∨ {Suc x} {Suc y} (s≤s lt) | case2 lt1 = case2 (s≤s lt1)
 
 case12-⊥ : {n : Level} {x y : Ordinal {suc n}} → lv x < lv y → ord x d< ord y → ⊥
 case12-⊥ {x} {y} lt1 lt2 with d<→lv lt2
@@ -123,7 +136,7 @@ case21-⊥ : {n : Level} {x y : Ordinal {suc n}} → lv x < lv y → ord y d< or
 case21-⊥ {x} {y} lt1 lt2 with d<→lv lt2
 ... | refl = nat-≡< refl lt1
 
-o<¬≡ : {n : Level } { ox oy : Ordinal {n}} → ox ≡ oy  → ox o< oy  → ⊥
+o<¬≡ : {n : Level } { ox oy : Ordinal {suc n}} → ox ≡ oy  → ox o< oy  → ⊥
 o<¬≡ {_} {ox} {ox} refl (case1 lt) =  =→¬< lt
 o<¬≡ {_} {ox} {ox} refl (case2 (s< lt)) = trio<≡ refl lt
 
@@ -314,13 +327,29 @@ OrdPreorder {n} = record { Carrier = Ordinal
      }
  }
 
-TransFinite : {n m : Level} → { ψ : Ordinal {n} → Set m }
-  → ( ∀ (lx : Nat ) → ψ ( record { lv = lx ; ord = Φ lx } ) )
+TransFinite : {n m : Level} → { ψ : Ordinal {suc n} → Set m }
+  → ( ∀ (lx : Nat ) → ( (x : Ordinal {suc n} ) → x o< ordinal lx (Φ lx)  → ψ x ) → ψ ( record { lv = lx ; ord = Φ lx } ) )
   → ( ∀ (lx : Nat ) → (x : OrdinalD lx )  → ψ ( record { lv = lx ; ord = x } ) → ψ ( record { lv = lx ; ord = OSuc lx x } ) )
   →  ∀ (x : Ordinal)  → ψ x
-TransFinite caseΦ caseOSuc record { lv = lv ; ord = (Φ (lv)) } = caseΦ lv
-TransFinite caseΦ caseOSuc record { lv = lx ; ord = (OSuc lx ox) } = 
-      caseOSuc lx ox (TransFinite caseΦ caseOSuc  record { lv = lx ; ord = ox })
+TransFinite {n} {m} {ψ} caseΦ caseOSuc x = proj1 (TransFinite1 (lv x) (ord x) ) where
+  TransFinite1 : (lx : Nat) (ox : OrdinalD lx ) → ψ (ordinal lx ox) ∧ ( ( (x : Ordinal {suc n} ) → x o< ordinal lx (Φ lx)  → ψ x ) )
+  TransFinite1 Zero (Φ 0) = record { proj1 = caseΦ Zero lemma ; proj2 = lemma1 } where
+      lemma : (x : Ordinal) → x o< ordinal Zero (Φ Zero) → ψ x
+      lemma x (case1 ())
+      lemma x (case2 ())
+      lemma1 : (x : Ordinal) → x o< ordinal Zero (Φ Zero) → ψ x
+      lemma1 x (case1 ())
+      lemma1 x (case2 ())
+  TransFinite1 (Suc lx) (Φ (Suc lx)) = record { proj1 = caseΦ (Suc lx) (λ x → lemma (lv x) (ord x)) ; proj2 = (λ x → lemma (lv x) (ord x)) } where
+      lemma0 : (ly : Nat) (oy : OrdinalD ly ) → ordinal ly oy  o< ordinal lx (Φ lx) → ψ (ordinal ly oy)
+      lemma0 ly oy lt = proj2 ( TransFinite1 lx (Φ lx) ) (ordinal ly oy) lt
+      lemma : (ly : Nat) (oy : OrdinalD ly ) → ordinal ly oy  o< ordinal (Suc lx) (Φ (Suc lx)) → ψ (ordinal ly oy)
+      lemma lx1 ox1 (case1 lt) with <-∨ lt
+      lemma lx (Φ lx) (case1 lt) | case1 refl = proj1 ( TransFinite1 lx (Φ lx) )
+      lemma lx (OSuc lx ox1) (case1 lt) | case1 refl = caseOSuc lx ox1 ( lemma lx ox1 (case1 a<sa)) 
+      lemma lx (Φ lx) (case1 lt) | case2 (s≤s lt1) = lemma0  lx (Φ lx) (case1 (s≤s lt1))
+      lemma lx1 (OSuc lx1 ox1) (case1 lt) | case2 lt1 = caseOSuc lx1 ox1 ( lemma lx1 ox1 (case1 (<-trans lt1 a<sa ))) 
+  TransFinite1 lx (OSuc lx ox)  = record { proj1 = caseOSuc lx ox (proj1 (TransFinite1 lx ox )) ; proj2 = proj2 (TransFinite1 lx ox )}
 
 -- we cannot prove this in intutionistic logic 
 --  (¬ (∀ y → ¬ ( ψ y ))) → (ψ y → p )  → p

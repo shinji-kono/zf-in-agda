@@ -70,12 +70,11 @@ postulate
   -- contra-position of mimimulity of supermum required in Power Set Axiom
   -- sup-x  : {n : Level } → ( Ordinal {n} → Ordinal {n}) →  Ordinal {n}
   -- sup-lb : {n : Level } → { ψ : Ordinal {n} →  Ordinal {n}} → {z : Ordinal {n}}  →  z o< sup-o ψ → z o< osuc (ψ (sup-x ψ))
-  -- sup-lb : {n : Level } → ( ψ : Ordinal {n} →  Ordinal {n}) → ( ∀ {x : Ordinal {n}} →  ψx  o<  z ) →  z o< osuc ( sup-o ψ ) 
   -- mimimul and x∋minimul is an Axiom of choice
   minimul : {n : Level } → (x : OD {suc n} ) → ¬ (x == od∅ )→ OD {suc n} 
   -- this should be ¬ (x == od∅ )→ ∃ ox → x ∋ Ord ox  ( minimum of x )
   x∋minimul : {n : Level } → (x : OD {suc n} ) → ( ne : ¬ (x == od∅ ) ) → def x ( od→ord ( minimul x ne ) )
-  -- 
+  -- minimulity (may proved by ε-induction )
   minimul-1 : {n : Level } → (x : OD {suc n} ) → ( ne : ¬ (x == od∅ ) ) → (y : OD {suc n}) → ¬ ( def (minimul x ne) (od→ord y)) ∧ (def x (od→ord  y) )
 
 _∋_ : { n : Level } → ( a x : OD {n} ) → Set n
@@ -102,18 +101,21 @@ sup-c< {n} ψ {x} = def-subst {n} {_} {_} {Ord ( sup-o ( λ x → od→ord (ψ (
     lemma : od→ord (ψ (ord→od (od→ord x))) o< sup-o (λ x → od→ord (ψ (ord→od x)))
     lemma = subst₂ (λ j k → j o< k ) refl diso (o<-subst sup-o< refl (sym diso)  )
 
-otrans : {n : Level} {a x : Ordinal {n} } → def (Ord a) x → { y : Ordinal {n} } → y o< x → def (Ord a) y
-otrans {n} {a} {x} x<a {y} y<x = ordtrans y<x x<a
+otrans : {n : Level} {a x y : Ordinal {n} } → def (Ord a) x → def (Ord x) y → def (Ord a) y
+otrans x<a y<x = ordtrans y<x x<a
 
-∅3 : {n : Level} →  { x : Ordinal {n}}  → ( ∀(y : Ordinal {n}) → ¬ (y o< x ) ) → x ≡ o∅ {n}
+def→o< : {n : Level } {X : OD {suc n}} → {x : Ordinal {suc n}} → def X x → x o< od→ord X 
+def→o< {n} {X} {x} lt = o<-subst {suc n} {_} {_} {x} {od→ord X} ( c<→o< ( def-subst {suc n} {X} {x}  lt (sym oiso) (sym diso) )) diso diso
+
+∅3 : {n : Level} →  { x : Ordinal {suc n}}  → ( ∀(y : Ordinal {suc n}) → ¬ (y o< x ) ) → x ≡ o∅ {suc n}
 ∅3 {n} {x} = TransFinite {n} c2 c3 x where
-   c0 : Nat →  Ordinal {n}  → Set n
-   c0 lx x = (∀(y : Ordinal {n}) → ¬ (y o< x))  → x ≡ o∅ {n}
-   c2 : (lx : Nat) → c0 lx (record { lv = lx ; ord = Φ lx } )
-   c2 Zero not = refl
-   c2 (Suc lx) not with not ( record { lv = lx ; ord = Φ lx } )
+   c0 : Nat →  Ordinal {suc n}  → Set (suc n)
+   c0 lx x = (∀(y : Ordinal {suc n}) → ¬ (y o< x))  → x ≡ o∅ {suc n}
+   c2 : (lx : Nat) → ((x₁ : Ordinal) → x₁ o< ordinal lx (Φ lx) → c0 (lv x₁) (record { lv = lv x₁ ; ord = ord x₁ }))→ c0 lx (record { lv = lx ; ord = Φ lx } )
+   c2 Zero _ not = refl
+   c2 (Suc lx) _ not with not ( record { lv = lx ; ord = Φ lx } )
    ... | t with t (case1 ≤-refl )
-   c2 (Suc lx) not | t | ()
+   c2 (Suc lx) _ not | t | ()
    c3 : (lx : Nat) (x₁ : OrdinalD lx) → c0 lx  (record { lv = lx ; ord = x₁ })  → c0 lx (record { lv = lx ; ord = OSuc lx x₁ })
    c3 lx (Φ .lx) d not with not ( record { lv = lx ; ord = Φ lx } )
    ... | t with t (case2 Φ< )
@@ -159,11 +161,6 @@ o≡→== {n} {x} {.x} refl = eq-refl
 c≤-refl : {n : Level} →  ( x : OD {n} ) → x c≤ x
 c≤-refl x = case1 refl
 
-∋→o< : {n : Level} →  { a x : OD {suc n} } → a ∋ x → od→ord x o< od→ord a
-∋→o< {n} {a} {x} lt = t where
-         t : (od→ord x) o< (od→ord a)
-         t = c<→o< {suc n} {x} {a} lt 
-
 o∅≡od∅ : {n : Level} → ord→od (o∅ {suc n}) ≡ od∅ {suc n}
 o∅≡od∅ {n} = ==→o≡ lemma where
      lemma0 :  {x : Ordinal} → def (ord→od o∅) x → def od∅ x
@@ -176,12 +173,6 @@ o∅≡od∅ {n} = ==→o≡ lemma where
 
 ord-od∅ : {n : Level} → od→ord (od∅ {suc n}) ≡ o∅ {suc n}
 ord-od∅ {n} = sym ( subst (λ k → k ≡  od→ord (od∅ {suc n}) ) diso (cong ( λ k → od→ord k ) o∅≡od∅ ) )
-
-o<→¬c> : {n : Level} →  { x y : OD {n} } → (od→ord x ) o< ( od→ord y) →  ¬ (y c< x )
-o<→¬c> {n} {x} {y} olt clt = o<> olt (c<→o< clt ) where
-
-o≡→¬c< : {n : Level} →  { x y : OD {n} } →  (od→ord x ) ≡ ( od→ord y) →   ¬ x c< y
-o≡→¬c< {n} {x} {y} oeq lt  = o<¬≡  (orefl oeq ) (c<→o< lt) 
 
 ∅0 : {n : Level} →  record { def = λ x →  Lift n ⊥ } == od∅ {n} 
 eq→ ∅0 {w} (lift ())
@@ -203,6 +194,38 @@ is-o∅ {n} record { lv = Zero ; ord = (Φ .0) } = yes refl
 is-o∅ {n} record { lv = Zero ; ord = (OSuc .0 ord₁) } = no ( λ () )
 is-o∅ {n} record { lv = (Suc lv₁) ; ord = ord } = no (λ())
 
+ppp : { n : Level } → { p : Set (suc n) } { a : OD {suc n} } → record { def = λ x → p } ∋ a → p
+ppp {n} {p} {a} d = d
+
+--
+-- Axiom of choice in intutionistic logic implies the exclude middle
+--     https://plato.stanford.edu/entries/axiom-choice/#AxiChoLog
+--
+p∨¬p : { n : Level } → ( p : Set (suc n) ) → p ∨ ( ¬ p )         -- assuming axiom of choice
+p∨¬p {n} p with is-o∅ ( od→ord ( record { def = λ x → p } ))
+p∨¬p {n} p | yes eq = case2 (¬p eq) where
+   ps = record { def = λ x → p }
+   lemma : ps == od∅ → p → ⊥
+   lemma eq p0 = ¬x<0 {n} {od→ord ps} (eq→ eq p0 )
+   ¬p : (od→ord ps ≡ o∅) → p → ⊥
+   ¬p eq = lemma ( subst₂ (λ j k → j ==  k ) oiso o∅≡od∅ ( o≡→== eq ))
+p∨¬p {n} p | no ¬p = case1 (ppp {n} {p} {minimul ps (λ eq →  ¬p (eqo∅ eq))} lemma) where
+   ps = record { def = λ x → p }
+   eqo∅ : ps ==  od∅ {suc n} → od→ord ps ≡  o∅ {suc n} 
+   eqo∅ eq = subst (λ k → od→ord ps ≡ k) ord-od∅ ( cong (λ k → od→ord k ) (==→o≡ eq)) 
+   lemma : ps ∋ minimul ps (λ eq →  ¬p (eqo∅ eq)) 
+   lemma = x∋minimul ps (λ eq →  ¬p (eqo∅ eq))
+
+∋-p : { n : Level } → ( p : Set (suc n) ) → Dec p   -- assuming axiom of choice    
+∋-p {n} p with p∨¬p p
+∋-p {n} p | case1 x = yes x
+∋-p {n} p | case2 x = no x
+
+double-neg-eilm : {n  : Level } {A : Set (suc n)} → ¬ ¬ A → A      -- we don't have this in intutionistic logic
+double-neg-eilm {n} {A} notnot with ∋-p  A                         -- assuming axiom of choice
+... | yes p = p
+... | no ¬p = ⊥-elim ( notnot ¬p )
+
 OrdP : {n : Level} →  ( x : Ordinal {suc n} ) ( y : OD {suc n} ) → Dec ( Ord x ∋ y )
 OrdP {n} x y with trio< x (od→ord y)
 OrdP {n} x y | tri< a ¬b ¬c = no ¬c
@@ -218,10 +241,23 @@ in-codomain {n} X ψ = record { def = λ x → ¬ ( (y : Ordinal {suc n}) → ¬
 -- Power Set of X ( or constructible by λ y → def X (od→ord y )
 
 ZFSubset : {n : Level} → (A x : OD {suc n} ) → OD {suc n}
-ZFSubset A x =  record { def = λ y → def A y ∧  def x y }   where
+ZFSubset A x =  record { def = λ y → def A y ∧  def x y }  --   roughly x = A → Set 
 
 Def :  {n : Level} → (A :  OD {suc n}) → OD {suc n}
-Def {n} A = Ord ( sup-o ( λ x → od→ord ( ZFSubset A (ord→od x )) ) )   -- Ord x does not help ord-power→
+Def {n} A = Ord ( sup-o ( λ x → od→ord ( ZFSubset A (ord→od x )) ) )   
+
+
+_⊆_ : {n : Level} ( A B : OD {suc n}  ) → ∀{ x : OD {suc n} } →  Set (suc n)
+_⊆_ A B {x} = A ∋ x →  B ∋ x
+
+infixr  220 _⊆_
+
+subset-lemma : {n : Level} → {A x y : OD {suc n} } → (  x ∋ y → ZFSubset A x ∋  y ) ⇔  ( _⊆_ x A {y} )
+subset-lemma {n} {A} {x} {y} = record {
+      proj1 = λ z lt → proj1 (z  lt)
+    ; proj2 = λ x⊆A lt → record { proj1 = x⊆A lt ; proj2 = lt }
+   } 
+
 
 -- Constructible Set on α
 -- Def X = record { def = λ y → ∀ (x : OD ) → y < X ∧ y <  od→ord x } 
@@ -265,8 +301,6 @@ OD→ZF {n}  = record {
     Union U = record { def = λ x → ¬ (∀ (u : Ordinal ) → ¬ ((def U u) ∧ (def (ord→od u) x)))  }
     _∈_ : ( A B : ZFSet  ) → Set (suc n)
     A ∈ B = B ∋ A
-    _⊆_ : ( A B : ZFSet  ) → ∀{ x : ZFSet } →  Set (suc n)
-    _⊆_ A B {x} = A ∋ x →  B ∋ x
     Power : OD {suc n} → OD {suc n}
     Power A = Replace (Def (Ord (od→ord A))) ( λ x → A ∩ x )
     ｛_｝ : ZFSet → ZFSet
@@ -282,7 +316,6 @@ OD→ZF {n}  = record {
 
     infixr  200 _∈_
     -- infixr  230 _∩_ _∪_
-    infixr  220 _⊆_
     isZF : IsZF (OD {suc n})  _∋_  _==_ od∅ _,_ Union Power Select Replace infinite
     isZF = record {
            isEquivalence  = record { refl = eq-refl ; sym = eq-sym; trans = eq-trans }
@@ -292,7 +325,7 @@ OD→ZF {n}  = record {
        ;   empty = empty
        ;   power→ = power→  
        ;   power← = power← 
-       ;   extensionality = extensionality
+       ;   extensionality = λ {A} {B} {w} → extensionality {A} {B} {w} 
        ;   ε-induction = ε-induction
        ;   infinity∅ = infinity∅
        ;   infinity = infinity
@@ -311,8 +344,6 @@ OD→ZF {n}  = record {
          empty x (case1 ())
          empty x (case2 ())
 
-         ord-⊆ : ( t x : OD {suc n} ) → _⊆_ t (Ord (od→ord t )) {x}
-         ord-⊆ t x lt = c<→o< lt
          o<→c< :  {x y : Ordinal {suc n}} {z : OD {suc n}}→ x o< y → _⊆_  (Ord x) (Ord y) {z}
          o<→c< lt lt1 = ordtrans lt1 lt
          
@@ -384,7 +415,6 @@ OD→ZF {n}  = record {
               lemma :  od→ord (ZFSubset (Ord a) (ord→od (od→ord t)) ) o< sup-o (λ x → od→ord (ZFSubset (Ord a) (ord→od x)))
               lemma = sup-o<   
 
-         -- double-neg-eilm : {n  : Level } {A : Set n} → ¬ ¬ A → A      -- we don't have this in intutionistic logic
          -- 
          -- Every set in OD is a subset of Ordinals
          -- 
@@ -429,6 +459,7 @@ OD→ZF {n}  = record {
                   lemma6 : od→ord t ≡ od→ord (A ∩ ord→od (od→ord t)) 
                   lemma6 = cong ( λ k → od→ord k ) (==→o≡ (subst (λ k → t == (A ∩ k)) (sym oiso) ( ∩-≡ t→A  )))
 
+         --  assuming axiom of choice
          regularity :  (x : OD) (not : ¬ (x == od∅)) →
             (x ∋ minimul x not) ∧ (Select (minimul x not) (λ x₁ → (minimul x not ∋ x₁) ∧ (x ∋ x₁)) == od∅)
          proj1 (regularity x not ) = x∋minimul x not
@@ -441,9 +472,13 @@ OD→ZF {n}  = record {
              lemma2 : {x₁ : Ordinal} → def od∅ x₁ → def (Select (minimul x not) (λ x₂ → (minimul x not ∋ x₂) ∧ (x ∋ x₂))) x₁
              lemma2 {y} d = ⊥-elim (empty (ord→od y) (def-subst {suc n} {_} {_} {od∅} {od→ord (ord→od y)} d refl (sym diso) ))
 
-         extensionality : {A B : OD {suc n}} → ((z : OD) → (A ∋ z) ⇔ (B ∋ z)) → A == B
-         eq→ (extensionality {A} {B} eq ) {x} d = def-iso {suc n} {A} {B} (sym diso) (proj1 (eq (ord→od x))) d  
-         eq← (extensionality {A} {B} eq ) {x} d = def-iso {suc n} {B} {A} (sym diso) (proj2 (eq (ord→od x))) d  
+         extensionality0 : {A B : OD {suc n}} → ((z : OD) → (A ∋ z) ⇔ (B ∋ z)) → A == B
+         eq→ (extensionality0 {A} {B} eq ) {x} d = def-iso {suc n} {A} {B} (sym diso) (proj1 (eq (ord→od x))) d  
+         eq← (extensionality0 {A} {B} eq ) {x} d = def-iso {suc n} {B} {A} (sym diso) (proj2 (eq (ord→od x))) d  
+
+         extensionality : {A B w : OD {suc n} } → ((z : OD {suc n}) → (A ∋ z) ⇔ (B ∋ z)) → (w ∋ A) ⇔ (w ∋ B)
+         proj1 (extensionality {A} {B} {w} eq ) d = subst (λ k → w ∋ k) ( ==→o≡ (extensionality0 {A} {B} eq) ) d
+         proj2 (extensionality {A} {B} {w} eq ) d = subst (λ k → w ∋ k) (sym ( ==→o≡ (extensionality0 {A} {B} eq) )) d 
 
          infinity∅ : infinite  ∋ od∅ {suc n}
          infinity∅ = def-subst {suc n} {_} {_} {infinite} {od→ord (od∅ {suc n})} iφ refl lemma where
@@ -468,6 +503,7 @@ OD→ZF {n}  = record {
          choice : (X : OD {suc n} ) → {A : OD } → ( X∋A : X ∋ A ) → (not : ¬ ( A == od∅ )) → A ∋ choice-func X not X∋A 
          choice X {A} X∋A not = x∋minimul A not
 
+         --
          -- another form of regularity 
          --
          ε-induction : {n m : Level} { ψ : OD {suc n} → Set m}
@@ -476,14 +512,12 @@ OD→ZF {n}  = record {
          ε-induction {n} {m} {ψ} ind x = subst (λ k → ψ k ) oiso (ε-induction-ord (lv (osuc (od→ord x))) (ord (osuc (od→ord x)))  <-osuc) where
             ε-induction-ord : (lx : Nat) ( ox : OrdinalD {suc n} lx ) {ly : Nat} {oy : OrdinalD {suc n} ly }
                 → (ly < lx) ∨ (oy d< ox  ) → ψ (ord→od (record { lv = ly ; ord = oy } ) )
-            ε-induction-ord Zero (Φ 0)  (case1 ())
-            ε-induction-ord Zero (Φ 0)  (case2 ())
             ε-induction-ord lx  (OSuc lx ox) {ly} {oy} y<x = 
                 ind {ord→od (record { lv = ly ; ord = oy })} ( λ {y} lt → subst (λ k → ψ k ) oiso (ε-induction-ord lx ox (lemma y lt ))) where
-                    lemma :  (y : OD) → ord→od record { lv = ly ; ord = oy } ∋ y → od→ord y o< record { lv = lx ; ord = ox }
-                    lemma y lt with osuc-≡< y<x
-                    lemma y lt | case1 refl = o<-subst (c<→o< lt) refl diso
-                    lemma y lt | case2 lt1 = ordtrans  (o<-subst (c<→o< lt) refl diso) lt1  
+                    lemma :  (z : OD) → ord→od record { lv = ly ; ord = oy } ∋ z → od→ord z o< record { lv = lx ; ord = ox }
+                    lemma z lt with osuc-≡< y<x
+                    lemma z lt | case1 refl = o<-subst (c<→o< lt) refl diso
+                    lemma z lt | case2 lt1 = ordtrans  (o<-subst (c<→o< lt) refl diso) lt1  
             ε-induction-ord (Suc lx) (Φ (Suc lx)) {ly} {oy} (case1 y<sox ) =                    
                 ind {ord→od (record { lv = ly ; ord = oy })} ( λ {y} lt → lemma y lt )  where  
                     --
@@ -524,4 +558,67 @@ OD→ZF {n}  = record {
                           lemma6 : { ly : Nat } { ox : OrdinalD {suc n} lx } { oy : OrdinalD {suc n} ly }  →
                                lx ≡ ly → ly ≡ lv (od→ord z)  → ψ z 
                           lemma6 {ly} {ox} {oy} refl refl = lemma5 (OSuc lx (ord (od→ord z)) ) (case2 s<refl)
+
+         ---
+         --- With assuption of OD is ordered,  p ∨ ( ¬ p ) <=> axiom of choice
+         ---
+         record choiced {n : Level} ( X : OD {suc n}) : Set (suc (suc n)) where
+            field
+                a-choice : OD {suc n}
+                is-in : X ∋ a-choice
+         choice-func' : (X : OD {suc n} ) → (p∨¬p : { n : Level } → ( p : Set (suc n) ) → p ∨ ( ¬ p )) → ¬ ( X == od∅ ) → choiced X
+         choice-func' X p∨¬p not = have_to_find 
+           where
+            ψ : ( ox : Ordinal {suc n}) → Set (suc (suc n))
+            ψ ox = (( x : Ordinal {suc n}) → x o< ox  → ( ¬ def X x )) ∨ choiced X
+            lemma-ord : ( ox : Ordinal {suc n} ) → ψ ox
+            lemma-ord  ox = TransFinite {n} {suc (suc n)} {ψ} caseΦ caseOSuc ox where
+               ∋-p' : (A x : OD {suc n} ) → Dec ( A ∋ x ) 
+               ∋-p' A x with p∨¬p ( A ∋ x )
+               ∋-p' A x | case1 t = yes t
+               ∋-p' A x | case2 t = no t
+               ∀-imply-or :  {n : Level}  {A : Ordinal {suc n} → Set (suc n) } {B : Set (suc (suc n)) }
+                   → ((x : Ordinal {suc n}) → A x ∨ B) →  ((x : Ordinal {suc n}) → A x) ∨ B
+               ∀-imply-or {n} {A} {B} ∀AB with p∨¬p  ((x : Ordinal {suc n}) → A x)
+               ∀-imply-or {n} {A} {B} ∀AB | case1 t = case1 t
+               ∀-imply-or {n} {A} {B} ∀AB | case2 x = case2 (lemma x) where
+                    lemma : ¬ ((x : Ordinal {suc n}) → A x) →  B
+                    lemma not with p∨¬p B
+                    lemma not | case1 b = b
+                    lemma not | case2 ¬b = ⊥-elim  (not (λ x → dont-orb (∀AB x) ¬b ))
+               caseΦ : (lx : Nat) → ( (x : Ordinal {suc n} ) → x o< ordinal lx (Φ lx) → ψ x) → ψ (ordinal lx (Φ lx) ) 
+               caseΦ lx prev with ∋-p' X ( ord→od (ordinal lx (Φ lx) ))
+               caseΦ lx prev | yes p = case2 ( record { a-choice = ord→od (ordinal lx (Φ lx)) ; is-in = p } )
+               caseΦ lx prev | no ¬p = lemma where
+                    lemma1 : (x : Ordinal) → (((Suc (lv x) ≤ lx) ∨ (ord x d< Φ lx) → def X x → ⊥) ∨ choiced X)
+                    lemma1 x with trio< x (ordinal lx (Φ lx))
+                    lemma1 x | tri< a ¬b ¬c with prev (osuc x) (lemma2 a) where
+                        lemma2 : x o< (ordinal lx (Φ lx)) →  osuc x o< ordinal lx (Φ lx)
+                        lemma2 (case1 lt) = case1 lt
+                    lemma1 x | tri< a ¬b ¬c | case2 found = case2 found
+                    lemma1 x | tri< a ¬b ¬c | case1 not_found = case1 ( λ lt df → not_found x <-osuc df )
+                    lemma1 x | tri≈ ¬a refl ¬c = case1 ( λ lt → ⊥-elim (o<¬≡ refl lt ))
+                    lemma1 x | tri> ¬a ¬b c = case1 ( λ lt → ⊥-elim (o<> lt c ))
+                    lemma : ((x : Ordinal) → (Suc (lv x) ≤ lx) ∨ (ord x d< Φ lx) → def X x → ⊥) ∨ choiced X
+                    lemma = ∀-imply-or lemma1
+               caseOSuc : (lx : Nat) (x : OrdinalD lx) → ψ ( ordinal lx x ) → ψ ( ordinal lx (OSuc lx x) )
+               caseOSuc lx x prev with ∋-p' X (ord→od record { lv = lx ; ord = x } )
+               caseOSuc lx x prev | yes p = case2 (record { a-choice = ord→od record { lv = lx ; ord = x } ; is-in = p })
+               caseOSuc lx x (case1 not_found) | no ¬p = case1 lemma where
+                    lemma : (y : Ordinal) → (Suc (lv y) ≤ lx) ∨ (ord y d< OSuc lx x) → def X y → ⊥
+                    lemma y lt with trio< y (ordinal lx x )
+                    lemma y lt | tri< a ¬b ¬c = not_found y a
+                    lemma y lt | tri≈ ¬a refl ¬c = subst (λ k → def X k → ⊥ ) diso ¬p
+                    lemma y lt | tri> ¬a ¬b c with osuc-≡< lt
+                    lemma y lt | tri> ¬a ¬b c | case1 refl = ⊥-elim ( ¬b refl )
+                    lemma y lt | tri> ¬a ¬b c | case2 lt1 = ⊥-elim (o<> c lt1 )
+               caseOSuc lx x (case2 found) | no ¬p = case2 found
+            have_to_find : choiced X
+            have_to_find with lemma-ord (od→ord X )
+            have_to_find | t = dont-or  t ¬¬X∋x where
+                ¬¬X∋x : ¬ ((x : Ordinal) → (Suc (lv x) ≤ lv (od→ord X)) ∨ (ord x d< ord (od→ord X)) → def X x → ⊥)
+                ¬¬X∋x nn = not record {
+                       eq→ = λ {x} lt → ⊥-elim  (nn x (def→o< lt) lt) 
+                     ; eq← = λ {x} lt → ⊥-elim ( ¬x<0 lt )
+                   }
 
