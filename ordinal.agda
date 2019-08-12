@@ -7,6 +7,8 @@ open import zf
 open import Data.Nat renaming ( zero to Zero ; suc to Suc ;  ℕ to Nat ; _⊔_ to _n⊔_ ) 
 open import Data.Empty
 open import  Relation.Binary.PropositionalEquality
+open import  logic
+open import  nat
 
 data OrdinalD {n : Level} :  (lv : Nat) → Set n where
    Φ : (lv : Nat) → OrdinalD  lv
@@ -58,12 +60,6 @@ ordinal-cong : {n : Level} {x y : Ordinal {n}}  →
       lv x  ≡ lv y → ord x ≅ ord y →  x ≡ y
 ordinal-cong refl refl = refl
 
-ordinal-lv : {n : Level} {x y : Ordinal {n}}  → x ≡ y → lv x  ≡ lv y 
-ordinal-lv refl = refl
-
-ordinal-d : {n : Level} {x y : Ordinal {n}}  → x ≡ y → ord x  ≅ ord y 
-ordinal-d refl = refl
-
 ≡→¬d< : {n : Level} →  {lv : Nat} → {x  : OrdinalD {n}  lv }  → x d< x → ⊥
 ≡→¬d<  {n} {lx} {OSuc lx y} (s< t) = ≡→¬d< t
 
@@ -72,9 +68,6 @@ trio<≡ refl = ≡→¬d<
 
 trio>≡ : {n : Level} →  {lx : Nat} {x  : OrdinalD {n} lx } { y : OrdinalD  lx }  → x ≡ y  → y d< x → ⊥
 trio>≡ refl = ≡→¬d<
-
-triO : {n : Level} →  {lx ly : Nat} → OrdinalD {n} lx  →  OrdinalD {n} ly  → Tri (lx < ly) ( lx ≡ ly ) ( lx > ly )
-triO  {n} {lx} {ly} x y = <-cmp lx ly
 
 triOrdd : {n : Level} →  {lx : Nat}   → Trichotomous  _≡_ ( _d<_  {n} {lx} {lx} )
 triOrdd  {_} {lv} (Φ lv) (Φ lv) = tri≈ ≡→¬d< refl ≡→¬d<
@@ -91,50 +84,6 @@ osuc record { lv = lx ; ord = ox } = record { lv = lx ; ord = OSuc lx ox }
 <-osuc : {n : Level} { x : Ordinal {n} } → x o< osuc x
 <-osuc {n} {record { lv = lx ; ord = Φ .lx }} =  case2 Φ<
 <-osuc {n} {record { lv = lx ; ord = OSuc .lx ox }} = case2 ( s< s<refl )
-
-osuc-lveq : {n : Level} { x : Ordinal {n} } → lv x ≡ lv ( osuc x )
-osuc-lveq {n} = refl
-
-osucc : {n : Level} {ox oy : Ordinal {n}} → oy o< ox  → osuc oy o< osuc ox
-osucc {n} {ox} {oy} (case1 x) = case1 x
-osucc {n} {ox} {oy} (case2 x) with d<→lv x
-... | refl = case2 (s< x)
-
-nat-<> : { x y : Nat } → x < y → y < x → ⊥
-nat-<>  (s≤s x<y) (s≤s y<x) = nat-<> x<y y<x
-
-nat-<≡ : { x : Nat } → x < x → ⊥
-nat-<≡  (s≤s lt) = nat-<≡ lt
-
-nat-≡< : { x y : Nat } → x ≡ y → x < y → ⊥
-nat-≡< refl lt = nat-<≡ lt
-
-¬a≤a : {la : Nat} → Suc la ≤ la → ⊥
-¬a≤a  (s≤s lt) = ¬a≤a  lt
-
-a<sa : {la : Nat} → la < Suc la 
-a<sa {Zero} = s≤s z≤n
-a<sa {Suc la} = s≤s a<sa 
-
-=→¬< : {x : Nat  } → ¬ ( x < x )
-=→¬< {Zero} ()
-=→¬< {Suc x} (s≤s lt) = =→¬< lt
-
-<-∨ : { x y : Nat } → x < Suc y → ( (x ≡ y ) ∨ (x < y) )
-<-∨ {Zero} {Zero} (s≤s z≤n) = case1 refl
-<-∨ {Zero} {Suc y} (s≤s lt) = case2 (s≤s z≤n)
-<-∨ {Suc x} {Zero} (s≤s ())
-<-∨ {Suc x} {Suc y} (s≤s lt) with <-∨ {x} {y} lt
-<-∨ {Suc x} {Suc y} (s≤s lt) | case1 eq = case1 (cong (λ k → Suc k ) eq)
-<-∨ {Suc x} {Suc y} (s≤s lt) | case2 lt1 = case2 (s≤s lt1)
-
-case12-⊥ : {n : Level} {x y : Ordinal {suc n}} → lv x < lv y → ord x d< ord y → ⊥
-case12-⊥ {x} {y} lt1 lt2 with d<→lv lt2
-... | refl = nat-≡< refl lt1
-
-case21-⊥ : {n : Level} {x y : Ordinal {suc n}} → lv x < lv y → ord y d< ord x → ⊥
-case21-⊥ {x} {y} lt1 lt2 with d<→lv lt2
-... | refl = nat-≡< refl lt1
 
 o<¬≡ : {n : Level } { ox oy : Ordinal {suc n}} → ox ≡ oy  → ox o< oy  → ⊥
 o<¬≡ {_} {ox} {ox} refl (case1 lt) =  =→¬< lt
@@ -176,26 +125,6 @@ osuc-< {n} {x} {y} y<ox (case1 x₂) | case2 (case1 x₁) = nat-<> x₂ x₁
 osuc-< {n} {x} {y} y<ox (case1 x₂) | case2 (case2 x₁) = nat-≡< (sym (d<→lv x₁)) x₂
 osuc-< {n} {x} {y} y<ox (case2 x<y) | case2 y<x = o<> (case2 x<y) y<x
 
-max : (x y : Nat) → Nat
-max Zero Zero = Zero
-max Zero (Suc x) = (Suc x)
-max (Suc x) Zero = (Suc x)
-max (Suc x) (Suc y) = Suc ( max x y )
-
-maxαd : {n : Level} → { lx : Nat } → OrdinalD {n} lx  →  OrdinalD  lx  →  OrdinalD  lx
-maxαd x y with triOrdd x y
-maxαd x y | tri< a ¬b ¬c = y
-maxαd x y | tri≈ ¬a b ¬c = x
-maxαd x y | tri> ¬a ¬b c = x
-
-minαd : {n : Level} → { lx : Nat } → OrdinalD {n} lx  →  OrdinalD  lx  →  OrdinalD  lx
-minαd x y with triOrdd x y
-minαd x y | tri< a ¬b ¬c = x
-minαd x y | tri≈ ¬a b ¬c = y
-minαd x y | tri> ¬a ¬b c = x
-
-_o≤_ : {n : Level} → Ordinal → Ordinal → Set (suc n)
-a o≤ b  = (a ≡ b)  ∨ ( a o< b )
 
 ordtrans : {n : Level} {x y z : Ordinal {n} }   → x o< y → y o< z → x o< z
 ordtrans {n} {x} {y} {z} (case1 x₁) (case1 x₂) = case1 ( <-trans x₁ x₂ )
@@ -234,105 +163,15 @@ trio< record { lv = .(lv b) ; ord = x } b | tri≈ ¬a refl ¬c | tri≈ ¬a₁ 
    lemma1 (case1 x) = ¬a x
    lemma1 (case2 x) = ≡→¬d< x
 
-xo<ab : {n : Level} {oa ob : Ordinal {suc n}} → ( {ox : Ordinal {suc n}} → ox o< oa  → ox o< ob ) → oa o< osuc ob
-xo<ab {n}  {oa} {ob} a→b with trio< oa ob
-xo<ab {n}  {oa} {ob} a→b | tri< a ¬b ¬c = ordtrans a <-osuc
-xo<ab {n}  {oa} {ob} a→b | tri≈ ¬a refl ¬c = <-osuc
-xo<ab {n}  {oa} {ob} a→b | tri> ¬a ¬b c = ⊥-elim ( o<¬≡ refl (a→b c )  )
-
-maxα : {n : Level} →  Ordinal {suc n} →  Ordinal  → Ordinal
-maxα x y with trio< x y
-maxα x y | tri< a ¬b ¬c = y
-maxα x y | tri> ¬a ¬b c = x
-maxα x y | tri≈ ¬a refl ¬c = x
-
-minα : {n : Level} →  Ordinal {suc n} →  Ordinal  → Ordinal
-minα {n} x y with trio< {n} x  y
-minα x y | tri< a ¬b ¬c = x
-minα x y | tri> ¬a ¬b c = y
-minα x y | tri≈ ¬a refl ¬c = x
-
-min1 : {n : Level} →  {x y z : Ordinal {suc n} } → z o< x → z o< y → z o< minα x y
-min1 {n} {x} {y} {z} z<x z<y with trio< {n} x y
-min1 {n} {x} {y} {z} z<x z<y | tri< a ¬b ¬c = z<x
-min1 {n} {x} {y} {z} z<x z<y | tri≈ ¬a refl ¬c = z<x
-min1 {n} {x} {y} {z} z<x z<y | tri> ¬a ¬b c = z<y
-
---
---  max ( osuc x , osuc y )
---
-
-omax : {n : Level} ( x y : Ordinal {suc n} ) → Ordinal {suc n}
-omax {n} x y with trio< x y
-omax {n} x y | tri< a ¬b ¬c = osuc y
-omax {n} x y | tri> ¬a ¬b c = osuc x
-omax {n} x y | tri≈ ¬a refl ¬c  = osuc x
-
-omax< : {n : Level} ( x y : Ordinal {suc n} ) → x o< y → osuc y ≡ omax x y
-omax< {n} x y lt with trio< x y
-omax< {n} x y lt | tri< a ¬b ¬c = refl
-omax< {n} x y lt | tri≈ ¬a b ¬c = ⊥-elim (¬a lt )
-omax< {n} x y lt | tri> ¬a ¬b c = ⊥-elim (¬a lt )
-
-omax≡ : {n : Level} ( x y : Ordinal {suc n} ) → x ≡ y → osuc y ≡ omax x y
-omax≡ {n} x y eq with trio< x y
-omax≡ {n} x y eq | tri< a ¬b ¬c = ⊥-elim (¬b eq )
-omax≡ {n} x y eq | tri≈ ¬a refl ¬c = refl
-omax≡ {n} x y eq | tri> ¬a ¬b c = ⊥-elim (¬b eq )
-
-omax-x : {n : Level} ( x y : Ordinal {suc n} ) → x o< omax x y
-omax-x {n} x y with trio< x y
-omax-x {n} x y | tri< a ¬b ¬c = ordtrans a <-osuc
-omax-x {n} x y | tri> ¬a ¬b c = <-osuc
-omax-x {n} x y | tri≈ ¬a refl ¬c = <-osuc
-
-omax-y : {n : Level} ( x y : Ordinal {suc n} ) → y o< omax x y
-omax-y {n} x y with  trio< x y
-omax-y {n} x y | tri< a ¬b ¬c = <-osuc
-omax-y {n} x y | tri> ¬a ¬b c = ordtrans c <-osuc
-omax-y {n} x y | tri≈ ¬a refl ¬c = <-osuc
-
-omxx : {n : Level} ( x : Ordinal {suc n} ) → omax x x ≡ osuc x
-omxx {n} x with  trio< x x
-omxx {n} x | tri< a ¬b ¬c = ⊥-elim (¬b refl )
-omxx {n} x | tri> ¬a ¬b c = ⊥-elim (¬b refl )
-omxx {n} x | tri≈ ¬a refl ¬c = refl
-
-omxxx : {n : Level} ( x : Ordinal {suc n} ) → omax x (omax x x ) ≡ osuc (osuc x)
-omxxx {n} x = trans ( cong ( λ k → omax x k ) (omxx x )) (sym ( omax< x (osuc x) <-osuc ))
 
 open _∧_
 
-osuc2 : {n : Level} ( x y : Ordinal {suc n} ) → ( osuc x o< osuc (osuc y )) ⇔ (x o< osuc y)
-proj1 (osuc2 {n} x y) (case1 lt) = case1 lt
-proj1 (osuc2 {n} x y) (case2 (s< lt)) = case2 lt
-proj2 (osuc2 {n} x y) (case1 lt) = case1 lt
-proj2 (osuc2 {n} x y) (case2 lt) with d<→lv lt
-... | refl = case2 (s< lt)
-
-OrdTrans : {n : Level} → Transitive {suc n} _o≤_
-OrdTrans (case1 refl) (case1 refl) = case1 refl
-OrdTrans (case1 refl) (case2 lt2) = case2 lt2
-OrdTrans (case2 lt1) (case1 refl) = case2 lt1
-OrdTrans (case2 x) (case2 y) = case2 (ordtrans x y)
-
-OrdPreorder : {n : Level} → Preorder (suc n) (suc n) (suc n)
-OrdPreorder {n} = record { Carrier = Ordinal
-   ; _≈_  = _≡_ 
-   ; _∼_   = _o≤_
-   ; isPreorder   = record {
-        isEquivalence = record { refl = refl  ; sym = sym ; trans = trans }
-        ; reflexive     = case1 
-        ; trans         = OrdTrans 
-     }
- }
-
 TransFinite : {n m : Level} → { ψ : Ordinal {suc n} → Set m }
   → ( ∀ (lx : Nat ) → ( (x : Ordinal {suc n} ) → x o< ordinal lx (Φ lx)  → ψ x ) → ψ ( record { lv = lx ; ord = Φ lx } ) )
-  → ( ∀ (lx : Nat ) → (x : OrdinalD lx )  → ψ ( record { lv = lx ; ord = x } ) → ψ ( record { lv = lx ; ord = OSuc lx x } ) )
+  → ( ∀ (lx : Nat ) → (x : OrdinalD lx ) → ( (y : Ordinal {suc n} ) → y o< ordinal lx (OSuc lx x)  → ψ y )   → ψ ( record { lv = lx ; ord = OSuc lx x } ) )
   →  ∀ (x : Ordinal)  → ψ x
 TransFinite {n} {m} {ψ} caseΦ caseOSuc x = proj1 (TransFinite1 (lv x) (ord x) ) where
-  TransFinite1 : (lx : Nat) (ox : OrdinalD lx ) → ψ (ordinal lx ox) ∧ ( ( (x : Ordinal {suc n} ) → x o< ordinal lx (Φ lx)  → ψ x ) )
+  TransFinite1 : (lx : Nat) (ox : OrdinalD lx ) → ψ (ordinal lx ox) ∧ ( ( (x : Ordinal {suc n} ) → x o< ordinal lx ox  → ψ x ) )
   TransFinite1 Zero (Φ 0) = record { proj1 = caseΦ Zero lemma ; proj2 = lemma1 } where
       lemma : (x : Ordinal) → x o< ordinal Zero (Φ Zero) → ψ x
       lemma x (case1 ())
@@ -344,12 +183,26 @@ TransFinite {n} {m} {ψ} caseΦ caseOSuc x = proj1 (TransFinite1 (lv x) (ord x) 
       lemma0 : (ly : Nat) (oy : OrdinalD ly ) → ordinal ly oy  o< ordinal lx (Φ lx) → ψ (ordinal ly oy)
       lemma0 ly oy lt = proj2 ( TransFinite1 lx (Φ lx) ) (ordinal ly oy) lt
       lemma : (ly : Nat) (oy : OrdinalD ly ) → ordinal ly oy  o< ordinal (Suc lx) (Φ (Suc lx)) → ψ (ordinal ly oy)
-      lemma lx1 ox1 (case1 lt) with <-∨ lt
-      lemma lx (Φ lx) (case1 lt) | case1 refl = proj1 ( TransFinite1 lx (Φ lx) )
-      lemma lx (OSuc lx ox1) (case1 lt) | case1 refl = caseOSuc lx ox1 ( lemma lx ox1 (case1 a<sa)) 
-      lemma lx (Φ lx) (case1 lt) | case2 (s≤s lt1) = lemma0  lx (Φ lx) (case1 (s≤s lt1))
-      lemma lx1 (OSuc lx1 ox1) (case1 lt) | case2 lt1 = caseOSuc lx1 ox1 ( lemma lx1 ox1 (case1 (<-trans lt1 a<sa ))) 
-  TransFinite1 lx (OSuc lx ox)  = record { proj1 = caseOSuc lx ox (proj1 (TransFinite1 lx ox )) ; proj2 = proj2 (TransFinite1 lx ox )}
+      lemma lx1 ox1            (case1 lt) with <-∨ lt
+      lemma lx (Φ lx)          (case1 lt) | case1 refl = proj1 ( TransFinite1 lx (Φ lx) )
+      lemma lx (Φ lx)          (case1 lt) | case2 lt1 = lemma0  lx (Φ lx) (case1 lt1)
+      lemma lx (OSuc lx ox1)   (case1 lt) | case1 refl = caseOSuc lx ox1 lemma2 where
+          lemma2 : (y : Ordinal) → (Suc (lv y) ≤ lx) ∨ (ord y d< OSuc lx ox1) → ψ y
+          lemma2 y lt1 with osuc-≡< lt1
+          lemma2 y lt1 | case1 refl = lemma lx ox1 (case1 a<sa)
+          lemma2 y lt1 | case2 t = proj2 (TransFinite1 lx ox1) y t 
+      lemma lx1 (OSuc lx1 ox1) (case1 lt) | case2 lt1 = caseOSuc lx1 ox1 lemma2 where
+          lemma2 : (y : Ordinal) → (Suc (lv y) ≤ lx1) ∨ (ord y d< OSuc lx1 ox1) → ψ y
+          lemma2 y lt2 with osuc-≡< lt2
+          lemma2 y lt2 | case1 refl = lemma lx1 ox1 (ordtrans lt2 (case1 lt))
+          lemma2 y lt2 | case2 (case1 lt3) = proj2 (TransFinite1 lx (Φ lx)) y (case1 (<-trans lt3 lt1 ))
+          lemma2 y lt2 | case2 (case2 lt3) with d<→lv lt3
+          ... | refl = proj2 (TransFinite1 lx (Φ lx)) y (case1 lt1)
+  TransFinite1 lx (OSuc lx ox)  = record { proj1 = caseOSuc lx ox lemma ; proj2 = lemma } where
+      lemma : (y : Ordinal) → y o< ordinal lx (OSuc lx ox) → ψ y
+      lemma y lt with osuc-≡< lt
+      lemma y lt | case1 refl = proj1 ( TransFinite1 lx ox ) 
+      lemma y lt | case2 lt1 = proj2 ( TransFinite1 lx ox ) y lt1
 
 -- we cannot prove this in intutionistic logic 
 --  (¬ (∀ y → ¬ ( ψ y ))) → (ψ y → p )  → p
@@ -367,3 +220,171 @@ TransFiniteExists : {n m l : Level} → ( ψ : Ordinal {n} → Set m )
   → ¬ p
 TransFiniteExists {n} {m} {l} ψ {p} P = contra-position ( λ p y ψy → P {y} ψy p ) 
 
+open import Ordinals 
+
+C-Ordinal : {n : Level} →  Ordinals {suc n} 
+C-Ordinal {n} = record {
+     ord = Ordinal {suc n}
+   ; o∅ = o∅
+   ; osuc = osuc
+   ; _o<_ = _o<_
+   ; isOrdinal = record {
+       Otrans = ordtrans
+     ; OTri = trio<
+     ; ¬x<0 = ¬x<0 
+     ; <-osuc = <-osuc
+     ; osuc-≡< = osuc-≡<
+     ; TransFinite = TransFinite1
+   }
+  } where
+     ord1 : Set (suc n)
+     ord1 = Ordinal {suc n}
+     TransFinite1 : { ψ : ord1  → Set (suc (suc n)) }
+          → ( (x : ord1)  → ( (y : ord1  ) → y o< x → ψ y ) → ψ x )
+          →  ∀ (x : ord1)  → ψ x
+     TransFinite1 {ψ} lt x = TransFinite {n} {suc (suc n)} {ψ} caseΦ caseOSuc x where
+        caseΦ : (lx : Nat) → ((x₁ : Ordinal) → x₁ o< ordinal lx (Φ lx) → ψ x₁) →
+            ψ (record { lv = lx ; ord = Φ lx })
+        caseΦ lx prev = lt (ordinal lx (Φ lx) ) prev
+        caseOSuc :  (lx : Nat) (x₁ : OrdinalD lx) → ((y : Ordinal) → y o< ordinal lx (OSuc lx x₁) → ψ y) →
+            ψ (record { lv = lx ; ord = OSuc lx x₁ })
+        caseOSuc lx ox prev = lt (ordinal lx (OSuc lx ox)) prev 
+
+module C-Ordinal-with-choice {n : Level} where
+
+  import OD 
+  -- open inOrdinal C-Ordinal 
+  open OD (C-Ordinal {n})
+  open OD.OD
+  
+  --
+  -- another form of regularity 
+  --
+  ε-induction : {m : Level} { ψ : OD  → Set m}
+   → ( {x : OD } → ({ y : OD } →  x ∋ y → ψ y ) → ψ x )
+   → (x : OD ) → ψ x
+  ε-induction {m} {ψ} ind x = subst (λ k → ψ k ) oiso (ε-induction-ord (lv (osuc (od→ord x))) (ord (osuc (od→ord x)))  <-osuc) where
+    ε-induction-ord : (lx : Nat) ( ox : OrdinalD {suc n} lx ) {ly : Nat} {oy : OrdinalD {suc n} ly }
+      → (ly < lx) ∨ (oy d< ox  ) → ψ (ord→od (record { lv = ly ; ord = oy } ) )
+    ε-induction-ord lx  (OSuc lx ox) {ly} {oy} y<x = 
+      ind {ord→od (record { lv = ly ; ord = oy })} ( λ {y} lt → subst (λ k → ψ k ) oiso (ε-induction-ord lx ox (lemma y lt ))) where
+          lemma :  (z : OD) → ord→od record { lv = ly ; ord = oy } ∋ z → od→ord z o< record { lv = lx ; ord = ox }
+          lemma z lt with osuc-≡< y<x
+          lemma z lt | case1 refl = o<-subst (c<→o< lt) refl diso
+          lemma z lt | case2 lt1 = ordtrans  (o<-subst (c<→o< lt) refl diso) lt1  
+    ε-induction-ord (Suc lx) (Φ (Suc lx)) {ly} {oy} (case1 y<sox ) =                    
+      ind {ord→od (record { lv = ly ; ord = oy })} ( λ {y} lt → lemma y lt )  where  
+          --
+          --     if lv of z if less than x Ok
+          --     else lv z = lv x. We can create OSuc of z which is larger than z and less than x in lemma
+          --
+          --                         lx    Suc lx      (1) lz(a) <lx by case1
+          --                 ly(1)   ly(2)             (2) lz(b) <lx by case1
+          --           lz(a) lz(b)   lz(c)                 lz(c) <lx by case2 ( ly==lz==lx)
+          --
+          lemma0 : { lx ly : Nat } → ly < Suc lx  → lx < ly → ⊥
+          lemma0 {Suc lx} {Suc ly} (s≤s lt1) (s≤s lt2) = lemma0 lt1 lt2
+          lemma1 : {ly : Nat} {oy : OrdinalD {suc n} ly} → lv (od→ord (ord→od (record { lv = ly ; ord = oy }))) ≡ ly
+          lemma1  {ly} {oy} = let open ≡-Reasoning in begin
+                  lv (od→ord (ord→od (record { lv = ly ; ord = oy })))
+               ≡⟨ cong ( λ k → lv k ) diso ⟩
+                  lv (record { lv = ly ; ord = oy })
+               ≡⟨⟩
+                  ly
+               ∎
+          lemma :  (z : OD) → ord→od record { lv = ly ; ord = oy } ∋ z → ψ z
+          lemma z lt with  c<→o<  {z} {ord→od (record { lv = ly ; ord = oy })} lt
+          lemma z lt | case1 lz<ly with <-cmp lx ly
+          lemma z lt | case1 lz<ly | tri< a ¬b ¬c = ⊥-elim ( lemma0 y<sox a) -- can't happen
+          lemma z lt | case1 lz<ly | tri≈ ¬a refl ¬c =    -- ly(1)
+                subst (λ k → ψ k ) oiso (ε-induction-ord lx (Φ lx) {_} {ord (od→ord z)} (case1 (subst (λ k → lv (od→ord z) < k ) lemma1 lz<ly ) ))
+          lemma z lt | case1 lz<ly | tri> ¬a ¬b c =       -- lz(a)
+                subst (λ k → ψ k ) oiso (ε-induction-ord lx (Φ lx) {_} {ord (od→ord z)} (case1 (<-trans lz<ly (subst (λ k → k < lx ) (sym lemma1) c))))
+          lemma z lt | case2 lz=ly with <-cmp lx ly
+          lemma z lt | case2 lz=ly | tri< a ¬b ¬c = ⊥-elim ( lemma0 y<sox a) -- can't happen
+          lemma z lt | case2 lz=ly | tri> ¬a ¬b c with d<→lv lz=ly        -- lz(b)
+          ... | eq = subst (λ k → ψ k ) oiso
+               (ε-induction-ord lx (Φ lx) {_} {ord (od→ord z)} (case1 (subst (λ k → k < lx ) (trans (sym lemma1)(sym eq) ) c )))
+          lemma z lt | case2 lz=ly | tri≈ ¬a lx=ly ¬c with d<→lv lz=ly    -- lz(c)
+          ... | eq =  subst (λ k → ψ k ) oiso ( ε-induction-ord lx (dz oz=lx) {lv (od→ord z)} {ord (od→ord z)} (case2 (dz<dz oz=lx) )) where
+              oz=lx : lv (od→ord z) ≡ lx 
+              oz=lx = let open ≡-Reasoning in begin
+                  lv (od→ord z)
+                 ≡⟨ eq ⟩
+                  lv (od→ord (ord→od (ordinal ly oy)))
+                 ≡⟨ cong ( λ k → lv k ) diso ⟩
+                  lv (ordinal ly oy)
+                 ≡⟨ sym lx=ly  ⟩
+                  lx
+                 ∎
+              dz : lv (od→ord z) ≡ lx → OrdinalD lx
+              dz refl = OSuc lx (ord (od→ord z))
+              dz<dz  : (z=x : lv (od→ord z) ≡ lx ) → ord (od→ord z) d< dz z=x
+              dz<dz refl = s<refl 
+  
+  ---
+  --- With assuption of OD is ordered,  p ∨ ( ¬ p ) <=> axiom of choice
+  ---
+  record choiced  ( X : OD) : Set (suc (suc n)) where
+   field
+      a-choice : OD
+      is-in : X ∋ a-choice
+  
+  choice-func' :  (X : OD ) → (p∨¬p : { n : Level } → ( p : Set (suc n) ) → p ∨ ( ¬ p )) → ¬ ( X == od∅ ) → choiced X
+  choice-func'  X p∨¬p not = have_to_find where
+          ψ : ( ox : Ordinal {suc n}) → Set (suc (suc n))
+          ψ ox = (( x : Ordinal {suc n}) → x o< ox  → ( ¬ def X x )) ∨ choiced X
+          lemma-ord : ( ox : Ordinal {suc n} ) → ψ ox
+          lemma-ord  ox = TransFinite {n} {suc (suc n)} {ψ} caseΦ caseOSuc1 ox where
+             ∋-p' : (A x : OD ) → Dec ( A ∋ x ) 
+             ∋-p' A x with p∨¬p ( A ∋ x )
+             ∋-p' A x | case1 t = yes t
+             ∋-p' A x | case2 t = no t
+             ∀-imply-or :  {n : Level}  {A : Ordinal {suc n} → Set (suc n) } {B : Set (suc (suc n)) }
+                 → ((x : Ordinal {suc n}) → A x ∨ B) →  ((x : Ordinal {suc n}) → A x) ∨ B
+             ∀-imply-or {n} {A} {B} ∀AB with p∨¬p  ((x : Ordinal {suc n}) → A x)
+             ∀-imply-or {n} {A} {B} ∀AB | case1 t = case1 t
+             ∀-imply-or {n} {A} {B} ∀AB | case2 x = case2 (lemma x) where
+                  lemma : ¬ ((x : Ordinal {suc n}) → A x) →  B
+                  lemma not with p∨¬p B
+                  lemma not | case1 b = b
+                  lemma not | case2 ¬b = ⊥-elim  (not (λ x → dont-orb (∀AB x) ¬b ))
+             caseΦ : (lx : Nat) → ( (x : Ordinal {suc n} ) → x o< ordinal lx (Φ lx) → ψ x) → ψ (ordinal lx (Φ lx) ) 
+             caseΦ lx prev with ∋-p' X ( ord→od (ordinal lx (Φ lx) ))
+             caseΦ lx prev | yes p = case2 ( record { a-choice = ord→od (ordinal lx (Φ lx)) ; is-in = p } )
+             caseΦ lx prev | no ¬p = lemma where
+                  lemma1 : (x : Ordinal) → (((Suc (lv x) ≤ lx) ∨ (ord x d< Φ lx) → def X x → ⊥) ∨ choiced X)
+                  lemma1 x with trio< x (ordinal lx (Φ lx))
+                  lemma1 x | tri< a ¬b ¬c with prev (osuc x) (lemma2 a) where
+                      lemma2 : x o< (ordinal lx (Φ lx)) →  osuc x o< ordinal lx (Φ lx)
+                      lemma2 (case1 lt) = case1 lt
+                  lemma1 x | tri< a ¬b ¬c | case2 found = case2 found
+                  lemma1 x | tri< a ¬b ¬c | case1 not_found = case1 ( λ lt df → not_found x <-osuc df )
+                  lemma1 x | tri≈ ¬a refl ¬c = case1 ( λ lt → ⊥-elim (o<¬≡ refl lt ))
+                  lemma1 x | tri> ¬a ¬b c = case1 ( λ lt → ⊥-elim (o<> lt c ))
+                  lemma : ((x : Ordinal) → (Suc (lv x) ≤ lx) ∨ (ord x d< Φ lx) → def X x → ⊥) ∨ choiced X
+                  lemma = ∀-imply-or lemma1
+             caseOSuc : (lx : Nat) (x : OrdinalD lx) → ψ ( ordinal lx x ) → ψ ( ordinal lx (OSuc lx x) )
+             caseOSuc lx x prev with ∋-p' X (ord→od record { lv = lx ; ord = x } )
+             caseOSuc lx x prev | yes p = case2 (record { a-choice = ord→od record { lv = lx ; ord = x } ; is-in = p })
+             caseOSuc lx x (case1 not_found) | no ¬p = case1 lemma where
+                  lemma : (y : Ordinal) → (Suc (lv y) ≤ lx) ∨ (ord y d< OSuc lx x) → def X y → ⊥
+                  lemma y lt with trio< y (ordinal lx x )
+                  lemma y lt | tri< a ¬b ¬c = not_found y a
+                  lemma y lt | tri≈ ¬a refl ¬c = subst (λ k → def X k → ⊥ ) diso ¬p
+                  lemma y lt | tri> ¬a ¬b c with osuc-≡< lt
+                  lemma y lt | tri> ¬a ¬b c | case1 refl = ⊥-elim ( ¬b refl )
+                  lemma y lt | tri> ¬a ¬b c | case2 lt1 = ⊥-elim (o<> c lt1 )
+             caseOSuc lx x (case2 found) | no ¬p = case2 found
+             caseOSuc1 : (lx : Nat) (x : OrdinalD lx) → ((y : Ordinal) → y o< ordinal lx (OSuc lx x) → ψ y) →
+                 ψ (record { lv = lx ; ord = OSuc lx x })
+             caseOSuc1 lx x lt =  caseOSuc lx x (lt ( ordinal lx x ) (case2 s<refl))
+          have_to_find : choiced X
+          have_to_find with lemma-ord (od→ord X )
+          have_to_find | t = dont-or  t ¬¬X∋x where
+              ¬¬X∋x : ¬ ((x : Ordinal) → (Suc (lv x) ≤ lv (od→ord X)) ∨ (ord x d< ord (od→ord X)) → def X x → ⊥)
+              ¬¬X∋x nn = not record {
+                     eq→ = λ {x} lt → ⊥-elim  (nn x (def→o< lt) lt) 
+                   ; eq← = λ {x} lt → ⊥-elim ( ¬x<0 lt )
+                 }
+  
