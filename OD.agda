@@ -33,7 +33,7 @@ record _==_  ( a b :  OD  ) : Set n where
      eq→ : ∀ { x : Ordinal  } → def a x → def b x 
      eq← : ∀ { x : Ordinal  } → def b x → def a x 
 
-id : {n : Level} {A : Set n} → A → A
+id : {A : Set n} → A → A
 id x = x
 
 eq-refl :  {  x :  OD  } → x == x
@@ -171,6 +171,70 @@ is-o∅ x | tri< a ¬b ¬c = no ¬b
 is-o∅ x | tri≈ ¬a b ¬c = yes b
 is-o∅ x | tri> ¬a ¬b c = no ¬b
 
+_,_ : OD  → OD  → OD 
+x , y = record { def = λ t → (t ≡ od→ord x ) ∨ ( t ≡ od→ord y ) } --  Ord (omax (od→ord x) (od→ord y))
+<_,_> : (x y : OD) → OD
+< x , y > = (x , x ) , (x , y )
+
+exg-pair : { x y : OD } → (x , y ) == ( y , x )
+exg-pair {x} {y} = record { eq→ = left ; eq← = right } where
+    left : {z : Ordinal} → def (x , y) z → def (y , x) z 
+    left (case1 t) = case2 t
+    left (case2 t) = case1 t
+    right : {z : Ordinal} → def (y , x) z → def (x , y) z 
+    right (case1 t) = case2 t
+    right (case2 t) = case1 t
+
+==-trans : { x y z : OD } →  x == y →  y == z →  x ==  z
+==-trans x=y y=z  = record { eq→ = λ {m} t → eq→ y=z (eq→ x=y t) ; eq← =  λ {m} t → eq← x=y (eq← y=z t) }
+
+==-sym : { x y  : OD } →  x == y →  y == x 
+==-sym x=y = record { eq→ = λ {m} t → eq← x=y t ; eq← =  λ {m} t → eq→ x=y t }
+
+ord≡→≡ : { x y : OD } → od→ord x ≡ od→ord y → x ≡ y
+ord≡→≡ eq = subst₂ (λ j k → j ≡ k ) oiso oiso ( cong ( λ k → ord→od k ) eq )
+
+od≡→≡ : { x y : Ordinal } → ord→od x ≡ ord→od y → x ≡ y
+od≡→≡ eq = subst₂ (λ j k → j ≡ k ) diso diso ( cong ( λ k → od→ord k ) eq )
+
+eq-prod : { x x' y y' : OD } → x ≡ x' → y ≡ y' → < x , y > ≡ < x' , y' >
+eq-prod refl refl = refl
+
+prod-eq : { x x' y y' : OD } → < x , y > == < x' , y' > → (x ≡ x' ) ∧ ( y ≡ y' )
+prod-eq {x} {x'} {y} {y'} eq = record { proj1 = lemmax ; proj2 = lemmay } where
+    lemma0 : {x y z : OD } → ( x , x ) == ( z , y ) → x ≡ y
+    lemma0 {x} {y} eq with trio< (od→ord x) (od→ord y) 
+    lemma0 {x} {y} eq | tri< a ¬b ¬c with eq← eq {od→ord y} (case2 refl) 
+    lemma0 {x} {y} eq | tri< a ¬b ¬c | case1 s = ⊥-elim ( o<¬≡ (sym s) a )
+    lemma0 {x} {y} eq | tri< a ¬b ¬c | case2 s = ⊥-elim ( o<¬≡ (sym s) a )
+    lemma0 {x} {y} eq | tri≈ ¬a b ¬c = ord≡→≡ b
+    lemma0 {x} {y} eq | tri> ¬a ¬b c  with eq← eq {od→ord y} (case2 refl) 
+    lemma0 {x} {y} eq | tri> ¬a ¬b c | case1 s = ⊥-elim ( o<¬≡ s c )
+    lemma0 {x} {y} eq | tri> ¬a ¬b c | case2 s = ⊥-elim ( o<¬≡ s c )
+    lemma2 : {x y z : OD } → ( x , x ) == ( z , y ) → z ≡ y
+    lemma2 {x} {y} {z} eq = trans (sym (lemma0 lemma3 )) ( lemma0 eq )  where
+        lemma3 : ( x , x ) == ( y , z )
+        lemma3 = ==-trans eq exg-pair
+    lemma1 : {x y : OD } → ( x , x ) == ( y , y ) → x ≡ y
+    lemma1 {x} {y} eq with eq← eq {od→ord y} (case2 refl)
+    lemma1 {x} {y} eq | case1 s = ord≡→≡ (sym s)
+    lemma1 {x} {y} eq | case2 s = ord≡→≡ (sym s)
+    lemma4 : {x y z : OD } → ( x , y ) == ( x , z ) → y ≡ z
+    lemma4 {x} {y} {z} eq with eq← eq {od→ord z} (case2 refl)
+    lemma4 {x} {y} {z} eq | case1 s with ord≡→≡ s -- x ≡ z
+    ... | refl with lemma2 (==-sym eq )
+    ... | refl = refl
+    lemma4 {x} {y} {z} eq | case2 s = ord≡→≡ (sym s) -- y ≡ z
+    lemmax : x ≡ x'
+    lemmax with eq→ eq {od→ord (x , x)} (case1 refl) 
+    lemmax | case1 s = lemma1 (ord→== s )  -- (x,x)≡(x',x')
+    lemmax | case2 s with lemma2 (ord→== s ) -- (x,x)≡(x',y') with x'≡y'
+    ... | refl = lemma1 (ord→== s )
+    lemmay : y ≡ y'
+    lemmay with lemmax
+    ... | refl with lemma4 eq -- with (x,y)≡(x,y')
+    ... | eq1 = lemma4 (ord→== (cong (λ  k → od→ord k )  eq1 ))
+
 ppp :  { p : Set n } { a : OD  } → record { def = λ x → p } ∋ a → p
 ppp  {p} {a} d = d
 
@@ -193,13 +257,13 @@ p∨¬p  p | no ¬p = case1 (ppp  {p} {minimul ps (λ eq →  ¬p (eqo∅ eq))} 
    lemma : ps ∋ minimul ps (λ eq →  ¬p (eqo∅ eq)) 
    lemma = x∋minimul ps (λ eq →  ¬p (eqo∅ eq))
 
-∋-p : ( p : Set n ) → Dec p   -- assuming axiom of choice    
-∋-p  p with p∨¬p p
-∋-p  p | case1 x = yes x
-∋-p  p | case2 x = no x
+decp : ( p : Set n ) → Dec p   -- assuming axiom of choice    
+decp  p with p∨¬p p
+decp  p | case1 x = yes x
+decp  p | case2 x = no x
 
 double-neg-eilm : {A : Set n} → ¬ ¬ A → A      -- we don't have this in intutionistic logic
-double-neg-eilm  {A} notnot with ∋-p  A                         -- assuming axiom of choice
+double-neg-eilm  {A} notnot with decp  A                         -- assuming axiom of choice
 ... | yes p = p
 ... | no ¬p = ⊥-elim ( notnot ¬p )
 
@@ -268,8 +332,6 @@ OD→ZF   = record {
     Select X ψ = record { def = λ x →  ( def X x ∧ ψ ( ord→od x )) }
     Replace : OD  → (OD  → OD  ) → OD 
     Replace X ψ = record { def = λ x → (x o< sup-o ( λ x → od→ord (ψ (ord→od x )))) ∧ def (in-codomain X ψ) x }
-    _,_ : OD  → OD  → OD 
-    x , y = Ord (omax (od→ord x) (od→ord y))
     _∩_ : ( A B : ZFSet  ) → ZFSet
     A ∩ B = record { def = λ x → def A x ∧ def B x } 
     Union : OD  → OD   
@@ -294,7 +356,8 @@ OD→ZF   = record {
     isZF : IsZF (OD )  _∋_  _==_ od∅ _,_ Union Power Select Replace infinite
     isZF = record {
            isEquivalence  = record { refl = eq-refl ; sym = eq-sym; trans = eq-trans }
-       ;   pair  = pair
+       ;   pair→  = pair→
+       ;   pair←  = pair←
        ;   union→ = union→
        ;   union← = union←
        ;   empty = empty
@@ -311,9 +374,17 @@ OD→ZF   = record {
        ;   choice = choice
      } where
 
-         pair : (A B : OD  ) → ((A , B) ∋ A) ∧  ((A , B) ∋ B)
-         proj1 (pair A B ) = omax-x  (od→ord A) (od→ord B)
-         proj2 (pair A B ) = omax-y  (od→ord A) (od→ord B)
+         pair→ : ( x y t : ZFSet  ) →  (x , y)  ∋ t  → ( t == x ) ∨ ( t == y ) 
+         pair→ x y t (case1 t≡x ) = case1 (subst₂ (λ j k → j == k ) oiso oiso (o≡→== t≡x ))
+         pair→ x y t (case2 t≡y ) = case2 (subst₂ (λ j k → j == k ) oiso oiso (o≡→== t≡y ))
+
+         pair← : ( x y t : ZFSet  ) → ( t == x ) ∨ ( t == y ) →  (x , y)  ∋ t  
+         pair← x y t (case1 t==x) = case1 (cong (λ k → od→ord k ) (==→o≡ t==x))
+         pair← x y t (case2 t==y) = case2 (cong (λ k → od→ord k ) (==→o≡ t==y))
+
+         -- pair0 : (A B : OD  ) → ((A , B) ∋ A) ∧  ((A , B) ∋ B)
+         -- proj1 (pair A B ) = omax-x  (od→ord A) (od→ord B)
+         -- proj2 (pair A B ) = omax-y  (od→ord A) (od→ord B)
 
          empty : (x : OD  ) → ¬  (od∅ ∋ x)
          empty x = ¬x<0 
@@ -477,10 +548,55 @@ OD→ZF   = record {
          choice : (X : OD  ) → {A : OD } → ( X∋A : X ∋ A ) → (not : ¬ ( A == od∅ )) → A ∋ choice-func X not X∋A 
          choice X {A} X∋A not = x∋minimul A not
 
-_,_ = ZF._,_ OD→ZF
+         ---
+         --- With assuption of OD is ordered,  p ∨ ( ¬ p ) <=> axiom of choice
+         ---
+         record choiced  ( X : OD) : Set (suc n) where
+          field
+             a-choice : OD
+             is-in : X ∋ a-choice
+         
+         choice-func' :  (X : OD ) → (p∨¬p : ( p : Set (suc n)) → p ∨ ( ¬ p )) → ¬ ( X == od∅ ) → choiced X
+         choice-func'  X p∨¬p not = have_to_find where
+                 ψ : ( ox : Ordinal ) → Set (suc n)
+                 ψ ox = (( x : Ordinal ) → x o< ox  → ( ¬ def X x )) ∨ choiced X
+                 lemma-ord : ( ox : Ordinal  ) → ψ ox
+                 lemma-ord  ox = TransFinite {ψ} induction ox where
+                    ∋-p : (A x : OD ) → Dec ( A ∋ x ) 
+                    ∋-p A x with p∨¬p (Lift (suc n) ( A ∋ x ))
+                    ∋-p A x | case1 (lift t)  = yes t
+                    ∋-p A x | case2 t  = no (λ x → t (lift x ))
+                    ∀-imply-or :  {A : Ordinal  → Set n } {B : Set (suc n) }
+                        → ((x : Ordinal ) → A x ∨ B) →  ((x : Ordinal ) → A x) ∨ B
+                    ∀-imply-or  {A} {B} ∀AB with p∨¬p (Lift ( suc n ) ((x : Ordinal ) → A x))
+                    ∀-imply-or  {A} {B} ∀AB | case1 (lift t) = case1 t
+                    ∀-imply-or  {A} {B} ∀AB | case2 x  = case2 (lemma (λ not → x (lift not ))) where
+                         lemma : ¬ ((x : Ordinal ) → A x) →  B
+                         lemma not with p∨¬p B
+                         lemma not | case1 b = b
+                         lemma not | case2 ¬b = ⊥-elim  (not (λ x → dont-orb (∀AB x) ¬b ))
+                    induction : (x : Ordinal) → ((y : Ordinal) → y o< x → ψ y) → ψ x
+                    induction x prev with ∋-p X ( ord→od x) 
+                    ... | yes p = case2 ( record { a-choice = ord→od x ; is-in = p } )
+                    ... | no ¬p = lemma where
+                         lemma1 : (y : Ordinal) → (y o< x → def X y → ⊥) ∨ choiced X
+                         lemma1 y with ∋-p X (ord→od y)
+                         lemma1 y | yes y<X = case2 ( record { a-choice = ord→od y ; is-in = y<X } )
+                         lemma1 y | no ¬y<X = case1 ( λ lt y<X → ¬y<X (subst (λ k → def X k ) (sym diso) y<X ) )
+                         lemma :  ((y : Ordinals.ord O) → (O Ordinals.o< y) x → def X y → ⊥) ∨ choiced X
+                         lemma = ∀-imply-or lemma1
+                 have_to_find : choiced X
+                 have_to_find with lemma-ord (od→ord X )
+                 have_to_find | t = dont-or  t ¬¬X∋x where
+                     ¬¬X∋x : ¬ ((x : Ordinal) → x o< (od→ord X) → def X x → ⊥)
+                     ¬¬X∋x nn = not record {
+                            eq→ = λ {x} lt → ⊥-elim  (nn x (def→o< lt) lt) 
+                          ; eq← = λ {x} lt → ⊥-elim ( ¬x<0 lt )
+                        }
+         
+
 Union = ZF.Union OD→ZF
 Power = ZF.Power OD→ZF
 Select = ZF.Select OD→ZF
 Replace = ZF.Replace OD→ZF
 isZF = ZF.isZF  OD→ZF
-TransFinite = IsOrdinals.TransFinite (Ordinals.isOrdinal O)

@@ -50,6 +50,7 @@ module inOrdinal  {n : Level} (O : Ordinals {n} ) where
         ¬x<0 = IsOrdinals.¬x<0 (Ordinals.isOrdinal O)
         osuc-≡< = IsOrdinals.osuc-≡<  (Ordinals.isOrdinal O)
         <-osuc = IsOrdinals.<-osuc  (Ordinals.isOrdinal O)
+        TransFinite = IsOrdinals.TransFinite  (Ordinals.isOrdinal O)
         
         o<-dom :   { x y : Ordinal } → x o< y → Ordinal 
         o<-dom  {x} _ = x

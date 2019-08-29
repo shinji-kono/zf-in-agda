@@ -20,40 +20,106 @@ open OD.OD
 open _∧_
 open _∨_
 open Bool
+open _==_
 
 -- we have to work on Ordinal to keep OD Level n
 -- since we use p∨¬p which works only on Level n
+--   < x , y > = (x , x) , (x , y)
+
+data ord-pair : (p : Ordinal) → Set n where
+   pair : (x y : Ordinal ) → ord-pair ( od→ord ( < ord→od x , ord→od y > ) )
+
+ZFProduct : OD
+ZFProduct = record { def = λ x → ord-pair x }
+
+-- open import Relation.Binary.HeterogeneousEquality as HE using (_≅_ ) 
+-- eq-pair : { x x' y y' : Ordinal } → x ≡ x' → y ≡ y' → pair x y ≅ pair x' y'
+-- eq-pair refl refl = HE.refl
+
+pi1 : { p : Ordinal } →   ord-pair p →  Ordinal
+pi1 ( pair x y) = x
+
+π1 : { p : OD } → ZFProduct ∋ p → Ordinal
+π1 lt = pi1 lt 
+
+pi2 : { p : Ordinal } →   ord-pair p →  Ordinal
+pi2 ( pair x y ) = y
+
+π2 : { p : OD } → ZFProduct ∋ p → Ordinal
+π2 lt = pi2 lt 
+
+p-cons :  ( x y  : OD ) → ZFProduct ∋ < x , y >
+p-cons x y =  def-subst {_} {_} {ZFProduct} {od→ord (< x , y >)} (pair (od→ord x) ( od→ord y )) refl (
+    let open ≡-Reasoning in begin
+        od→ord < ord→od (od→ord x) , ord→od (od→ord y) >
+    ≡⟨ cong₂ (λ j k → od→ord < j , k >) oiso oiso ⟩
+        od→ord < x , y >
+    ∎ ) 
+
+
+p-iso1 :  { ox oy  : Ordinal } → ZFProduct ∋ < ord→od ox , ord→od oy >  
+p-iso1 {ox} {oy} = pair ox oy
+
+p-iso :  { x  : OD } → (p : ZFProduct ∋ x ) → < ord→od (π1 p) , ord→od (π2 p) > ≡ x
+p-iso {x} p = ord≡→≡ (lemma p) where
+    lemma :  { op : Ordinal } → (q : ord-pair op ) → od→ord < ord→od (pi1 q) , ord→od (pi2 q) > ≡ op
+    lemma (pair ox oy) = refl
+
+    
+∋-p : (A x : OD ) → Dec ( A ∋ x ) 
+∋-p A x with p∨¬p ( A ∋ x )
+∋-p A x | case1 t = yes t
+∋-p A x | case2 t = no t
+
+_⊗_  : (A B : OD) → OD
+A ⊗ B  = record { def = λ x → def ZFProduct x ∧ ( { x : Ordinal } → (p : def ZFProduct x ) → checkAB p ) } where
+    checkAB : { p : Ordinal } → def ZFProduct p → Set n
+    checkAB (pair x y) = def A x ∧ def B y
+
+func→od0  : (f : Ordinal → Ordinal ) → OD
+func→od0  f = record { def = λ x → def ZFProduct x ∧ ( { x : Ordinal } → (p : def ZFProduct x ) → checkfunc p ) } where
+    checkfunc : { p : Ordinal } → def ZFProduct p → Set n
+    checkfunc (pair x y) = f x ≡ y
+
+--  Power (Power ( A ∪ B )) ∋ ( A ⊗ B )
+
+Func :  ( A B : OD ) → OD
+Func A B = record { def = λ x → def (Power (A ⊗ B)) x } 
+
+-- power→ :  ( A t : OD) → Power A ∋ t → {x : OD} → t ∋ x → ¬ ¬ (A ∋ x)
+
 
 func→od : (f : Ordinal → Ordinal ) → ( dom : OD ) → OD 
-func→od f dom = Replace dom ( λ x →  x , (ord→od (f (od→ord x) )))
+func→od f dom = Replace dom ( λ x →  < x , ord→od (f (od→ord x)) > )
 
-record _⊗_  (A B : Ordinal) : Set n where
+record Func←cd { dom cod : OD } {f : Ordinal }  : Set n where
    field
-      π1 : Ordinal
-      π2 : Ordinal
-      A∋π1 : def (ord→od A)  π1
-      B∋π2 : def (ord→od B)  π2
+      func-1 : Ordinal → Ordinal
+      func→od∈Func-1 :  Func dom cod ∋  func→od func-1 dom
+ 
+od→func : { dom cod : OD } → {f : Ordinal }  → def (Func dom cod ) f  → Func←cd {dom} {cod} {f} 
+od→func {dom} {cod} {f} lt = record { func-1 = λ x → sup-o ( λ y → lemma x y ) ; func→od∈Func-1 = record { proj1 = {!!} ; proj2 = {!!} } } where
+   lemma : Ordinal → Ordinal → Ordinal
+   lemma x y with IsZF.power→ isZF (dom ⊗ cod) (ord→od f) (subst (λ k → def (Power (dom ⊗ cod)) k ) (sym diso) lt ) | ∋-p (ord→od f) (ord→od y)
+   lemma x y | p | no n  = o∅
+   lemma x y | p | yes f∋y = lemma2 (proj1 (double-neg-eilm ( p {ord→od y} f∋y ))) where -- p : {y : OD} → f ∋ y → ¬ ¬ (dom ⊗ cod ∋ y) 
+           lemma2 : {p : Ordinal} → ord-pair p  → Ordinal
+           lemma2 (pair x1 y1) with decp ( x1 ≡ x)
+           lemma2 (pair x1 y1) | yes p = y1
+           lemma2 (pair x1 y1) | no ¬p = o∅
+   fod : OD
+   fod = Replace dom ( λ x →  < x , ord→od (sup-o ( λ y → lemma (od→ord x) y )) > )
 
--- Clearly wrong. We need ordered pair
-Func :  ( A B : OD ) → OD
-Func A B = record { def = λ x → (od→ord A) ⊗ (od→ord B) }
 
-open  _⊗_
-
-func←od : { dom cod : OD } → (f : OD )  → Func dom cod ∋ f → (Ordinal → Ordinal )
-func←od {dom} {cod} f lt x = sup-o ( λ y → lemma  y ) where
-   lemma : Ordinal → Ordinal
-   lemma y with p∨¬p ( _⊗_.π1 lt ≡ x )
-   lemma y | case1 refl = _⊗_.π2 lt
-   lemma y | case2 not = o∅
+open Func←cd
 
 -- contra position of sup-o<
 --
 
-postulate
-  -- contra-position of mimimulity of supermum required in Cardinal
-  sup-x  : ( Ordinal  → Ordinal ) →  Ordinal 
-  sup-lb : { ψ : Ordinal  →  Ordinal } → {z : Ordinal }  →  z o< sup-o ψ → z o< osuc (ψ (sup-x ψ))
+-- postulate
+--   -- contra-position of mimimulity of supermum required in Cardinal
+--   sup-x  : ( Ordinal  → Ordinal ) →  Ordinal 
+--   sup-lb : { ψ : Ordinal  →  Ordinal } → {z : Ordinal }  →  z o< sup-o ψ → z o< osuc (ψ (sup-x ψ))
 
 ------------
 --
@@ -68,7 +134,8 @@ record Onto  (X Y : OD )  : Set n where
        ymap : Ordinal 
        xfunc : def (Func X Y) xmap 
        yfunc : def (Func Y X) ymap 
-       onto-iso   : {y :  Ordinal  } → (lty : def Y y ) → func←od (ord→od xmap) xfunc ( func←od (ord→od ymap) yfunc y )  ≡ y
+       onto-iso   : {y :  Ordinal  } → (lty : def Y y ) →
+          func-1 ( od→func {X} {Y} {xmap} xfunc ) ( func-1 (od→func  yfunc) y )  ≡ y 
 
 open Onto
 
@@ -88,7 +155,7 @@ onto-restrict {X} {Y} {Z} onto  Z⊆Y = record {
        xfunc1 = {!!}
        zfunc : def (Func Z X) zmap 
        zfunc = {!!}
-       onto-iso1   : {z :  Ordinal  } → (ltz : def Z z ) → func←od (ord→od xmap1) xfunc1 ( func←od (ord→od zmap) zfunc z )  ≡ z
+       onto-iso1   : {z :  Ordinal  } → (ltz : def Z z ) → func-1 (od→func  xfunc1 )  (func-1 (od→func  zfunc ) z )  ≡ z
        onto-iso1   = {!!}
 
 

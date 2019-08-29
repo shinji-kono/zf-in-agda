@@ -22,8 +22,9 @@ record IsZF {n m : Level }
        : Set (suc (n ⊔ m)) where
   field
      isEquivalence : IsEquivalence {n} {m} {ZFSet} _≈_ 
-     -- ∀ x ∀ y ∃ z(x ∈ z ∧ y ∈ z)
-     pair : ( A B : ZFSet  ) →  ( (A , B)  ∋ A ) ∧ ( (A , B)  ∋ B  )
+     -- ∀ x ∀ y ∃ z ∀ t ( z ∋ t → t ≈ x ∨ t  ≈ y)
+     pair→ : ( x y t : ZFSet  ) →  (x , y)  ∋ t  → ( t ≈ x ) ∨ ( t ≈ y ) 
+     pair← : ( x y t : ZFSet  ) →  ( t ≈ x ) ∨ ( t ≈ y )  →  (x , y)  ∋ t 
      -- ∀ x ∃ y ∀ z (z ∈ y ⇔ ∃ u ∈ x  ∧ (z ∈ u))
      union→ : ( X z u : ZFSet ) → ( X ∋ u ) ∧ (u ∋ z ) → Union X ∋ z
      union← : ( X z : ZFSet ) → (X∋z : Union X ∋ z ) →  ¬  ( (u : ZFSet ) → ¬ ((X ∋  u) ∧ (u ∋ z )))
@@ -34,7 +35,7 @@ record IsZF {n m : Level }
   _∩_ : ( A B : ZFSet  ) → ZFSet
   A ∩ B = Select A (  λ x → ( A ∋ x ) ∧ ( B ∋ x )  )
   _∪_ : ( A B : ZFSet  ) → ZFSet
-  A ∪ B = Union (A , B)    -- Select A (  λ x → ( A ∋ x ) ∨ ( B ∋ x )  ) is easer
+  A ∪ B = Union (A , B)    -- Select A (  λ x → ( A ∋ x ) ∨ ( B ∋ x )  ) is easier
   ｛_｝ : ZFSet → ZFSet
   ｛ x ｝ = ( x ,  x )
   infixr  200 _∈_

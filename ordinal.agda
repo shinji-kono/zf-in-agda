@@ -1,4 +1,3 @@
-{-# OPTIONS --allow-unsolved-metas #-}
 open import Level
 module ordinal where
 
@@ -204,21 +203,6 @@ TransFinite {n} {m} {ψ} caseΦ caseOSuc x = proj1 (TransFinite1 (lv x) (ord x) 
       lemma y lt | case1 refl = proj1 ( TransFinite1 lx ox ) 
       lemma y lt | case2 lt1 = proj2 ( TransFinite1 lx ox ) y lt1
 
--- we cannot prove this in intutionistic logic 
---  (¬ (∀ y → ¬ ( ψ y ))) → (ψ y → p )  → p
--- postulate 
---  TransFiniteExists : {n m l : Level} → ( ψ : Ordinal {n} → Set m ) 
---   → (exists : ¬ (∀ y → ¬ ( ψ y ) ))
---   → {p : Set l} ( P : { y : Ordinal {n} } →  ψ y → p )
---   → p
---
--- Instead we prove
---
-TransFiniteExists : {n m l : Level} → ( ψ : Ordinal {n} → Set m ) 
-  → {p : Set l} ( P : { y : Ordinal {n} } →  ψ y → ¬ p )
-  → (exists : ¬ (∀ y → ¬ ( ψ y ) ))
-  → ¬ p
-TransFiniteExists {n} {m} {l} ψ {p} P = contra-position ( λ p y ψy → P {y} ψy p ) 
 
 open import Ordinals 
 
@@ -321,70 +305,4 @@ module C-Ordinal-with-choice {n : Level} where
               dz refl = OSuc lx (ord (od→ord z))
               dz<dz  : (z=x : lv (od→ord z) ≡ lx ) → ord (od→ord z) d< dz z=x
               dz<dz refl = s<refl 
-  
-  ---
-  --- With assuption of OD is ordered,  p ∨ ( ¬ p ) <=> axiom of choice
-  ---
-  record choiced  ( X : OD) : Set (suc (suc n)) where
-   field
-      a-choice : OD
-      is-in : X ∋ a-choice
-  
-  choice-func' :  (X : OD ) → (p∨¬p : { n : Level } → ( p : Set (suc n) ) → p ∨ ( ¬ p )) → ¬ ( X == od∅ ) → choiced X
-  choice-func'  X p∨¬p not = have_to_find where
-          ψ : ( ox : Ordinal {suc n}) → Set (suc (suc n))
-          ψ ox = (( x : Ordinal {suc n}) → x o< ox  → ( ¬ def X x )) ∨ choiced X
-          lemma-ord : ( ox : Ordinal {suc n} ) → ψ ox
-          lemma-ord  ox = TransFinite {n} {suc (suc n)} {ψ} caseΦ caseOSuc1 ox where
-             ∋-p' : (A x : OD ) → Dec ( A ∋ x ) 
-             ∋-p' A x with p∨¬p ( A ∋ x )
-             ∋-p' A x | case1 t = yes t
-             ∋-p' A x | case2 t = no t
-             ∀-imply-or :  {n : Level}  {A : Ordinal {suc n} → Set (suc n) } {B : Set (suc (suc n)) }
-                 → ((x : Ordinal {suc n}) → A x ∨ B) →  ((x : Ordinal {suc n}) → A x) ∨ B
-             ∀-imply-or {n} {A} {B} ∀AB with p∨¬p  ((x : Ordinal {suc n}) → A x)
-             ∀-imply-or {n} {A} {B} ∀AB | case1 t = case1 t
-             ∀-imply-or {n} {A} {B} ∀AB | case2 x = case2 (lemma x) where
-                  lemma : ¬ ((x : Ordinal {suc n}) → A x) →  B
-                  lemma not with p∨¬p B
-                  lemma not | case1 b = b
-                  lemma not | case2 ¬b = ⊥-elim  (not (λ x → dont-orb (∀AB x) ¬b ))
-             caseΦ : (lx : Nat) → ( (x : Ordinal {suc n} ) → x o< ordinal lx (Φ lx) → ψ x) → ψ (ordinal lx (Φ lx) ) 
-             caseΦ lx prev with ∋-p' X ( ord→od (ordinal lx (Φ lx) ))
-             caseΦ lx prev | yes p = case2 ( record { a-choice = ord→od (ordinal lx (Φ lx)) ; is-in = p } )
-             caseΦ lx prev | no ¬p = lemma where
-                  lemma1 : (x : Ordinal) → (((Suc (lv x) ≤ lx) ∨ (ord x d< Φ lx) → def X x → ⊥) ∨ choiced X)
-                  lemma1 x with trio< x (ordinal lx (Φ lx))
-                  lemma1 x | tri< a ¬b ¬c with prev (osuc x) (lemma2 a) where
-                      lemma2 : x o< (ordinal lx (Φ lx)) →  osuc x o< ordinal lx (Φ lx)
-                      lemma2 (case1 lt) = case1 lt
-                  lemma1 x | tri< a ¬b ¬c | case2 found = case2 found
-                  lemma1 x | tri< a ¬b ¬c | case1 not_found = case1 ( λ lt df → not_found x <-osuc df )
-                  lemma1 x | tri≈ ¬a refl ¬c = case1 ( λ lt → ⊥-elim (o<¬≡ refl lt ))
-                  lemma1 x | tri> ¬a ¬b c = case1 ( λ lt → ⊥-elim (o<> lt c ))
-                  lemma : ((x : Ordinal) → (Suc (lv x) ≤ lx) ∨ (ord x d< Φ lx) → def X x → ⊥) ∨ choiced X
-                  lemma = ∀-imply-or lemma1
-             caseOSuc : (lx : Nat) (x : OrdinalD lx) → ψ ( ordinal lx x ) → ψ ( ordinal lx (OSuc lx x) )
-             caseOSuc lx x prev with ∋-p' X (ord→od record { lv = lx ; ord = x } )
-             caseOSuc lx x prev | yes p = case2 (record { a-choice = ord→od record { lv = lx ; ord = x } ; is-in = p })
-             caseOSuc lx x (case1 not_found) | no ¬p = case1 lemma where
-                  lemma : (y : Ordinal) → (Suc (lv y) ≤ lx) ∨ (ord y d< OSuc lx x) → def X y → ⊥
-                  lemma y lt with trio< y (ordinal lx x )
-                  lemma y lt | tri< a ¬b ¬c = not_found y a
-                  lemma y lt | tri≈ ¬a refl ¬c = subst (λ k → def X k → ⊥ ) diso ¬p
-                  lemma y lt | tri> ¬a ¬b c with osuc-≡< lt
-                  lemma y lt | tri> ¬a ¬b c | case1 refl = ⊥-elim ( ¬b refl )
-                  lemma y lt | tri> ¬a ¬b c | case2 lt1 = ⊥-elim (o<> c lt1 )
-             caseOSuc lx x (case2 found) | no ¬p = case2 found
-             caseOSuc1 : (lx : Nat) (x : OrdinalD lx) → ((y : Ordinal) → y o< ordinal lx (OSuc lx x) → ψ y) →
-                 ψ (record { lv = lx ; ord = OSuc lx x })
-             caseOSuc1 lx x lt =  caseOSuc lx x (lt ( ordinal lx x ) (case2 s<refl))
-          have_to_find : choiced X
-          have_to_find with lemma-ord (od→ord X )
-          have_to_find | t = dont-or  t ¬¬X∋x where
-              ¬¬X∋x : ¬ ((x : Ordinal) → (Suc (lv x) ≤ lv (od→ord X)) ∨ (ord x d< ord (od→ord X)) → def X x → ⊥)
-              ¬¬X∋x nn = not record {
-                     eq→ = λ {x} lt → ⊥-elim  (nn x (def→o< lt) lt) 
-                   ; eq← = λ {x} lt → ⊥-elim ( ¬x<0 lt )
-                 }
   
