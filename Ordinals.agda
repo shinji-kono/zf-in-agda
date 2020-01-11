@@ -193,9 +193,9 @@ module inOrdinal  {n : Level} (O : Ordinals {n} ) where
              }
          }
 
-        TransFiniteExists : {m l : Level} → ( ψ : Ordinal  → Set m ) 
+        FExists : {m l : Level} → ( ψ : Ordinal  → Set m ) 
           → {p : Set l} ( P : { y : Ordinal  } →  ψ y → ¬ p )
           → (exists : ¬ (∀ y → ¬ ( ψ y ) ))
           → ¬ p
-        TransFiniteExists  {m} {l} ψ {p} P = contra-position ( λ p y ψy → P {y} ψy p ) 
+        FExists  {m} {l} ψ {p} P = contra-position ( λ p y ψy → P {y} ψy p ) 
 

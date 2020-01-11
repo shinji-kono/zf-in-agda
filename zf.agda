@@ -35,7 +35,7 @@ record IsZF {n m : Level }
   _∩_ : ( A B : ZFSet  ) → ZFSet
   A ∩ B = Select A (  λ x → ( A ∋ x ) ∧ ( B ∋ x )  )
   _∪_ : ( A B : ZFSet  ) → ZFSet
-  A ∪ B = Union (A , B)    -- Select A (  λ x → ( A ∋ x ) ∨ ( B ∋ x )  ) is easier
+  A ∪ B = Union (A , B)    
   ｛_｝ : ZFSet → ZFSet
   ｛ x ｝ = ( x ,  x )
   infixr  200 _∈_
@@ -50,8 +50,8 @@ record IsZF {n m : Level }
      extensionality :  { A B w : ZFSet  } → ( (z : ZFSet) → ( A ∋ z ) ⇔ (B ∋ z)  ) → ( A ∈ w ⇔ B ∈ w )
      -- This form of regurality forces choice function
      -- regularity : ∀ x ( x ≠ ∅ → ∃ y ∈ x ( y ∩ x = ∅ ) )
-     -- minimul : (x : ZFSet ) → ¬ (x ≈ ∅) → ZFSet 
-     -- regularity : ∀( x : ZFSet  ) → (not : ¬ (x ≈ ∅)) → (  minimul x not  ∈ x ∧  (  minimul x not  ∩ x  ≈ ∅ ) )
+     -- minimal : (x : ZFSet ) → ¬ (x ≈ ∅) → ZFSet 
+     -- regularity : ∀( x : ZFSet  ) → (not : ¬ (x ≈ ∅)) → (  minimal x not  ∈ x ∧  (  minimal x not  ∩ x  ≈ ∅ ) )
      -- another form of regularity
      -- ε-induction : { ψ : ZFSet → Set m}
      --         → ( {x : ZFSet } → ({ y : ZFSet } →  x ∋ y → ψ y ) → ψ x )

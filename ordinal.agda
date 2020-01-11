@@ -203,7 +203,6 @@ TransFinite {n} {m} {ψ} caseΦ caseOSuc x = proj1 (TransFinite1 (lv x) (ord x) 
       lemma y lt | case1 refl = proj1 ( TransFinite1 lx ox ) 
       lemma y lt | case2 lt1 = proj2 ( TransFinite1 lx ox ) y lt1
 
-
 open import Ordinals 
 
 C-Ordinal : {n : Level} →  Ordinals {suc n} 
@@ -240,69 +239,56 @@ module C-Ordinal-with-choice {n : Level} where
   -- open inOrdinal C-Ordinal 
   open OD (C-Ordinal {n})
   open OD.OD
-  
-  --
-  -- another form of regularity 
-  --
-  ε-induction : {m : Level} { ψ : OD  → Set m}
-   → ( {x : OD } → ({ y : OD } →  x ∋ y → ψ y ) → ψ x )
-   → (x : OD ) → ψ x
-  ε-induction {m} {ψ} ind x = subst (λ k → ψ k ) oiso (ε-induction-ord (lv (osuc (od→ord x))) (ord (osuc (od→ord x)))  <-osuc) where
-    ε-induction-ord : (lx : Nat) ( ox : OrdinalD {suc n} lx ) {ly : Nat} {oy : OrdinalD {suc n} ly }
-      → (ly < lx) ∨ (oy d< ox  ) → ψ (ord→od (record { lv = ly ; ord = oy } ) )
-    ε-induction-ord lx  (OSuc lx ox) {ly} {oy} y<x = 
-      ind {ord→od (record { lv = ly ; ord = oy })} ( λ {y} lt → subst (λ k → ψ k ) oiso (ε-induction-ord lx ox (lemma y lt ))) where
-          lemma :  (z : OD) → ord→od record { lv = ly ; ord = oy } ∋ z → od→ord z o< record { lv = lx ; ord = ox }
-          lemma z lt with osuc-≡< y<x
-          lemma z lt | case1 refl = o<-subst (c<→o< lt) refl diso
-          lemma z lt | case2 lt1 = ordtrans  (o<-subst (c<→o< lt) refl diso) lt1  
-    ε-induction-ord (Suc lx) (Φ (Suc lx)) {ly} {oy} (case1 y<sox ) =                    
-      ind {ord→od (record { lv = ly ; ord = oy })} ( λ {y} lt → lemma y lt )  where  
-          --
-          --     if lv of z if less than x Ok
-          --     else lv z = lv x. We can create OSuc of z which is larger than z and less than x in lemma
-          --
-          --                         lx    Suc lx      (1) lz(a) <lx by case1
-          --                 ly(1)   ly(2)             (2) lz(b) <lx by case1
-          --           lz(a) lz(b)   lz(c)                 lz(c) <lx by case2 ( ly==lz==lx)
-          --
-          lemma0 : { lx ly : Nat } → ly < Suc lx  → lx < ly → ⊥
-          lemma0 {Suc lx} {Suc ly} (s≤s lt1) (s≤s lt2) = lemma0 lt1 lt2
-          lemma1 : {ly : Nat} {oy : OrdinalD {suc n} ly} → lv (od→ord (ord→od (record { lv = ly ; ord = oy }))) ≡ ly
-          lemma1  {ly} {oy} = let open ≡-Reasoning in begin
-                  lv (od→ord (ord→od (record { lv = ly ; ord = oy })))
-               ≡⟨ cong ( λ k → lv k ) diso ⟩
-                  lv (record { lv = ly ; ord = oy })
-               ≡⟨⟩
-                  ly
-               ∎
-          lemma :  (z : OD) → ord→od record { lv = ly ; ord = oy } ∋ z → ψ z
-          lemma z lt with  c<→o<  {z} {ord→od (record { lv = ly ; ord = oy })} lt
-          lemma z lt | case1 lz<ly with <-cmp lx ly
-          lemma z lt | case1 lz<ly | tri< a ¬b ¬c = ⊥-elim ( lemma0 y<sox a) -- can't happen
-          lemma z lt | case1 lz<ly | tri≈ ¬a refl ¬c =    -- ly(1)
-                subst (λ k → ψ k ) oiso (ε-induction-ord lx (Φ lx) {_} {ord (od→ord z)} (case1 (subst (λ k → lv (od→ord z) < k ) lemma1 lz<ly ) ))
-          lemma z lt | case1 lz<ly | tri> ¬a ¬b c =       -- lz(a)
-                subst (λ k → ψ k ) oiso (ε-induction-ord lx (Φ lx) {_} {ord (od→ord z)} (case1 (<-trans lz<ly (subst (λ k → k < lx ) (sym lemma1) c))))
-          lemma z lt | case2 lz=ly with <-cmp lx ly
-          lemma z lt | case2 lz=ly | tri< a ¬b ¬c = ⊥-elim ( lemma0 y<sox a) -- can't happen
-          lemma z lt | case2 lz=ly | tri> ¬a ¬b c with d<→lv lz=ly        -- lz(b)
-          ... | eq = subst (λ k → ψ k ) oiso
-               (ε-induction-ord lx (Φ lx) {_} {ord (od→ord z)} (case1 (subst (λ k → k < lx ) (trans (sym lemma1)(sym eq) ) c )))
-          lemma z lt | case2 lz=ly | tri≈ ¬a lx=ly ¬c with d<→lv lz=ly    -- lz(c)
-          ... | eq =  subst (λ k → ψ k ) oiso ( ε-induction-ord lx (dz oz=lx) {lv (od→ord z)} {ord (od→ord z)} (case2 (dz<dz oz=lx) )) where
-              oz=lx : lv (od→ord z) ≡ lx 
-              oz=lx = let open ≡-Reasoning in begin
-                  lv (od→ord z)
-                 ≡⟨ eq ⟩
-                  lv (od→ord (ord→od (ordinal ly oy)))
-                 ≡⟨ cong ( λ k → lv k ) diso ⟩
-                  lv (ordinal ly oy)
-                 ≡⟨ sym lx=ly  ⟩
-                  lx
-                 ∎
-              dz : lv (od→ord z) ≡ lx → OrdinalD lx
-              dz refl = OSuc lx (ord (od→ord z))
-              dz<dz  : (z=x : lv (od→ord z) ≡ lx ) → ord (od→ord z) d< dz z=x
-              dz<dz refl = s<refl 
-  
+  open _⊆_
+
+  o<→c< :  {x y : Ordinal } → x o< y →   Ord x ⊆ Ord y 
+  o<→c< lt = record { incl = λ lt1 → ordtrans lt1 lt }
+
+  ⊆→o< :  {x y : Ordinal } →  Ord x ⊆ Ord y →  x o< osuc y
+  ⊆→o< {x} {y}  lt with trio< x y 
+  ⊆→o< {x} {y}  lt | tri< a ¬b ¬c = ordtrans a <-osuc
+  ⊆→o< {x} {y}  lt | tri≈ ¬a b ¬c = subst ( λ k → k o< osuc y) (sym b) <-osuc
+  ⊆→o< {x} {y}  lt | tri> ¬a ¬b c with incl lt  (o<-subst c (sym diso) refl )
+  ... | ttt = ⊥-elim ( o<¬≡ refl (o<-subst ttt diso refl ))
+
+  -- ZFSubset : (A x : OD  ) → OD 
+  -- ZFSubset A x =  record { def = λ y → def A y ∧  def x y }  
+
+  -- Def :  (A :  OD ) → OD 
+  -- Def  A = Ord ( sup-o  ( λ x → od→ord ( ZFSubset A (ord→od x )) ) )   
+
+  Ord-lemma : (a : Ordinal)  →  ord→od a ⊆ Ord a
+  Ord-lemma a  = record { incl = λ lt → o<-subst (c<→o< lt ) refl diso }
+
+  ⊆-trans :  {a b c x : OD}  →  a ⊆ b  →   b ⊆ c  → a ⊆ c     
+  ⊆-trans a⊆b b⊆c = record { incl = λ a∋x →  incl b⊆c (incl a⊆b a∋x) }
+
+  _∩_ = IsZF._∩_ isZF
+
+-- 
+--   ord-power-lemma : {a : Ordinal} → Power (Ord a) == Def (Ord a)
+--   ord-power-lemma {a} = record { eq→ = left ; eq← = right } where
+--        left : {x : Ordinal} → def (Power (Ord a)) x → def (Def (Ord a)) x
+--        left {x} lt = lemma1 where
+--           lemma : od→ord ((Ord a) ∩ (ord→od x)) o< sup-o ( λ y → od→ord ((Ord a) ∩ (ord→od y)))
+--           lemma = sup-o< { λ y → od→ord ((Ord a) ∩ (ord→od y))} {x} 
+--           lemma1 : x o<  sup-o  ( λ x → od→ord ( ZFSubset (Ord a) (ord→od x ))) 
+--           lemma1 = {!!}
+--        right : {x : Ordinal } → def (Def (Ord a)) x → def (Power (Ord a)) x
+--        right {x} lt = def-subst {_} {_} {Power (Ord a)} {x} (IsZF.power← isZF (Ord a) (ord→od x) {!!}) refl diso
+-- 
+--   uncountable : (a y : Ordinal) →  Ord (osuc a) ∋ ZFSubset (Ord a) (ord→od y) 
+--   uncountable a y = ⊆→o<  lemma  where
+--        lemma-a :  (x : OD ) → _⊆_ (ZFSubset (Ord a) (ord→od y)) (Ord a) {x}
+--        lemma-a x lt = proj1 lt
+--        lemma :  (x : OD ) → _⊆_ (Ord ( od→ord (ZFSubset (Ord a) (ord→od y)))) (Ord a) {x}
+--        lemma x = {!!}
+-- 
+--   continuum-hyphotheis : (a : Ordinal) → (x : OD) → _⊆_  (Power (Ord a)) (Ord (osuc a)) {x}
+--   continuum-hyphotheis a x = lemma2 where
+--        lemma1 : sup-o (λ x₁ → od→ord (ZFSubset (Ord a) (ord→od x₁))) o< osuc a
+--        lemma1 = {!!}
+--        lemma : _⊆_ (Def (Ord a))  (Ord (osuc a)) {x}
+--        lemma = o<→c< lemma1
+--        lemma2 : _⊆_ (Power (Ord a))  (Ord (osuc a)) {x}
+--        lemma2 = subst ( λ k → _⊆_ k (Ord (osuc a)) {x} ) (sym (==→o≡ ord-power-lemma)) lemma

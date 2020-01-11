@@ -22,66 +22,67 @@ open _∧_
 open _∨_
 open Bool
 
-record Filter  ( P max : OD  )  : Set (suc n) where
+_∩_ : ( A B : OD  ) → OD
+A ∩ B = record { def = λ x → def A x ∧ def B x } 
+
+_∪_ : ( A B : OD  ) → OD
+A ∪ B = record { def = λ x → def A x ∨ def B x } 
+
+_＼_ : ( A B : OD  ) → OD
+A ＼ B = record { def = λ x → def A x ∧ ( ¬ ( def B x ) ) }
+
+
+record Filter  ( L : OD  ) : Set (suc n) where
    field
-       _⊇_ : OD  → OD  → Set n
-       G : OD 
-       G∋1 : G ∋ max
-       Gmax : { p : OD  } → P ∋ p → p ⊇  max 
-       Gless : { p q : OD  } → G ∋ p → P ∋ q →  p ⊇ q  → G ∋ q
-       Gcompat : { p q : OD  } → G ∋ p → G ∋ q → ¬ (
-           ( r : OD ) →  ((  p ⊇  r ) ∧ (  p ⊇ r )))
+       filter : OD
+       proper : ¬ ( filter ∋ od∅ )
+       inL :  filter ⊆ L 
+       filter1 : { p q : OD } →  q ⊆ L  → filter ∋ p →  p ⊆ q  → filter ∋ q
+       filter2 : { p q : OD } → filter ∋ p →  filter ∋ q  → filter ∋ (p ∩ q)
 
-dense :   Set (suc n)
-dense = { D P p : OD  } → ({x : OD } → P ∋ p → ¬ ( ( q : OD ) → D ∋ q → od→ord p o< od→ord q ))
+open Filter
 
-record NatFilter  ( P : Nat → Set n)  : Set (suc n) where
+L-filter : {L : OD} → (P : Filter L ) → {p : OD} → filter P ∋ p → filter P ∋ L
+L-filter {L} P {p} lt = filter1 P {p} {L} {!!} lt {!!}
+
+prime-filter : {L : OD} → Filter L → ∀ {p q : OD } → Set n
+prime-filter {L} P {p} {q} =  filter P ∋ ( p ∪ q) → ( filter P ∋ p ) ∨ ( filter P ∋ q )
+
+ultra-filter :  {L : OD} → Filter L → ∀ {p : OD } → Set n 
+ultra-filter {L} P {p} = L ∋ p →  ( filter P ∋ p ) ∨ (  filter P ∋ ( L ＼ p) )
+
+
+filter-lemma1 :  {L : OD} → (P : Filter L)  → ∀ {p q : OD } → ( ∀ (p : OD ) → ultra-filter {L} P {p} ) → prime-filter {L} P {p} {q}
+filter-lemma1 {L} P {p} {q} u lt = {!!}
+
+filter-lemma2 :  {L : OD} → (P : Filter L)  → ( ∀ {p q : OD } → prime-filter {L} P {p} {q}) →  ∀ (p : OD ) → ultra-filter {L} P {p} 
+filter-lemma2 {L} P prime p with prime {!!}
+... | t = {!!}
+
+generated-filter : {L : OD} → Filter L → (p : OD ) → Filter ( record { def = λ x → def L x ∨ (x ≡ od→ord p) } )
+generated-filter {L} P p = record {
+     proper = {!!} ; 
+     filter = {!!}  ; inL = {!!} ; 
+     filter1 = {!!} ; filter2 = {!!}
+   }
+
+record Dense  (P : OD ) : Set (suc n) where
    field
-       GN : Nat → Set n
-       GN∋1 : GN 0
-       GNmax : { p : Nat } → P p →  0 ≤ p 
-       GNless : { p q : Nat } → GN p → P q →  q ≤ p  → GN q
-       Gr : (  p q : Nat ) →  GN p → GN q  →  Nat
-       GNcompat : { p q : Nat }  → (gp : GN p) → (gq : GN q ) → (  Gr p q gp gq ≤  p ) ∨ (  Gr p q gp gq ≤ q )
-
-record NatDense {n : Level} ( P : Nat → Set n)  : Set (suc n) where
-   field
-       Gmid : { p : Nat } → P p  → Nat
-       GDense : { D : Nat → Set n } → {x p : Nat } → (pp : P p ) → D (Gmid {p} pp) →  Gmid pp  ≤ p 
-
-open OD.OD
+       dense : OD
+       incl :  dense ⊆ P 
+       dense-f : OD → OD
+       dense-p :  { p : OD} → P ∋ p  → p ⊆ (dense-f p) 
 
 -- H(ω,2) = Power ( Power ω ) = Def ( Def ω))
 
-Pred :  ( Dom : OD  ) → OD 
-Pred  dom = record {
-      def = λ x → def dom x → {!!}
-  }
+infinite = ZF.infinite OD→ZF
 
-Hω2 :   OD 
-Hω2  = record { def = λ x → {dom : Ordinal } → x ≡ od→ord ( Pred ( ord→od dom )) }
+module in-countable-ordinal {n : Level} where
 
-Hω2Filter :     Filter  Hω2 od∅
-Hω2Filter  = record {
-       _⊇_ = _⊇_
-     ; G = {!!}
-     ; G∋1 = {!!}
-     ; Gmax = {!!}
-     ; Gless = {!!}
-     ; Gcompat = {!!}
-  } where
-       P = Hω2
-       _⊇_ : OD  → OD  → Set n
-       _⊇_ = {!!}
-       G : OD 
-       G = {!!}
-       G∋1 : G ∋ od∅
-       G∋1 = {!!}
-       Gmax : { p : OD  } → P ∋ p → p ⊇  od∅
-       Gmax = {!!}
-       Gless : { p q : OD  } → G ∋ p → P ∋ q →  p ⊇ q  → G ∋ q
-       Gless = {!!}
-       Gcompat : { p q : OD  } → G ∋ p → G ∋ q → ¬ (
-           ( r : OD ) →  ((  p ⊇  r ) ∧ (  p ⊇ r )))
-       Gcompat = {!!}
+   import ordinal
+
+   open  ordinal.C-Ordinal-with-choice 
+
+   Hω2 : Filter (Power (Power infinite))
+   Hω2 = {!!}
 

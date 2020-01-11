@@ -24,46 +24,6 @@ open _==_
 
 -- we have to work on Ordinal to keep OD Level n
 -- since we use p∨¬p which works only on Level n
---   < x , y > = (x , x) , (x , y)
-
-data ord-pair : (p : Ordinal) → Set n where
-   pair : (x y : Ordinal ) → ord-pair ( od→ord ( < ord→od x , ord→od y > ) )
-
-ZFProduct : OD
-ZFProduct = record { def = λ x → ord-pair x }
-
--- open import Relation.Binary.HeterogeneousEquality as HE using (_≅_ ) 
--- eq-pair : { x x' y y' : Ordinal } → x ≡ x' → y ≡ y' → pair x y ≅ pair x' y'
--- eq-pair refl refl = HE.refl
-
-pi1 : { p : Ordinal } →   ord-pair p →  Ordinal
-pi1 ( pair x y) = x
-
-π1 : { p : OD } → ZFProduct ∋ p → Ordinal
-π1 lt = pi1 lt 
-
-pi2 : { p : Ordinal } →   ord-pair p →  Ordinal
-pi2 ( pair x y ) = y
-
-π2 : { p : OD } → ZFProduct ∋ p → Ordinal
-π2 lt = pi2 lt 
-
-p-cons :  ( x y  : OD ) → ZFProduct ∋ < x , y >
-p-cons x y =  def-subst {_} {_} {ZFProduct} {od→ord (< x , y >)} (pair (od→ord x) ( od→ord y )) refl (
-    let open ≡-Reasoning in begin
-        od→ord < ord→od (od→ord x) , ord→od (od→ord y) >
-    ≡⟨ cong₂ (λ j k → od→ord < j , k >) oiso oiso ⟩
-        od→ord < x , y >
-    ∎ ) 
-
-
-p-iso1 :  { ox oy  : Ordinal } → ZFProduct ∋ < ord→od ox , ord→od oy >  
-p-iso1 {ox} {oy} = pair ox oy
-
-p-iso :  { x  : OD } → (p : ZFProduct ∋ x ) → < ord→od (π1 p) , ord→od (π2 p) > ≡ x
-p-iso {x} p = ord≡→≡ (lemma p) where
-    lemma :  { op : Ordinal } → (q : ord-pair op ) → od→ord < ord→od (pi1 q) , ord→od (pi2 q) > ≡ op
-    lemma (pair ox oy) = refl
 
     
 ∋-p : (A x : OD ) → Dec ( A ∋ x ) 
@@ -87,7 +47,6 @@ Func :  ( A B : OD ) → OD
 Func A B = record { def = λ x → def (Power (A ⊗ B)) x } 
 
 -- power→ :  ( A t : OD) → Power A ∋ t → {x : OD} → t ∋ x → ¬ ¬ (A ∋ x)
-
 
 func→od : (f : Ordinal → Ordinal ) → ( dom : OD ) → OD 
 func→od f dom = Replace dom ( λ x →  < x , ord→od (f (od→ord x)) > )
@@ -139,7 +98,7 @@ record Onto  (X Y : OD )  : Set n where
 
 open Onto
 
-onto-restrict : {X Y Z : OD} → Onto X Y → ({x : OD} → _⊆_ Z Y {x}) → Onto X Z
+onto-restrict : {X Y Z : OD} → Onto X Y → Z ⊆ Y  → Onto X Z
 onto-restrict {X} {Y} {Z} onto  Z⊆Y = record {
      xmap = xmap1
    ; ymap = zmap
