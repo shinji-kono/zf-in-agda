@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:xl="http://www.w3.org/1999/xlink" version="1.1" viewBox="28 101 424 224" width="424" height="224">
+  <defs>
+    <font-face font-family="Hiragino Sans" font-size="22" panose-1="2 11 3 0 0 0 0 0 0 0" units-per-em="1000" underline-position="-75" underline-thickness="50" slope="0" x-height="545" cap-height="766" ascent="880.0018" descent="-120.00024" font-weight="300">
+      <font-face-src>
+        <font-face-name name="HiraginoSans-W3"/>
+      </font-face-src>
+    </font-face>
+    <marker orient="auto" overflow="visible" markerUnits="strokeWidth" id="FilledArrow_Marker" stroke-linejoin="miter" stroke-miterlimit="10" viewBox="-1 -4 10 8" markerWidth="10" markerHeight="8" color="black">
+      <g>
+        <path d="M 8 0 L 0 -3 L 0 3 Z" fill="currentColor" stroke="currentColor" stroke-width="1"/>
+      </g>
+    </marker>
+    <marker orient="auto" overflow="visible" markerUnits="strokeWidth" id="FilledArrow_Marker_2" stroke-linejoin="miter" stroke-miterlimit="10" viewBox="-9 -4 10 8" markerWidth="10" markerHeight="8" color="black">
+      <g>
+        <path d="M -8 0 L 0 3 L 0 -3 Z" fill="currentColor" stroke="currentColor" stroke-width="1"/>
+      </g>
+    </marker>
+  </defs>
+  <metadata> Produced by OmniGraffle 7.12.1 
+    <dc:date>2020-01-11 11:10:39 +0000</dc:date>
+  </metadata>
+  <g id="Canvas_1" stroke-opacity="1" stroke-dasharray="none" stroke="none" fill="none" fill-opacity="1">
+    <title>Canvas 1</title>
+    <rect fill="white" x="28" y="101" width="424" height="224"/>
+    <g id="Canvas_1: Layer 1">
+      <title>Layer 1</title>
+      <g id="Graphic_18">
+        <rect x="30" y="103" width="420" height="166" stroke="gray" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>
+      </g>
+      <g id="Graphic_2">
+        <text transform="translate(334.578 126)" fill="black">
+          <tspan font-family="Hiragino Sans" font-size="22" font-weight="300" fill="black" x="48316906e-20" y="19">Choice</tspan>
+        </text>
+      </g>
+      <g id="Graphic_3">
+        <text transform="translate(347.91 223.00002)" fill="black">
+          <tspan font-family="Hiragino Sans" font-size="22" font-weight="300" fill="black" x="14566126e-20" y="19">LEM</tspan>
+        </text>
+      </g>
+      <g id="Graphic_4">
+        <text transform="translate(133.323 286)" fill="black">
+          <tspan font-family="Hiragino Sans" font-size="22" font-weight="300" fill="black" x="8952838e-19" y="19">Well ordering outside</tspan>
+        </text>
+      </g>
+      <g id="Graphic_7">
+        <text transform="translate(83 180)" fill="black">
+          <tspan font-family="Hiragino Sans" font-size="22" font-weight="300" fill="black" x="0" y="19">ε-induction</tspan>
+        </text>
+      </g>
+      <g id="Graphic_8">
+        <text transform="translate(43.556 126)" fill="black">
+          <tspan font-family="Hiragino Sans" font-size="22" font-weight="300" fill="black" x="0" y="19">Strong Regularity</tspan>
+        </text>
+      </g>
+      <g id="Line_9">
+        <line x1="240" y1="142.50001" x2="319.678" y2="142.50001" marker-end="url(#FilledArrow_Marker)" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Line_10">
+        <line x1="372" y1="164.00002" x2="372" y2="208.10002" marker-end="url(#FilledArrow_Marker)" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Graphic_11">
+        <text transform="translate(110.66 223.00002)" fill="black">
+          <tspan font-family="Hiragino Sans" font-size="22" font-weight="300" fill="black" x="0" y="19">Well ordering inside</tspan>
+        </text>
+      </g>
+      <g id="Line_12">
+        <line x1="218.438" y1="179.55565" x2="319.95423" y2="155.05904" marker-end="url(#FilledArrow_Marker)" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Group_16">
+        <g id="Line_14">
+          <line x1="240" y1="156" x2="272.71875" y2="188.27344" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+        </g>
+        <g id="Line_15">
+          <line x1="274" y1="156" x2="240" y2="188.23828" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+        </g>
+      </g>
+      <g id="Line_17">
+        <line x1="372" y1="218.00002" x2="372" y2="173.90002" marker-end="url(#FilledArrow_Marker)" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Line_19">
+        <line x1="329.6113" y1="169.28897" x2="260.9037" y2="212.71107" marker-end="url(#FilledArrow_Marker)" marker-start="url(#FilledArrow_Marker_2)" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+    </g>
+  </g>
+</svg>

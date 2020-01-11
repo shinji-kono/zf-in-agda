@@ -1,0 +1,1619 @@
+<html>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+<head>
+<STYLE type="text/css">
+.main { width:100%; }
+.side { top:0px; width:0%; position:fixed; left:80%; display:none}
+</STYLE>
+<script type="text/javascript">
+function showElement(layer){
+    var myLayer = document.getElementById(layer);
+    var main = document.getElementById('mmm');
+    if(myLayer.style.display=="none"){
+        myLayer.style.width="20%";
+        main.style.width="80%";
+        myLayer.style.display="block";
+        myLayer.backgroundPosition="top";
+    } else { 
+        myLayer.style.width="0%";
+        main.style.width="100%";
+        myLayer.style.display="none";
+    }
+}
+</script>
+<title>Constructing ZF Set Theory in Agda </title>
+</head>
+<body>
+<div class="main" id="mmm">
+<h1>Constructing ZF Set Theory in Agda </h1>
+<a href="#" right="0px" onclick="javascript:showElement('menu')">
+<span>Menu</span>
+</a>
+<a href="#" left="0px" onclick="javascript:showElement('menu')">
+<span>Menu</span>
+</a>
+
+<p>
+
+<author> Shinji KONO</author>
+
+<hr/>
+<h2><a name="content000">Programming Mathematics</a></h2>
+Programming is processing data structure with λ terms.
+<p>
+We are going to handle Mathematics in intuitionistic logic with λ terms.
+<p>
+Mathematics is a functional programming which values are proofs.
+<p>
+Programming ZF Set Theory in Agda
+<p>
+
+<hr/>
+<h2><a name="content001">Target</a></h2>
+
+<pre>
+   Describe ZF axioms in Agda
+   Construction a Model of ZF Set Theory in Agda
+   Show necessary assumptions for the model
+   Show validities of ZF axioms on the model
+
+</pre>
+This shows consistency of Set Theory (with some assumptions),
+without circulating ZF Theory assumption.
+<p>
+<a href="https://github.com/shinji-kono/zf-in-agda">
+ZF in Agda https://github.com/shinji-kono/zf-in-agda
+</a>
+<p>
+
+<hr/>
+<h2><a name="content002">Why Set Theory</a></h2>
+If we can formulate Set theory, it suppose to work on any mathematical theory.
+<p>
+Set Theory is a difficult point for beginners especially axiom of choice.
+<p>
+It has some amount of difficulty and self circulating discussion.
+<p>
+I'm planning to do it in my old age, but I'm enough age now.
+<p>
+This is done during from May to September.
+<p>
+
+<hr/>
+<h2><a name="content003">Agda and Intuitionistic Logic </a></h2>
+Curry Howard Isomorphism
+<p>
+
+<pre>
+    Proposition : Proof ⇔ Type : Value
+
+</pre>
+which means
+<p>
+　　constructing a typed lambda calculus which corresponds a logic
+<p>
+Typed lambda calculus which allows complex type as a value of a variable (System FC)
+<p>
+　　First class Type / Dependent Type
+<p>
+Agda is a such a programming language which has similar syntax of Haskell
+<p>
+Coq is specialized in proof assistance such as command and tactics .
+<p>
+
+<hr/>
+<h2><a name="content004">Introduction of Agda </a></h2>
+A length of a list of type A.
+<p>
+
+<pre>
+    length : {A : Set } → List A → Nat
+    length [] = zero
+    length (_ ∷ t)  = suc ( length t )
+
+</pre>
+Simple functional programming language. Type declaration is mandatory.
+A colon means type, an equal means value. Indentation based.
+<p>
+Set is a base type (which may have a level ).
+<p>
+{} means implicit variable which can be omitted if Agda infers its value.
+<p>
+
+<hr/>
+<h2><a name="content005">data ( Sum type )</a></h2>
+A data type which as exclusive multiple constructors. A similar one as
+union in C or case class in Scala.
+<p>
+It has a similar syntax as Haskell but it has a slight difference.
+<p>
+
+<pre>
+   data List (A : Set ) : Set where
+        [] : List A
+        _∷_ : A → List A → List A
+
+</pre>
+_∷_ means infix operator. If use explicit _, it can be used in a normal function
+syntax.
+<p>
+Natural number can be defined as a usual way.
+<p>
+
+<pre>
+   data Nat : Set where
+        zero : Nat
+        suc  : Nat → Nat
+
+</pre>
+
+<hr/>
+<h2><a name="content006"> A → B means "A implies B"</a></h2>
+
+<p>
+In Agda, a type can be a value of a variable, which is usually called dependent type.
+Type has a name Set in Agda.
+<p>
+
+<pre>
+    ex3 : {A B : Set} → Set 
+    ex3 {A}{B}  =  A → B
+
+</pre>
+ex3 is a type : A → B, which is a value of Set. It also means a formula : A implies B.
+<p>
+
+<pre>
+    A type is a formula, the value is the proof
+
+</pre>
+A value of A → B can be interpreted as an inference from the formula A to the formula B, which
+can be a function from a proof of A to a proof of B.
+<p>
+
+<hr/>
+<h2><a name="content007">introduction と elimination</a></h2>
+For a logical operator, there are two types of inference, an introduction and an elimination.
+<p>
+
+<pre>
+  intro creating symbol  / constructor / introduction
+  elim  using symbolic / accessors / elimination
+
+</pre>
+In Natural deduction, this can be written in proof schema.
+<p>
+
+<pre>
+       A                   
+       :
+       B                    A       A → B
+   ------------- →intro   ------------------ →elim
+      A → B                     B
+
+</pre>
+In Agda, this is a pair of type and value as follows. Introduction of → uses λ.
+<p>
+
+<pre>
+    →intro : {A B : Set } → A →  B → ( A → B )
+    →intro _ b = λ x → b
+    →elim : {A B : Set } → A → ( A → B ) → B
+    →elim a f = f a
+
+</pre>
+Important
+<p>
+
+<pre>
+    {A B : Set } → A →  B → ( A → B )
+
+</pre>
+is
+<p>
+
+<pre>
+    {A B : Set } → ( A →  ( B → ( A → B ) ))
+
+</pre>
+This makes currying of function easy.
+<p>
+
+<hr/>
+<h2><a name="content008"> To prove A → B </a></h2>
+Make a left type as an argument. (intros in Coq)
+<p>
+
+<pre>
+    ex5 : {A B C : Set } → A → B → C  → ?
+    ex5 a b c = ?
+
+</pre>
+? is called a hole, which is unspecified part. Agda tell us which kind type is required for the Hole.
+<p>
+We are going to fill the holes, and if we have no warnings nor errors such as type conflict (Red),
+insufficient proof or instance (Yellow), Non-termination, the proof is completed.
+<p>
+
+<hr/>
+<h2><a name="content009"> A ∧ B</a></h2>
+Well known conjunction's introduction and elimination is as follow.
+<p>
+
+<pre>
+     A    B                 A ∧ B           A ∧ B 
+   -------------         ----------- proj1   ---------- proj2
+      A ∧ B                   A               B
+
+</pre>
+We can introduce a corresponding structure in our functional programming language.
+<p>
+
+<hr/>
+<h2><a name="content010"> record</a></h2>
+
+<pre>
+   record _∧_ A B : Set
+     field
+         proj1 : A
+         proj2 : B
+
+</pre>
+_∧_　means infix operator.  _∧_ A B can be written as  A ∧  B (Haskell uses (∧) )
+<p>
+This a type which constructed from type A and type B. You may think this as an object
+or struct.
+<p>
+
+<pre>
+   record { proj1 = x ; proj2 = y }    
+
+</pre>
+is a constructor of _∧_.
+<p>
+
+<pre>
+    ex3 : {A B : Set} → A → B → ( A ∧ B )
+    ex3 a b = record { proj1 = a ; proj2 = b }
+    ex1 : {A B : Set} → ( A ∧ B ) → A
+    ex1 a∧b = proj1 a∧b
+
+</pre>
+a∧b is a variable name. If we have no spaces in a string, it is a word even if we have symbols
+except parenthesis or colons. A symbol requires space separation such as a type defining colon.
+<p>
+Defining record can be recursively, but we don't use the recursion here.
+<p>
+
+<hr/>
+<h2><a name="content011"> Mathematical structure</a></h2>
+We have types of elements and the relationship in a mathematical structure.
+<p>
+
+<pre>
+  logical relation has no ordering
+  there is a natural ordering in arguments and a value in a function
+
+</pre>
+So we have typical definition style of mathematical structure with records.
+<p>
+
+<pre>
+  record IsOrdinals {n : Level} (ord : Set n)  
+    (_o&lt;_ : ord → ord → Set n) : Set (suc (suc n)) where
+   field
+     Otrans :  {x y z : ord }  → x o&lt; y → y o&lt; z → x o&lt; z
+  record Ordinals {n : Level} : Set (suc (suc n)) where
+       field 
+         ord : Set n
+         _o&lt;_ : ord → ord → Set n
+         isOrdinal : IsOrdinals ord _o&lt;_
+
+</pre>
+In IsOrdinals, axioms are written in flat way. In Ordinal, we may have
+inputs and outputs are put in the field including IsOrdinal.
+<p>
+Fields of Ordinal is existential objects in the mathematical structure.
+<p>
+
+<hr/>
+<h2><a name="content012"> A Model and a theory</a></h2>
+Agda record is a type, so we can write it in the argument, but is it really exists?
+<p>
+If we have a value of the record, it simply exists, that is, we need to create all the existence
+in the record satisfies all the axioms (= field of IsOrdinal) should be valid.
+<p>
+
+<pre>
+   type of record = theory
+   value of record = model
+
+</pre>
+We call the value of the record as a model. If mathematical structure has a
+model, it exists. Pretty Obvious.
+<p>
+
+<hr/>
+<h2><a name="content013"> postulate と module</a></h2>
+Agda proofs are separated by modules, which are large records.
+<p>
+postulates are assumptions. We can assume a type without proofs.
+<p>
+
+<pre>
+    postulate      
+      sup-o  :  ( Ordinal  → Ordinal ) →  Ordinal 
+      sup-o&lt; :  { ψ : Ordinal  →  Ordinal } → ∀ {x : Ordinal } → ψ x  o&lt;  sup-o ψ 
+
+</pre>
+sup-o is an example of upper bound of a function and sup-o&lt; assumes it actually satisfies all the value is less than upper bound.
+<p>
+Writing some type in a module argument is the same as postulating a type, but
+postulate can be written the middle of a proof.
+<p>
+postulate can be constructive.
+<p>
+postulate can be inconsistent, which result everything has a proof.
+<p>
+
+<hr/>
+<h2><a name="content014"> A ∨ B</a></h2>
+
+<pre>
+    data _∨_ (A B : Set) : Set where
+      case1 : A → A ∨ B
+      case2 : B → A ∨ B
+
+</pre>
+As Haskell, case1/case2 are  patterns.
+<p>
+
+<pre>
+    ex3 : {A B : Set} → ( A ∨ A ) → A 
+    ex3 = ?
+
+</pre>
+In a case statement, Agda command C-C C-C generates possible cases in the head.
+<p>
+
+<pre>
+    ex3 : {A B : Set} → ( A ∨ A ) → A 
+    ex3 (case1 x) = ?
+    ex3 (case2 x) = ?
+
+</pre>
+Proof schema of ∨ is omit due to the complexity.
+<p>
+
+<hr/>
+<h2><a name="content015"> Negation</a></h2>
+
+<pre>
+       ⊥
+    ------------- ⊥-elim
+       A
+
+</pre>
+Anything can be derived from bottom, in this case a Set A. There is no introduction rule
+in ⊥, which can be implemented as data which has no constructor.
+<p>
+
+<pre>
+    data ⊥ : Set where
+
+</pre>
+⊥-elim can be proved like this.
+<p>
+
+<pre>
+    ⊥-elim : {A : Set } -&gt; ⊥ -&gt; A
+    ⊥-elim ()
+
+</pre>
+() means no match argument nor value.
+<p>
+A negation can be defined using ⊥ like this.
+<p>
+
+<pre>
+    ¬_ : Set → Set
+    ¬ A = A → ⊥
+
+</pre>
+
+<hr/>
+<h2><a name="content016">Equality </a></h2>
+
+<p>
+All the value in Agda are terms. If we have the same normalized form, two terms are equal.
+If we have variables in the terms, we will perform an unification. unifiable terms are equal.
+We don't go further on the unification.
+<p>
+
+<pre>
+     { x : A }                 x ≡ y    f x y
+   --------------- ≡-intro   --------------------- ≡-elim
+      x ≡ x                         f x x
+
+</pre>
+equality _≡_  can be defined as a data.
+<p>
+
+<pre>
+    data _≡_ {A : Set } : A → A → Set where
+       refl :  {x : A} → x ≡ x
+
+</pre>
+The elimination of equality is a substitution in a term.
+<p>
+
+<pre>
+    subst : {A : Set } → { x y : A } → ( f : A → Set ) → x ≡ y → f x → f y
+    subst {A} {x} {y} f refl fx = fx
+    ex5 :   {A : Set} {x y z : A } →  x ≡ y → y ≡ z → x ≡ z
+    ex5 {A} {x} {y} {z} x≡y y≡z = subst ( λ k → x ≡ k ) y≡z x≡y
+
+</pre>
+
+<hr/>
+<h2><a name="content017">Equivalence relation</a></h2>
+
+<p>
+
+<pre>
+    refl' : {A : Set} {x : A } → x ≡ x
+    refl'  = ?
+    sym : {A : Set} {x y : A } → x ≡ y → y ≡ x
+    sym = ?
+    trans : {A : Set} {x y z : A } → x ≡ y → y ≡ z → x ≡ z
+    trans = ?
+    cong : {A B : Set} {x y : A } { f : A → B } →   x ≡ y → f x ≡ f y
+    cong = ?
+
+</pre>
+
+<hr/>
+<h2><a name="content018">Ordering</a></h2>
+
+<p>
+Relation is a predicate on two value which has a same type.
+<p>
+
+<pre>
+   A → A → Set 
+
+</pre>
+Defining order is the definition of this type with predicate or a data.
+<p>
+
+<pre>
+    data _≤_ : Rel ℕ 0ℓ where
+      z≤n : ∀ {n}                 → zero  ≤ n
+      s≤s : ∀ {m n} (m≤n : m ≤ n) → suc m ≤ suc n
+
+</pre>
+
+<hr/>
+<h2><a name="content019">Quantifier</a></h2>
+
+<p>
+Handling quantifier in an intuitionistic logic requires special cares.
+<p>
+In the input of a function, there are no restriction on it, that is, it has
+a universal quantifier. (If we explicitly write ∀, Agda gives us a type inference on it)
+<p>
+There is no ∃ in agda, the one way is using negation like this.
+<p>
+　∃ (x : A ) → p x  = ¬ ( ( x : A ) → ¬ ( p x ) )
+<p>
+On the another way, f : A can be used like this.
+<p>
+
+<pre>
+  p f
+
+</pre>
+If we use a function which can be defined globally which has stronger meaning the
+usage of ∃ x in a logical expression.
+<p>
+
+<hr/>
+<h2><a name="content020">Can we do math in this way?</a></h2>
+Yes, we can. Actually we have Principia Mathematica by Russell and Whitehead (with out computer support).
+<p>
+In some sense, this story is a reprinting of the work, (but Principia Mathematica has a different formulation than ZF).
+<p>
+
+<pre>
+    define mathematical structure as a record
+    program inferences as if we have proofs in variables
+
+</pre>
+
+<hr/>
+<h2><a name="content021">Things which Agda cannot prove</a></h2>
+
+<p>
+The infamous Internal Parametricity is a limitation of Agda, it cannot prove so called Free Theorem, which
+leads uniqueness of a functor in Category Theory.
+<p>
+Functional extensionality cannot be proved.
+<pre>
+  (∀ x → f x ≡ g x) → f ≡ g
+
+</pre>
+Agda has no law of exclude middle.
+<p>
+
+<pre>
+  a ∨ ( ¬ a )
+
+</pre>
+For example, (A → B) → ¬ B → ¬ A can be proved but, ( ¬ B → ¬ A ) → A → B cannot.
+<p>
+It also other problems such as termination, type inference or unification which we may overcome with
+efforts or devices or may not.
+<p>
+If we cannot prove something, we can safely postulate it unless it leads a contradiction.
+<pre>
+ 
+
+</pre>
+
+<hr/>
+<h2><a name="content022">Classical story of ZF Set Theory</a></h2>
+
+<p>
+Assuming ZF, constructing  a model of ZF is a flow of classical Set Theory, which leads
+a relative consistency proof of the Set Theory.
+Ordinal number is used in the flow. 
+<p>
+In Agda, first we defines Ordinal numbers (Ordinals), then introduce Ordinal Definable Set (OD).
+We need some non constructive assumptions in the construction. A model of Set theory is
+constructed based on these assumptions.
+<p>
+<img src="fig/set-theory.svg">
+
+<p>
+
+<hr/>
+<h2><a name="content023">Ordinals</a></h2>
+Ordinals are our intuition of infinite things, which has ∅ and orders on the things.
+It also has a successor osuc.
+<p>
+
+<pre>
+    record Ordinals {n : Level} : Set (suc (suc n)) where
+       field
+         ord : Set n
+         o∅ : ord
+         osuc : ord → ord
+         _o&lt;_ : ord → ord → Set n
+         isOrdinal : IsOrdinals ord o∅ osuc _o&lt;_
+
+</pre>
+It is different from natural numbers in way. The order of Ordinals is not defined in terms
+of successor. It is given from outside, which make it possible to have higher order infinity.
+<p>
+
+<hr/>
+<h2><a name="content024">Axiom of Ordinals</a></h2>
+Properties of infinite things. We request a transfinite induction, which states that if
+some properties are satisfied below all possible ordinals, the properties are true on all
+ordinals.
+<p>
+Successor osuc has no ordinal between osuc and the base ordinal. There are some ordinals
+which is not a successor of any ordinals. It is called limit ordinal.
+<p>
+Any two ordinal can be compared, that is less, equal or more, that is total order.
+<p>
+
+<pre>
+  record IsOrdinals {n : Level} (ord : Set n)  (o∅ : ord ) 
+    (osuc : ord → ord )  
+    (_o&lt;_ : ord → ord → Set n) : Set (suc (suc n)) where
+   field
+     Otrans :  {x y z : ord }  → x o&lt; y → y o&lt; z → x o&lt; z
+     OTri : Trichotomous {n} _≡_  _o&lt;_ 
+     ¬x&lt;0 :   { x  : ord  } → ¬ ( x o&lt; o∅  )
+     &lt;-osuc :  { x : ord  } → x o&lt; osuc x
+     osuc-≡&lt; :  { a x : ord  } → x o&lt; osuc a  →  (x ≡ a ) ∨ (x o&lt; a)  
+     TransFinite : { ψ : ord  → Set (suc n) }
+          → ( (x : ord)  → ( (y : ord  ) → y o&lt; x → ψ y ) → ψ x )
+          →  ∀ (x : ord)  → ψ x
+
+</pre>
+
+<hr/>
+<h2><a name="content025">Concrete Ordinals</a></h2>
+
+<p>
+We can define a list like structure with level, which is a kind of two dimensional infinite array.
+<p>
+
+<pre>
+    data OrdinalD {n : Level} :  (lv : Nat) → Set n where
+       Φ : (lv : Nat) → OrdinalD  lv
+       OSuc : (lv : Nat) → OrdinalD {n} lv → OrdinalD lv
+
+</pre>
+The order of the OrdinalD can be defined in this way.
+<p>
+
+<pre>
+    data _d&lt;_ {n : Level} :   {lx ly : Nat} → OrdinalD {n} lx  →  OrdinalD {n} ly  → Set n where
+       Φ&lt;  : {lx : Nat} → {x : OrdinalD {n} lx}  →  Φ lx d&lt; OSuc lx x
+       s&lt;  : {lx : Nat} → {x y : OrdinalD {n} lx}  →  x d&lt; y  → OSuc  lx x d&lt; OSuc  lx y
+
+</pre>
+This is a simple data structure, it has no abstract assumptions, and it is countable many data
+structure.
+<p>
+
+<pre>
+   Φ 0
+   OSuc 2 ( Osuc 2 ( Osuc 2 (Φ 2)))
+   Osuc 0 (Φ 0) d&lt; Φ 1
+
+</pre>
+
+<hr/>
+<h2><a name="content026">Model of Ordinals</a></h2>
+
+<p>
+It is easy to show OrdinalD and its order satisfies the axioms of Ordinals.
+<p>
+So our Ordinals has a mode. This means axiom of Ordinals are consistent.
+<p>
+
+<hr/>
+<h2><a name="content027">Debugging axioms using Model</a></h2>
+Whether axiom is correct or not can be checked by a validity on a mode.
+<p>
+If not, we may fix the axioms or the model, such as the definitions of the order.
+<p>
+We can also ask whether the inputs exist.
+<p>
+
+<hr/>
+<h2><a name="content028">Countable Ordinals can contains uncountable set?</a></h2>
+Yes, the ordinals contains any level of infinite Set in the axioms.
+<p>
+If we handle real-number in the model, only countable number of real-number is used.
+<p>
+
+<pre>
+    from the outside view point, it is countable
+    from the internal view point, it is uncountable
+
+</pre>
+The definition of countable/uncountable is the same, but the properties are different
+depending on the context.
+<p>
+We don't show the definition of cardinal number here.
+<p>
+
+<hr/>
+<h2><a name="content029">What is Set</a></h2>
+The word Set in Agda is not a Set of ZF Set, but it is a type (why it is named Set?).
+<p>
+From naive point view, a set i a list, but in Agda, elements have all the same type.
+A set in ZF may contain other Sets in ZF, which not easy to implement it as a list.
+<p>
+Finite set may be written in finite series of ∨, but ...
+<p>
+
+<hr/>
+<h2><a name="content030">We don't ask the contents of Set. It can be anything.</a></h2>
+From empty set φ, we can think a set contains a φ, and a pair of φ and the set, and so on,
+and all of them, and again we repeat this.
+<p>
+
+<pre>
+   φ {φ} {φ,{φ}}, {φ,{φ},...}
+
+</pre>
+It is called V.
+<p>
+This operation can be performed within a ZF Set theory. Classical Set Theory assumes
+ZF, so this kind of thing is allowed.
+<p>
+But in our case, we have no ZF theory, so we are going to use Ordinals.
+<p>
+
+<hr/>
+<h2><a name="content031">Ordinal Definable Set</a></h2>
+We can define a sbuset of Ordinals using predicates. What is a subset?
+<p>
+
+<pre>
+   a predicate has an Ordinal argument
+
+</pre>
+is an Ordinal Definable Set (OD). In Agda, OD is defined as follows.
+<p>
+
+<pre>
+    record OD : Set (suc n ) where
+      field
+        def : (x : Ordinal  ) → Set n
+
+</pre>
+Ordinals itself is not a set in a ZF Set theory but a class. In OD, 
+<p>
+
+<pre>
+   record { def = λ x → true }
+
+</pre>
+means Ordinals itself, so ODs are larger than a notion of ZF Set Theory,
+but we don't care about it.
+<p>
+
+<hr/>
+<h2><a name="content032">∋ in OD</a></h2>
+OD is a predicate on Ordinals and it does not contains OD directly. If we have a mapping
+<p>
+
+<pre>
+      od→ord : OD  → Ordinal 
+
+</pre>
+we may check an OD is an element of the OD using def.
+<p>
+A ∋ x can be define as follows.
+<p>
+
+<pre>
+    _∋_ : ( A x : OD  ) → Set n
+    _∋_  A x  = def A ( od→ord x )
+
+</pre>
+In ψ : Ordinal → Set,  if A is a  record { def = λ x → ψ x } , then
+<p>
+
+<pre>
+    A x = def A ( od→ord x ) = ψ (od→ord x)
+
+</pre>
+
+<hr/>
+<h2><a name="content033">1 to 1 mapping between an OD and an Ordinal</a></h2>
+
+<p>
+
+<pre>
+  od→ord : OD  → Ordinal 
+  ord→od : Ordinal  → OD  
+  oiso   :  {x : OD }      → ord→od ( od→ord x ) ≡ x
+  diso   :  {x : Ordinal } → od→ord ( ord→od x ) ≡ x
+
+</pre>
+They say the existing of the mappings can be proved in Classical Set Theory, but we
+simply assumes these non constructively.
+<p>
+We use postulate, it may contains additional restrictions which are not clear now. It look like the mapping should be a subset of Ordinals, but we don't explicitly
+state it.
+<p>
+<img src="fig/ord-od-mapping.svg">
+
+<p>
+
+<hr/>
+<h2><a name="content034">Order preserving in the mapping of OD and Ordinal</a></h2>
+Ordinals have the order and OD has a natural order based on inclusion ( def / ∋ ).
+<p>
+
+<pre>
+     def y ( od→ord x )
+
+</pre>
+An elements of OD should be defined before the OD, that is, an ordinal corresponding an elements
+have to be smaller than the corresponding ordinal of the containing OD.
+<p>
+
+<pre>
+  c&lt;→o&lt;  :  {x y : OD  }   → def y ( od→ord x ) → od→ord x o&lt; od→ord y
+
+</pre>
+This is also said to be provable in classical Set Theory, but we simply assumes it.
+<p>
+OD has an order based on the corresponding ordinal, but it may not have corresponding def / ∋relation. This means the reverse order preservation, 
+<p>
+
+<pre>
+  o&lt;→c&lt;  : {n : Level} {x y : Ordinal  } → x o&lt; y → def (ord→od y) x 
+
+</pre>
+is not valid. If we assumes it, ∀ x ∋ ∅ becomes true, which manes all OD becomes Ordinals in
+the model.
+<p>
+<img src="fig/ODandOrdinals.svg">
+
+<p>
+
+<hr/>
+<h2><a name="content035">ISO</a></h2>
+It also requires isomorphisms, 
+<p>
+
+<pre>
+  oiso   :  {x : OD }      → ord→od ( od→ord x ) ≡ x
+  diso   :  {x : Ordinal } → od→ord ( ord→od x ) ≡ x
+
+</pre>
+
+<hr/>
+<h2><a name="content036">Various Sets</a></h2>
+
+<p>
+In classical Set Theory, there is a hierarchy call L, which can be defined by a predicate.
+<p>
+
+<pre>
+    Ordinal / things satisfies axiom of Ordinal / extension of natural number 
+    V / hierarchical construction of Set from φ   
+    L / hierarchical predicate definable construction of Set from φ   
+    OD / equational formula on Ordinals 
+    Agda Set / Type / it also has a level
+
+</pre>
+
+<hr/>
+<h2><a name="content037">Fixes on ZF to intuitionistic logic</a></h2>
+
+<p>
+We use ODs as Sets in ZF, and defines record ZF, that is, we have to define
+ZF axioms in Agda.
+<p>
+It may not valid in our model. We have to debug it.
+<p>
+Fixes are depends on axioms.
+<p>
+<img src="fig/axiom-type.svg">
+
+<p>
+<a href="fig/zf-record.html">
+ZFのrecord </a>
+<p>
+
+<hr/>
+<h2><a name="content038">Pure logical axioms</a></h2>
+
+<pre>
+   empty, pair, select, ε-inductioninfinity
+
+</pre>
+These are logical relations among OD.
+<p>
+
+<pre>
+     empty :  ∀( x : ZFSet  ) → ¬ ( ∅ ∋ x )
+     pair→ : ( x y t : ZFSet  ) →  (x , y)  ∋ t  → ( t ≈ x ) ∨ ( t ≈ y ) 
+     pair← : ( x y t : ZFSet  ) →  ( t ≈ x ) ∨ ( t ≈ y )  →  (x , y)  ∋ t 
+     selection : { ψ : ZFSet → Set m } → ∀ { X y : ZFSet  } →  ( ( y ∈ X ) ∧ ψ y ) ⇔ (y ∈  Select X ψ ) 
+     infinity∅ :  ∅ ∈ infinite
+     infinity :  ∀( x : ZFSet  ) → x ∈ infinite →  ( x ∪ ( x , x ) ) ∈ infinite 
+     ε-induction : { ψ : OD  → Set (suc n)}
+       → ( {x : OD } → ({ y : OD } →  x ∋ y → ψ y ) → ψ x )
+       → (x : OD ) → ψ x
+
+</pre>
+finitely can be define by Agda data.
+<p>
+
+<pre>
+    data infinite-d  : ( x : Ordinal  ) → Set n where
+        iφ :  infinite-d o∅
+        isuc : {x : Ordinal  } →   infinite-d  x  →
+                infinite-d  (od→ord ( Union (ord→od x , (ord→od x , ord→od x ) ) ))
+
+</pre>
+Union (x , ( x , x )) should be an direct successor of x, but we cannot prove it in our model.
+<p>
+
+<hr/>
+<h2><a name="content039">Axiom of Pair</a></h2>
+In the Tanaka's book, axiom of pair is as follows.
+<p>
+
+<pre>
+     ∀ x ∀ y ∃ z ∀ t ( z ∋ t ↔ t ≈ x ∨ t ≈ y)
+
+</pre>
+We have fix ∃ z, a function (x , y) is defined, which is  _,_ .
+<p>
+
+<pre>
+     _,_ : ( A B : ZFSet  ) → ZFSet
+
+</pre>
+using this, we can define two directions in separates axioms, like this.
+<p>
+
+<pre>
+     pair→ : ( x y t : ZFSet  ) →  (x , y)  ∋ t  → ( t ≈ x ) ∨ ( t ≈ y ) 
+     pair← : ( x y t : ZFSet  ) →  ( t ≈ x ) ∨ ( t ≈ y )  →  (x , y)  ∋ t 
+
+</pre>
+This is already written in Agda, so we use these as axioms. All inputs have ∀.
+<p>
+
+<hr/>
+<h2><a name="content040">pair in OD</a></h2>
+OD is an equation on Ordinals, we can simply write axiom of pair in the OD.
+<p>
+
+<pre>
+    _,_ : OD  → OD  → OD 
+    x , y = record { def = λ t → (t ≡ od→ord x ) ∨ ( t ≡ od→ord y ) } 
+
+</pre>
+≡ is an equality of λ terms, but please not that this is equality on Ordinals.
+<p>
+
+<hr/>
+<h2><a name="content041">Validity of Axiom of Pair</a></h2>
+Assuming ZFSet is OD, we are going to prove pair→ .
+<p>
+
+<pre>
+    pair→ : ( x y t : OD  ) →  (x , y)  ∋ t  → ( t == x ) ∨ ( t == y ) 
+    pair→ x y t p = ?
+
+</pre>
+In this program, type of p is ( x , y ) ∋ t , that is def ( x , y ) that is, (t ≡ od→ord x ) ∨ ( t ≡ od→ord y ) .
+<p>
+Since _∨_ is a data, it can be developed as (C-c C-c : agda2-make-case ).
+<p>
+
+<pre>
+    pair→ x y t (case1 t≡x ) = ?
+    pair→ x y t (case2 t≡y ) = ?
+
+</pre>
+The type of the ? is ( t == x ) ∨ ( t == y ), again it is  data _∨_ .
+<p>
+
+<pre>
+    pair→ x y t (case1 t≡x ) = case1 ?
+    pair→ x y t (case2 t≡y ) = case2 ?
+
+</pre>
+The ? in case1 is t == x, so we have to create this from t≡x, which is a name of a variable
+which type is 
+<p>
+
+<pre>
+    t≡x : od→ord t ≡ od→ord x
+
+</pre>
+which is shown by an Agda command (C-C C-E : agda2-show-context ).
+<p>
+But we haven't defined == yet.
+<p>
+
+<hr/>
+<h2><a name="content042">Equality of OD and Axiom of Extensionality </a></h2>
+OD is defined by a predicates, if we compares normal form of the predicates, even if
+it contains the same elements, it may be different, which is no good as an equality of
+Sets.
+<p>
+Axiom of Extensionality requires sets having the same elements are handled in the same way
+each other.
+<p>
+
+<pre>
+    ∀ z ( z ∈ x ⇔ z ∈ y ) ⇒ ∀ w ( x ∈ w ⇔ y ∈ w )
+
+</pre>
+We can write this axiom in Agda as follows.
+<p>
+
+<pre>
+     extensionality :  { A B w : ZFSet  } → ( (z : ZFSet) → ( A ∋ z ) ⇔ (B ∋ z)  ) → ( A ∈ w ⇔ B ∈ w )
+
+</pre>
+So we use ( A ∋ z ) ⇔ (B ∋ z) as an equality (_==_) of our model. We have to show
+A ∈ w ⇔ B ∈ w from A == B.
+<p>
+x ==  y can be defined in this way.
+<p>
+
+<pre>
+    record _==_  ( a b :  OD  ) : Set n where
+      field
+         eq→ : ∀ { x : Ordinal  } → def a x → def b x
+         eq← : ∀ { x : Ordinal  } → def b x → def a x
+
+</pre>
+Actually, (z : OD) → (A ∋ z) ⇔ (B ∋ z) implies A == B.
+<p>
+
+<pre>
+    extensionality0 : {A B : OD } → ((z : OD) → (A ∋ z) ⇔ (B ∋ z)) → A == B
+    eq→ (extensionality0 {A} {B} eq ) {x} d = ?
+    eq← (extensionality0 {A} {B} eq ) {x} d = ?
+
+</pre>
+? are def B x and def A x and these are generated from  eq : (z : OD) → (A ∋ z) ⇔ (B ∋ z) .
+<p>
+Actual proof is rather complicated.
+<p>
+
+<pre>
+   eq→ (extensionality0 {A} {B} eq ) {x} d = def-iso  {A} {B} (sym diso) (proj1 (eq (ord→od x))) d
+   eq← (extensionality0 {A} {B} eq ) {x} d = def-iso  {B} {A} (sym diso) (proj2 (eq (ord→od x))) d
+
+</pre>
+where
+<p>
+
+<pre>
+   def-iso : {A B : OD } {x y : Ordinal } → x ≡ y  → (def A y → def B y)  → def A x → def B x
+   def-iso refl t = t
+
+</pre>
+
+<hr/>
+<h2><a name="content043">Validity of Axiom of Extensionality</a></h2>
+
+<p>
+If we can derive (w ∋ A) ⇔ (w ∋ B) from A == B, the axiom becomes valid, but it seems impossible, so we assumes
+<p>
+
+<pre>
+  ==→o≡ : { x y : OD  } → (x == y) → x ≡ y
+
+</pre>
+Using this, we have
+<p>
+
+<pre>
+    extensionality : {A B w : OD  } → ((z : OD ) → (A ∋ z) ⇔ (B ∋ z)) → (w ∋ A) ⇔ (w ∋ B)
+    proj1 (extensionality {A} {B} {w} eq ) d = subst (λ k → w ∋ k) ( ==→o≡ (extensionality0 {A} {B} eq) ) d
+    proj2 (extensionality {A} {B} {w} eq ) d = subst (λ k → w ∋ k) (sym ( ==→o≡ (extensionality0 {A} {B} eq) )) d
+
+</pre>
+This assumption means we may have an equivalence set on any predicates.
+<p>
+
+<hr/>
+<h2><a name="content044">Non constructive assumptions so far</a></h2>
+We have correspondence between OD and Ordinals and one directional order preserving.
+<p>
+We also have equality assumption.
+<p>
+
+<pre>
+  od→ord : OD  → Ordinal
+  ord→od : Ordinal  → OD
+  oiso   :  {x : OD }      → ord→od ( od→ord x ) ≡ x
+  diso   :  {x : Ordinal } → od→ord ( ord→od x ) ≡ x
+  c&lt;→o&lt;  :  {x y : OD  }   → def y ( od→ord x ) → od→ord x o&lt; od→ord y
+  ==→o≡ : { x y : OD  } → (x == y) → x ≡ y
+
+</pre>
+
+<hr/>
+<h2><a name="content045">Axiom which have negation form</a></h2>
+
+<p>
+
+<pre>
+   Union, Selection
+
+</pre>
+These axioms contains ∃ x as a logical relation, which can be described in ¬ ( ∀ x ( ¬ p )).
+<p>
+Axiom of replacement uses upper bound of function on Ordinals, which makes it non-constructive.
+<p>
+Power Set axiom requires double negation, 
+<p>
+
+<pre>
+     power→ : ∀( A t : ZFSet  ) → Power A ∋ t → ∀ {x}  →  t ∋ x → ¬ ¬ ( A ∋ x ) 
+     power← : ∀( A t : ZFSet  ) → t ⊆_ A → Power A ∋ t 
+
+</pre>
+If we have an assumption of law of exclude middle, we can recover the original A ∋ x form.
+<p>
+
+<hr/>
+<h2><a name="content046">Union </a></h2>
+The original form of the Axiom of Union is
+<p>
+
+<pre>
+     ∀ x ∃ y ∀ z (z ∈ y ⇔ ∃ u ∈ x  ∧ (z ∈ u))
+
+</pre>
+Union requires the existence of b in  a ⊇ ∃ b ∋ x . We will use negation form of ∃.
+<p>
+
+<pre>
+     union→ : ( X z u : ZFSet ) → ( X ∋ u ) ∧ (u ∋ z ) → Union X ∋ z
+     union← : ( X z : ZFSet ) → (X∋z : Union X ∋ z ) →  ¬  ( (u : ZFSet ) → ¬ ((X ∋  u) ∧ (u ∋ z )))
+
+</pre>
+The definition of Union in OD is like this.
+<p>
+
+<pre>
+    Union : OD  → OD   
+    Union U = record { def = λ x → ¬ (∀ (u : Ordinal ) → ¬ ((def U u) ∧ (def (ord→od u) x)))  }
+
+</pre>
+Proof of validity is straight forward.
+<p>
+
+<pre>
+         union→ :  (X z u : OD) → (X ∋ u) ∧ (u ∋ z) → Union X ∋ z
+         union→ X z u xx not = ⊥-elim ( not (od→ord u) ( record { proj1 = proj1 xx
+              ; proj2 = subst ( λ k → def k (od→ord z)) (sym oiso) (proj2 xx) } ))
+         union← :  (X z : OD) (X∋z : Union X ∋ z) →  ¬  ( (u : OD ) → ¬ ((X ∋  u) ∧ (u ∋ z )))
+         union← X z UX∋z =  FExists _ lemma UX∋z where
+              lemma : {y : Ordinal} → def X y ∧ def (ord→od y) (od→ord z) → ¬ ((u : OD) → ¬ (X ∋ u) ∧ (u ∋ z))
+              lemma {y} xx not = not (ord→od y) record { proj1 = subst ( λ k → def X k ) (sym diso) (proj1 xx ) ; proj2 = proj2 xx }
+
+</pre>
+where
+<p>
+
+<pre>
+        FExists : {m l : Level} → ( ψ : Ordinal  → Set m )
+          → {p : Set l} ( P : { y : Ordinal  } →  ψ y → ¬ p )
+          → (exists : ¬ (∀ y → ¬ ( ψ y ) ))
+          → ¬ p
+        FExists  {m} {l} ψ {p} P = contra-position ( λ p y ψy → P {y} ψy p )
+
+</pre>
+which checks existence using contra-position.
+<p>
+
+<hr/>
+<h2><a name="content047">Axiom of replacement</a></h2>
+We can replace the elements of a set by a function and it becomes a set. From the book, 
+<p>
+
+<pre>
+     ∀ x ∀ y ∀ z ( ( ψ ( x , y ) ∧ ψ ( x , z ) ) → y = z ) → ∀ X ∃ A ∀ y ( y ∈ A ↔ ∃ x ∈ X ψ ( x , y ) )
+
+</pre>
+The existential quantifier can be related by a function, 
+<p>
+
+<pre>
+     Replace : OD  → (OD  → OD  ) → OD
+
+</pre>
+The axioms becomes as follows.
+<p>
+
+<pre>
+     replacement← : {ψ : ZFSet → ZFSet} → ∀ ( X x : ZFSet  ) → x ∈ X → ψ x ∈  Replace X ψ
+     replacement→ : {ψ : ZFSet → ZFSet} → ∀ ( X x : ZFSet  ) →  ( lt : x ∈  Replace X ψ ) → ¬ ( ∀ (y : ZFSet)  →  ¬ ( x ≈ ψ y ) )
+
+</pre>
+In the axiom, the existence of the original elements is necessary. In order to do that we use OD which has
+negation form of existential quantifier in the definition.
+<p>
+
+<pre>
+    in-codomain : (X : OD  ) → ( ψ : OD  → OD  ) → OD 
+    in-codomain  X ψ = record { def = λ x → ¬ ( (y : Ordinal ) → ¬ ( def X y ∧  ( x ≡ od→ord (ψ (ord→od y )))))  }
+
+</pre>
+Besides this upper bounds is required.
+<p>
+
+<pre>
+    Replace : OD  → (OD  → OD  ) → OD 
+    Replace X ψ = record { def = λ x → (x o&lt; sup-o  ( λ x → od→ord (ψ (ord→od x )))) ∧ def (in-codomain X ψ) x }
+
+</pre>
+We omit the proof of the validity, but it is rather straight forward.
+<p>
+
+<hr/>
+<h2><a name="content048">Validity of Power Set Axiom</a></h2>
+The original Power Set Axiom is this.
+<p>
+
+<pre>
+     ∀ X ∃ A ∀ t ( t ∈ A ↔ t ⊆ X ) )
+
+</pre>
+The existential quantifier is replaced by a function
+<p>
+
+<pre>
+    Power : ( A : OD  ) → OD
+
+</pre>
+t ⊆ X is a  record like this.
+<p>
+
+<pre>
+    record _⊆_ ( A B : OD   ) : Set (suc n) where
+      field
+         incl : { x : OD } → A ∋ x →  B ∋ x
+
+</pre>
+Axiom becomes likes this.
+<p>
+
+<pre>
+    power→ :  ( A t : OD) → Power A ∋ t → {x : OD} → t ∋ x → ¬ ¬ (A ∋ x)
+    power← :  (A t : OD) → ({x : OD} → (t ∋ x → A ∋ x)) → Power A ∋ t
+
+</pre>
+The validity of the axioms are slight complicated, we have to define set of all subset. We define
+subset in a different form.
+<p>
+
+<pre>
+    ZFSubset : (A x : OD  ) → OD 
+    ZFSubset A x =  record { def = λ y → def A y ∧  def x y }  
+
+</pre>
+We can prove, 
+<p>
+
+<pre>
+    ( {y : OD } → x ∋ y → ZFSubset A x ∋  y ) ⇔  ( x ⊆ A  ) 
+
+</pre>
+We only have upper bound as an ordinal, but we have an obvious OD based on the order of Ordinals,
+which is an Ordinals with our Model.
+<p>
+
+<pre>
+    Ord : ( a : Ordinal  ) → OD 
+    Ord  a = record { def = λ y → y o&lt; a }  
+    Def :  (A :  OD ) → OD 
+    Def  A = Ord ( sup-o  ( λ x → od→ord ( ZFSubset A (ord→od x )) ) )   
+
+</pre>
+This is slight larger than Power A, so we replace all elements x by A ∩ x (some of them may empty).
+<p>
+
+<pre>
+    Power : OD  → OD 
+    Power A = Replace (Def (Ord (od→ord A))) ( λ x → A ∩ x )
+
+</pre>
+Creating Power Set of Ordinals is rather easy, then we use replacement axiom on A ∩ x since we have this.
+<p>
+
+<pre>
+     ∩-≡ :  { a b : OD  } → ({x : OD  } → (a ∋ x → b ∋ x)) → a == ( b ∩ a )
+
+</pre>
+In case of Ord a  intro of Power Set axiom becomes valid.
+<p>
+
+<pre>
+    ord-power← : (a : Ordinal ) (t : OD) → ({x : OD} → (t ∋ x → (Ord a) ∋ x)) → Def (Ord a) ∋ t
+
+</pre>
+Using this, we can prove,
+<p>
+
+<pre>
+         power→ :  ( A t : OD) → Power A ∋ t → {x : OD} → t ∋ x → ¬ ¬ (A ∋ x)
+         power← :  (A t : OD) → ({x : OD} → (t ∋ x → A ∋ x)) → Power A ∋ t
+
+</pre>
+
+<hr/>
+<h2><a name="content049">Axiom of regularity, Axiom of choice, ε-induction</a></h2>
+
+<p>
+Axiom of regularity requires non self intersectable elements (which is called minimum), if we
+replace it by a function, it becomes a choice function. It makes axiom of choice valid.
+<p>
+This means we cannot prove axiom regularity form our model, and if we postulate this, axiom of
+choice also becomes valid.
+<p>
+
+<pre>
+  minimal : (x : OD  ) → ¬ (x == od∅ )→ OD
+  x∋minimal : (x : OD  ) → ( ne : ¬ (x == od∅ ) ) → def x ( od→ord ( minimal x ne ) )
+  minimal-1 : (x : OD  ) → ( ne : ¬ (x == od∅ ) ) → (y : OD ) → ¬ ( def (minimal x ne) (od→ord y)) ∧ (def x (od→ord  y) )
+
+</pre>
+We can avoid this using ε-induction (a predicate is valid on all set if the predicate is true on some element of set).
+Assuming law of exclude middle, they say axiom of regularity will be proved, but we haven't check it yet.
+<p>
+
+<pre>
+    ε-induction : { ψ : OD  → Set (suc n)}
+       → ( {x : OD } → ({ y : OD } →  x ∋ y → ψ y ) → ψ x )
+       → (x : OD ) → ψ x
+
+</pre>
+In our model, we assumes the mapping between Ordinals and OD, this is actually the TransFinite induction in Ordinals.
+<p>
+The axiom of choice in the book is complicated using any pair in a set, so we use use a form in the Wikipedia.
+<p>
+
+<pre>
+     ∀ X [ ∅ ∉ X → (∃ f : X → ⋃ X ) → ∀ A ∈ X ( f ( A ) ∈ A ) ]
+
+</pre>
+We can formulate like this.
+<p>
+
+<pre>
+     choice-func : (X : ZFSet ) → {x : ZFSet } → ¬ ( x ≈ ∅ ) → ( X ∋ x ) → ZFSet
+     choice : (X : ZFSet  ) → {A : ZFSet } → ( X∋A : X ∋ A ) → (not : ¬ ( A ≈ ∅ )) → A ∋ choice-func X not X∋A
+
+</pre>
+It does not requires ∅ ∉ X .
+<p>
+
+<hr/>
+<h2><a name="content050">Axiom of choice and Law of Excluded Middle</a></h2>
+In our model, since OD has a mapping to Ordinals, it has evident order, which means well ordering theorem is valid,
+but it don't have correct form of the axiom yet. They say well ordering axiom is equivalent to the axiom of choice,
+but it requires law of the exclude middle.
+<p>
+Actually, it is well known to prove law of the exclude middle from axiom of choice in intuitionistic logic, and we can
+perform the proof in our mode. Using the definition like this, predicates and ODs are related and we can ask the
+set is empty or not if we have an axiom of choice, so we have the law of the exclude middle  p ∨ ( ¬ p ) .
+<p>
+
+<pre>
+    ppp :  { p : Set n } { a : OD  } → record { def = λ x → p } ∋ a → p
+    ppp  {p} {a} d = d
+
+</pre>
+We can prove axiom of choice from law excluded middle since we have TransFinite induction. So Axiom of choice
+and Law of Excluded Middle is equivalent in our mode.
+<p>
+
+<hr/>
+<h2><a name="content051">Relation-ship among ZF axiom</a></h2>
+<img src="fig/axiom-dependency.svg">
+
+<p>
+
+<hr/>
+<h2><a name="content052">Non constructive assumption in our model</a></h2>
+mapping between OD and Ordinals
+<p>
+
+<pre>
+  od→ord : OD  → Ordinal
+  ord→od : Ordinal  → OD
+  oiso   :  {x : OD }      → ord→od ( od→ord x ) ≡ x
+  diso   :  {x : Ordinal } → od→ord ( ord→od x ) ≡ x
+  c&lt;→o&lt;  :  {x y : OD  }   → def y ( od→ord x ) → od→ord x o&lt; od→ord y
+
+</pre>
+Equivalence on OD
+<p>
+
+<pre>
+  ==→o≡ : { x y : OD  } → (x == y) → x ≡ y
+
+</pre>
+Upper bound
+<p>
+
+<pre>
+  sup-o  :  ( Ordinal  → Ordinal ) →  Ordinal
+  sup-o&lt; :  { ψ : Ordinal  →  Ordinal } → ∀ {x : Ordinal } → ψ x  o&lt;  sup-o ψ
+
+</pre>
+Axiom of choice and strong axiom of regularity.
+<p>
+
+<pre>
+  minimal : (x : OD  ) → ¬ (x == od∅ )→ OD
+  x∋minimal : (x : OD  ) → ( ne : ¬ (x == od∅ ) ) → def x ( od→ord ( minimal x ne ) )
+  minimal-1 : (x : OD  ) → ( ne : ¬ (x == od∅ ) ) → (y : OD ) → ¬ ( def (minimal x ne) (od→ord y)) ∧ (def x (od→ord  y) )
+
+</pre>
+
+<hr/>
+<h2><a name="content053">So it this correct?</a></h2>
+
+<p>
+Our axiom are syntactically the same in the text book, but negations are slightly different.
+<p>
+If we assumes excluded middle, these are exactly same.
+<p>
+Even if we assumes excluded middle, intuitionistic logic itself remains consistent, but we cannot prove it.
+<p>
+Except the upper bound, axioms are simple logical relation.
+<p>
+Proof of existence of mapping between OD and Ordinals are not obvious. We don't know we prove it or not.
+<p>
+Existence of the Upper bounds is a pure assumption, if we have not limit on Ordinals, it may contradicts,
+but we don't have explicit upper limit on Ordinals.
+<p>
+Several inference on our model or our axioms are basically parallel to the set theory text book, so it looks like correct.
+<p>
+
+<hr/>
+<h2><a name="content054">How to use Agda Set Theory</a></h2>
+Assuming record ZF, classical set theory can be developed. If necessary, axiom of choice can be
+postulated or assuming law of excluded middle.
+<p>
+Instead, simply assumes non constructive assumption, various theory can be developed. We haven't check
+these assumptions are proved in record ZF, so we are not sure, these development is a result of ZF Set theory.
+<p>
+ZF record itself is not necessary, for example, topology theory without ZF can be possible.
+<p>
+
+<hr/>
+<h2><a name="content055">Topos and Set Theory</a></h2>
+Topos is a mathematical structure in Category Theory, which is a Cartesian closed category which has a
+sub-object classifier. 
+<p>
+Topos itself is model of intuitionistic logic. 
+<p>
+Transitive Sets are objects of Cartesian closed category.
+It is possible to introduce Power Set Functor on it
+<p>
+We can use replacement A ∩ x for each element in Transitive Set,
+in the similar way of our power set axiom. I
+<p>
+A model of ZF Set theory can be constructed on top of the Topos which is shown in Oisus. 
+<p>
+Our Agda model is a proof theoretic version of it.
+<p>
+
+<hr/>
+<h2><a name="content056">Cardinal number and Continuum hypothesis</a></h2>
+Axiom of choice is required to define cardinal number
+<p>
+definition of cardinal number is not yet done
+<p>
+definition of filter is not yet done
+<p>
+we may have a model without axiom of choice or without continuum hypothesis
+<p>
+Possible representation of continuum hypothesis is this.
+<p>
+
+<pre>
+     continuum-hyphotheis : (a : Ordinal) → Power (Ord a) ⊆ Ord (osuc a)
+
+</pre>
+
+<hr/>
+<h2><a name="content057">Filter</a></h2>
+
+<p>
+filter is a dual of ideal on boolean algebra or lattice. Existence on natural number
+is depends on axiom of choice.
+<p>
+
+<pre>
+    record Filter  ( L : OD  ) : Set (suc n) where
+       field
+           filter : OD
+           proper : ¬ ( filter ∋ od∅ )
+           inL :  filter ⊆ L 
+           filter1 : { p q : OD } →  q ⊆ L  → filter ∋ p →  p ⊆ q  → filter ∋ q
+           filter2 : { p q : OD } → filter ∋ p →  filter ∋ q  → filter ∋ (p ∩ q)
+
+</pre>
+We may construct a model of non standard analysis or set theory.
+<p>
+This may be simpler than classical forcing theory ( not yet done).
+<p>
+
+<hr/>
+<h2><a name="content058">Programming Mathematics</a></h2>
+Mathematics is a functional programming in Agda where proof is a value of a variable. The mathematical
+structure are
+<p>
+
+<pre>
+   record and data
+
+</pre>
+Proof is check by type consistency not by the computation, but it may include some normalization.
+<p>
+Type inference and termination is not so clear in multi recursions.
+<p>
+Defining Agda record is a good way to understand mathematical theory, for examples,
+<p>
+
+<pre>
+    Category theory ( Yoneda lemma, Floyd Adjunction functor theorem, Applicative functor )
+    Automaton ( Subset construction、Language containment)
+
+</pre>
+are proved in Agda.
+<p>
+
+<hr/>
+<h2><a name="content059">link</a></h2>
+Summer school of foundation of mathematics (in Japanese)<br> <a href="https://www.sci.shizuoka.ac.jp/~math/yorioka/ss2019/">https://www.sci.shizuoka.ac.jp/~math/yorioka/ss2019/</a>
+<p>
+Foundation of axiomatic set theory (in Japanese)<br> <a href="https://www.sci.shizuoka.ac.jp/~math/yorioka/ss2019/sakai0.pdf">https://www.sci.shizuoka.ac.jp/~math/yorioka/ss2019/sakai0.pdf
+</a>
+<p>
+Agda
+<br> <a href="https://agda.readthedocs.io/en/v2.6.0.1/">https://agda.readthedocs.io/en/v2.6.0.1/</a>
+<p>
+ZF-in-Agda source
+<br> <a href="https://github.com/shinji-kono/zf-in-agda.git">https://github.com/shinji-kono/zf-in-agda.git
+</a>
+<p>
+Category theory in Agda source
+<br> <a href="https://github.com/shinji-kono/category-exercise-in-agda">https://github.com/shinji-kono/category-exercise-in-agda
+</a>
+<p>
+</div>
+<ol class="side" id="menu">
+Constructing ZF Set Theory in Agda 
+<li><a href="#content000">  Programming Mathematics</a>
+<li><a href="#content001">  Target</a>
+<li><a href="#content002">  Why Set Theory</a>
+<li><a href="#content003">  Agda and Intuitionistic Logic </a>
+<li><a href="#content004">  Introduction of Agda </a>
+<li><a href="#content005">  data ( Sum type )</a>
+<li><a href="#content006">   A → B means "A implies B"</a>
+<li><a href="#content007">  introduction と elimination</a>
+<li><a href="#content008">   To prove A → B </a>
+<li><a href="#content009">   A ∧ B</a>
+<li><a href="#content010">   record</a>
+<li><a href="#content011">   Mathematical structure</a>
+<li><a href="#content012">   A Model and a theory</a>
+<li><a href="#content013">   postulate と module</a>
+<li><a href="#content014">   A ∨ B</a>
+<li><a href="#content015">   Negation</a>
+<li><a href="#content016">  Equality </a>
+<li><a href="#content017">  Equivalence relation</a>
+<li><a href="#content018">  Ordering</a>
+<li><a href="#content019">  Quantifier</a>
+<li><a href="#content020">  Can we do math in this way?</a>
+<li><a href="#content021">  Things which Agda cannot prove</a>
+<li><a href="#content022">  Classical story of ZF Set Theory</a>
+<li><a href="#content023">  Ordinals</a>
+<li><a href="#content024">  Axiom of Ordinals</a>
+<li><a href="#content025">  Concrete Ordinals</a>
+<li><a href="#content026">  Model of Ordinals</a>
+<li><a href="#content027">  Debugging axioms using Model</a>
+<li><a href="#content028">  Countable Ordinals can contains uncountable set?</a>
+<li><a href="#content029">  What is Set</a>
+<li><a href="#content030">  We don't ask the contents of Set. It can be anything.</a>
+<li><a href="#content031">  Ordinal Definable Set</a>
+<li><a href="#content032">  ∋ in OD</a>
+<li><a href="#content033">  1 to 1 mapping between an OD and an Ordinal</a>
+<li><a href="#content034">  Order preserving in the mapping of OD and Ordinal</a>
+<li><a href="#content035">  ISO</a>
+<li><a href="#content036">  Various Sets</a>
+<li><a href="#content037">  Fixes on ZF to intuitionistic logic</a>
+<li><a href="#content038">  Pure logical axioms</a>
+<li><a href="#content039">  Axiom of Pair</a>
+<li><a href="#content040">  pair in OD</a>
+<li><a href="#content041">  Validity of Axiom of Pair</a>
+<li><a href="#content042">  Equality of OD and Axiom of Extensionality </a>
+<li><a href="#content043">  Validity of Axiom of Extensionality</a>
+<li><a href="#content044">  Non constructive assumptions so far</a>
+<li><a href="#content045">  Axiom which have negation form</a>
+<li><a href="#content046">  Union </a>
+<li><a href="#content047">  Axiom of replacement</a>
+<li><a href="#content048">  Validity of Power Set Axiom</a>
+<li><a href="#content049">  Axiom of regularity, Axiom of choice, ε-induction</a>
+<li><a href="#content050">  Axiom of choice and Law of Excluded Middle</a>
+<li><a href="#content051">  Relation-ship among ZF axiom</a>
+<li><a href="#content052">  Non constructive assumption in our model</a>
+<li><a href="#content053">  So it this correct?</a>
+<li><a href="#content054">  How to use Agda Set Theory</a>
+<li><a href="#content055">  Topos and Set Theory</a>
+<li><a href="#content056">  Cardinal number and Continuum hypothesis</a>
+<li><a href="#content057">  Filter</a>
+<li><a href="#content058">  Programming Mathematics</a>
+<li><a href="#content059">  link</a>
+</ol>
+
+<hr/>  Shinji KONO /  Sat Jan 11 20:04:01 2020
+</body></html>

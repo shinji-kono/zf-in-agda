@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xl="http://www.w3.org/1999/xlink" xmlns:dc="http://purl.org/dc/elements/1.1/" viewBox="26 93 572 303" width="572" height="303">
+  <defs>
+    <font-face font-family="Hiragino Sans" font-size="18" panose-1="2 11 3 0 0 0 0 0 0 0" units-per-em="1000" underline-position="-75" underline-thickness="50" slope="0" x-height="545" cap-height="766" ascent="880.0018" descent="-120.00024" font-weight="300">
+      <font-face-src>
+        <font-face-name name="HiraginoSans-W3"/>
+      </font-face-src>
+    </font-face>
+    <font-face font-family="Helvetica Neue" font-size="18" panose-1="2 0 5 3 0 0 0 2 0 4" units-per-em="1000" underline-position="-100" underline-thickness="50" slope="0" x-height="517" cap-height="714" ascent="951.9958" descent="-212.99744" font-weight="400">
+      <font-face-src>
+        <font-face-name name="HelveticaNeue"/>
+      </font-face-src>
+    </font-face>
+  </defs>
+  <metadata> Produced by OmniGraffle 7.12.1 
+    <dc:date>2019-11-27 13:34:32 +0000</dc:date>
+  </metadata>
+  <g id="Canvas_1" stroke-dasharray="none" stroke="none" fill="none" stroke-opacity="1" fill-opacity="1">
+    <title>Canvas 1</title>
+    <rect fill="white" x="26" y="93" width="572" height="303"/>
+    <g id="Canvas_1: Layer 1">
+      <title>Layer 1</title>
+      <g id="Graphic_2">
+        <text transform="translate(133 98.00003)" fill="black">
+          <tspan font-family="Hiragino Sans" font-size="18" font-weight="300" fill="black" x="0" y="16">様々な集合</tspan>
+        </text>
+      </g>
+      <g id="Graphic_4">
+        <text transform="translate(108 137.00001)" fill="black">
+          <tspan font-family="Hiragino Sans" font-size="18" font-weight="300" fill="black" x="0" y="16">順序数の公理を満たすもの。自然数の延長</tspan>
+        </text>
+      </g>
+      <g id="Graphic_5">
+        <text transform="translate(108 176)" fill="black">
+          <tspan font-family="Hiragino Sans" font-size="18" font-weight="300" fill="black" x="0" y="16">一つ一つ増やす。無限回繰り返して、それを全部。</tspan>
+          <tspan font-family="Hiragino Sans" font-size="18" font-weight="300" fill="black" x="0" y="43.00002">また一つ一つ増やすを繰り返して得られるもの</tspan>
+        </text>
+      </g>
+      <g id="Graphic_6">
+        <text transform="translate(108 233.696)" fill="black">
+          <tspan font-family="Hiragino Sans" font-size="18" font-weight="300" fill="black" x="0" y="16">述語で定義されるものを集めるのを繰り返して作られるもの</tspan>
+        </text>
+      </g>
+      <g id="Graphic_7">
+        <text transform="translate(108 281.99994)" fill="black">
+          <tspan font-family="Hiragino Sans" font-size="18" font-weight="300" fill="black" x="0" y="16">順序数上の方程式を満たす順序数の集合</tspan>
+          <tspan font-family="Hiragino Sans" font-size="18" font-weight="300" fill="black" x="0" y="43.00002">階層化されていない</tspan>
+        </text>
+      </g>
+      <g id="Graphic_8">
+        <text transform="translate(31.59 137.00001)" fill="black">
+          <tspan font-family="Helvetica Neue" font-size="18" font-weight="400" fill="black" x="0" y="17">Ordinal</tspan>
+        </text>
+      </g>
+      <g id="Graphic_9">
+        <text transform="translate(54.936 176)" fill="black">
+          <tspan font-family="Helvetica Neue" font-size="18" font-weight="400" fill="black" x="0" y="17">V</tspan>
+        </text>
+      </g>
+      <g id="Graphic_10">
+        <text transform="translate(53.23 281.99994)" fill="black">
+          <tspan font-family="Helvetica Neue" font-size="18" font-weight="400" fill="black" x="0" y="17">OD</tspan>
+        </text>
+      </g>
+      <g id="Graphic_11">
+        <text transform="translate(55.816 233.696)" fill="black">
+          <tspan font-family="Helvetica Neue" font-size="18" font-weight="400" fill="black" x="8144596e-19" y="17">L</tspan>
+        </text>
+      </g>
+      <g id="Graphic_12">
+        <text transform="translate(51.174 336)" fill="black">
+          <tspan font-family="Helvetica Neue" font-size="18" font-weight="400" fill="black" x="2.502" y="17">Set </tspan>
+        </text>
+      </g>
+      <g id="Graphic_13">
+        <text transform="translate(108 336)" fill="black">
+          <tspan font-family="Hiragino Sans" font-size="18" font-weight="300" fill="black" x="0" y="16">型。集まりではなく、値の種類を区別する記号。’</tspan>
+          <tspan font-family="Hiragino Sans" font-size="18" font-weight="300" fill="black" x="0" y="43.00002">自身が値になると、一つLevelの高い型を持つ</tspan>
+        </text>
+      </g>
+    </g>
+  </g>
+</svg>

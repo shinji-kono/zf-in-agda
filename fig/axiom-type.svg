@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:xl="http://www.w3.org/1999/xlink" version="1.1" viewBox="30 61 586 330" width="586" height="330">
+  <defs>
+    <font-face font-family="Hiragino Sans" font-size="22" panose-1="2 11 3 0 0 0 0 0 0 0" units-per-em="1000" underline-position="-75" underline-thickness="50" slope="0" x-height="545" cap-height="766" ascent="880.0018" descent="-120.00024" font-weight="300">
+      <font-face-src>
+        <font-face-name name="HiraginoSans-W3"/>
+      </font-face-src>
+    </font-face>
+    <font-face font-family="Helvetica Neue" font-size="22" panose-1="2 0 5 3 0 0 0 2 0 4" units-per-em="1000" underline-position="-100" underline-thickness="50" slope="0" x-height="517" cap-height="714" ascent="951.9958" descent="-212.99744" font-weight="400">
+      <font-face-src>
+        <font-face-name name="HelveticaNeue"/>
+      </font-face-src>
+    </font-face>
+    <font-face font-family="Helvetica" font-size="22" units-per-em="1000" underline-position="-75.68359" underline-thickness="49.316406" slope="0" x-height="522.9492" cap-height="717.28516" ascent="770.0195" descent="-229.98047" font-weight="400">
+      <font-face-src>
+        <font-face-name name="Helvetica"/>
+      </font-face-src>
+    </font-face>
+  </defs>
+  <metadata> Produced by OmniGraffle 7.12.1 
+    <dc:date>2020-01-11 11:09:31 +0000</dc:date>
+  </metadata>
+  <g id="Canvas_1" stroke-opacity="1" stroke-dasharray="none" stroke="none" fill="none" fill-opacity="1">
+    <title>Canvas 1</title>
+    <rect fill="white" x="30" y="61" width="586" height="330"/>
+    <g id="Canvas_1: Layer 1">
+      <title>Layer 1</title>
+      <g id="Graphic_2">
+        <text transform="translate(184.9378 66)" fill="black">
+          <tspan font-family="Hiragino Sans" font-size="22" font-weight="300" fill="black" x="19895197e-20" y="19">Axioms of Set theory in Agda</tspan>
+        </text>
+      </g>
+      <g id="Graphic_3">
+        <text transform="translate(42.728 147)" fill="black">
+          <tspan font-family="Hiragino Sans" font-size="22" font-weight="300" fill="black" x="8526513e-19" y="19">Pure logical</tspan>
+        </text>
+      </g>
+      <g id="Graphic_4">
+        <text transform="translate(35 228.358)" fill="black">
+          <tspan font-family="Hiragino Sans" font-size="22" font-weight="300" fill="black" x="6963319e-19" y="19">Negation form</tspan>
+        </text>
+      </g>
+      <g id="Graphic_5">
+        <text transform="translate(42.728 295)" fill="black">
+          <tspan font-family="Hiragino Sans" font-size="22" font-weight="300" fill="black" x="22737368e-20" y="19">Non construtive</tspan>
+          <tspan font-family="Hiragino Sans" font-size="22" font-weight="300" fill="black" x="18.205" y="52.00002">assumptions</tspan>
+        </text>
+      </g>
+      <g id="Graphic_6">
+        <text transform="translate(418.057 127.71603)" fill="black">
+          <tspan font-family="Helvetica Neue" font-size="22" font-weight="400" fill="black" x="0" y="21">pair</tspan>
+        </text>
+      </g>
+      <g id="Graphic_7">
+        <text transform="translate(315.19725 212.40404)" fill="black">
+          <tspan font-family="Helvetica Neue" font-size="22" font-weight="400" fill="black" x="0" y="21">union</tspan>
+        </text>
+      </g>
+      <g id="Graphic_8">
+        <text transform="translate(315.2768 109.00002)" fill="black">
+          <tspan font-family="Helvetica Neue" font-size="22" font-weight="400" fill="black" x="24868996e-20" y="21">empty</tspan>
+        </text>
+      </g>
+      <g id="Graphic_9">
+        <text transform="translate(299.057 255.71603)" fill="black">
+          <tspan font-family="Helvetica Neue" font-size="22" font-weight="400" fill="black" x="7993606e-19" y="21">power</tspan>
+        </text>
+      </g>
+      <g id="Graphic_10">
+        <text transform="translate(454.8557 286.10003)" fill="black">
+          <tspan font-family="Helvetica Neue" font-size="22" font-weight="400" fill="black" x="9094947e-19" y="21">extensionarity</tspan>
+        </text>
+      </g>
+      <g id="Graphic_11">
+        <text transform="translate(460.5455 217.10003)" fill="black">
+          <tspan font-family="Helvetica Neue" font-size="22" font-weight="400" fill="black" x="45474735e-20" y="21">infinity</tspan>
+        </text>
+      </g>
+      <g id="Graphic_16">
+        <text transform="translate(488.237 148.71603)" fill="black">
+          <tspan font-family="Helvetica" font-size="22" font-weight="400" fill="black" x="0" y="21">selection</tspan>
+        </text>
+      </g>
+      <g id="Graphic_18">
+        <text transform="translate(454.8557 249.02004)" fill="black">
+          <tspan font-family="Helvetica" font-size="22" font-weight="400" fill="black" x="0" y="21">replacement</tspan>
+        </text>
+      </g>
+      <g id="Graphic_19">
+        <text transform="translate(339.057 358.71603)" fill="black">
+          <tspan font-family="Helvetica Neue" font-size="22" font-weight="400" fill="black" x="7531753e-19" y="21">choice</tspan>
+        </text>
+      </g>
+      <g id="Graphic_20">
+        <text transform="translate(503.237 184.71603)" fill="black">
+          <tspan font-family="Helvetica" font-size="22" font-weight="400" fill="black" x="0" y="21">ε-induction</tspan>
+        </text>
+      </g>
+      <g id="Graphic_21">
+        <text transform="translate(478.057 322.71603)" fill="black">
+          <tspan font-family="Helvetica" font-size="22" font-weight="400" fill="black" x="0" y="21">regularity</tspan>
+        </text>
+      </g>
+      <g id="Line_23">
+        <line x1="174.272" y1="158.8584" x2="413.057" y2="142.6241" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Line_24">
+        <line x1="174.272" y1="163.21387" x2="483.237" y2="161.91894" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Line_25">
+        <line x1="174.272" y1="181.47427" x2="310.19725" y2="217.25989" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Line_26">
+        <line x1="174.272" y1="151.78494" x2="310.2768" y2="128.44731" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Line_27">
+        <line x1="174.272" y1="175.32412" x2="455.5455" y2="224.03823" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Line_29">
+        <line x1="174.272" y1="168.67903" x2="498.237" y2="193.25456" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Line_30">
+        <line x1="198.114" y1="237.807" x2="310.19725" y2="228.40505" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Line_31">
+        <line x1="198.114" y1="254.2734" x2="294.057" y2="265.02016" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Line_32">
+        <line x1="198.114" y1="248.45253" x2="449.8557" y2="259.2177" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Line_33">
+        <line x1="221.748" y1="312.25824" x2="449.8557" y2="273.2318" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Line_34">
+        <line x1="221.748" y1="300.8768" x2="294.057" y2="279.56114" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Line_35">
+        <line x1="221.748" y1="344.74433" x2="334.057" y2="365.1827" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Line_36">
+        <line x1="221.748" y1="329.80394" x2="473.057" y2="334.73102" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Line_37">
+        <line x1="221.748" y1="321.31552" x2="449.8557" y2="304.74357" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+    </g>
+  </g>
+</svg>

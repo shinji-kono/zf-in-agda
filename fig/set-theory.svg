@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:xl="http://www.w3.org/1999/xlink" version="1.1" viewBox="38.294 90.49994 434.607 310.5001" width="434.607" height="310.5001">
+  <defs>
+    <font-face font-family="Hiragino Sans" font-size="22" panose-1="2 11 3 0 0 0 0 0 0 0" units-per-em="1000" underline-position="-75" underline-thickness="50" slope="0" x-height="545" cap-height="766" ascent="880.0018" descent="-120.00024" font-weight="300">
+      <font-face-src>
+        <font-face-name name="HiraginoSans-W3"/>
+      </font-face-src>
+    </font-face>
+    <font-face font-family="Hiragino Sans" font-size="16" panose-1="2 11 3 0 0 0 0 0 0 0" units-per-em="1000" underline-position="-75" underline-thickness="50" slope="0" x-height="545" cap-height="766" ascent="880.0018" descent="-120.00024" font-weight="300">
+      <font-face-src>
+        <font-face-name name="HiraginoSans-W3"/>
+      </font-face-src>
+    </font-face>
+  </defs>
+  <metadata> Produced by OmniGraffle 7.12.1 
+    <dc:date>2020-01-11 11:07:37 +0000</dc:date>
+  </metadata>
+  <g id="Canvas_1" stroke-opacity="1" stroke-dasharray="none" stroke="none" fill="none" fill-opacity="1">
+    <title>Canvas 1</title>
+    <rect fill="white" x="38.294" y="90.49994" width="434.607" height="310.5001"/>
+    <g id="Canvas_1: Layer 1">
+      <title>Layer 1</title>
+      <g id="Graphic_21">
+        <rect x="55" y="323.5" width="172" height="76.000045" stroke="gray" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>
+      </g>
+      <g id="Graphic_22">
+        <rect x="278" y="323.5" width="172" height="76.000045" stroke="gray" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>
+      </g>
+      <g id="Graphic_20">
+        <rect x="55" y="260.5" width="172" height="59.5" stroke="gray" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>
+      </g>
+      <g id="Graphic_18">
+        <rect x="278" y="197.5" width="172" height="122.5" stroke="gray" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>
+      </g>
+      <g id="Graphic_17">
+        <rect x="55" y="197.5" width="172" height="59.5" stroke="gray" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>
+      </g>
+      <g id="Graphic_2">
+        <text transform="translate(43.294 95.49994)" fill="black">
+          <tspan font-family="Hiragino Sans" font-size="22" font-weight="300" fill="black" x="58264504e-20" y="19">primitive set theory</tspan>
+        </text>
+      </g>
+      <g id="Graphic_4">
+        <text transform="translate(68.66 138.49996)" fill="black">
+          <tspan font-family="Hiragino Sans" font-size="22" font-weight="300" fill="black" x="22.858" y="19">First order</tspan>
+          <tspan font-family="Hiragino Sans" font-size="22" font-weight="300" fill="black" x="5968559e-19" y="52.00002">predicate logic</tspan>
+        </text>
+      </g>
+      <g id="Graphic_5">
+        <text transform="translate(78.849 279.75004)" fill="black">
+          <tspan font-family="Hiragino Sans" font-size="22" font-weight="300" fill="black" x="8597567e-19" y="19">Ordinals</tspan>
+        </text>
+      </g>
+      <g id="Graphic_6">
+        <text transform="translate(76.954 340.5001)" fill="black">
+          <tspan font-family="Hiragino Sans" font-size="22" font-weight="300" fill="black" x="19895197e-20" y="19">Model on ZF</tspan>
+        </text>
+      </g>
+      <g id="Graphic_10">
+        <text transform="translate(270.099 171.49999)" fill="black">
+          <tspan font-family="Hiragino Sans" font-size="22" font-weight="300" fill="black" x="0" y="19">Higher order logic</tspan>
+        </text>
+      </g>
+      <g id="Graphic_13">
+        <text transform="translate(292.522 210.75)" fill="black">
+          <tspan font-family="Hiragino Sans" font-size="22" font-weight="300" fill="black" x="8597567e-19" y="19">Ordinals</tspan>
+        </text>
+      </g>
+      <g id="Graphic_14">
+        <text transform="translate(292.522 242.25)" fill="black">
+          <tspan font-family="Hiragino Sans" font-size="22" font-weight="300" fill="black" x="0" y="19">ZF axioms</tspan>
+        </text>
+      </g>
+      <g id="Graphic_15">
+        <text transform="translate(285.475 272.25003)" fill="black">
+          <tspan font-family="Hiragino Sans" font-size="16" font-weight="300" fill="black" x="3.573997" y="14">Non constructive</tspan>
+          <tspan font-family="Hiragino Sans" font-size="16" font-weight="300" fill="black" x="21.437997" y="38.000016">assumptions</tspan>
+        </text>
+      </g>
+      <g id="Graphic_16">
+        <text transform="translate(292.522 348.5)" fill="black">
+          <tspan font-family="Hiragino Sans" font-size="22" font-weight="300" fill="black" x="0" y="19">Model on OD</tspan>
+        </text>
+      </g>
+      <g id="Graphic_19">
+        <text transform="translate(77.021 210.99999)" fill="black">
+          <tspan font-family="Hiragino Sans" font-size="22" font-weight="300" fill="black" x="0" y="19">ZF axioms</tspan>
+        </text>
+      </g>
+    </g>
+  </g>
+</svg>
