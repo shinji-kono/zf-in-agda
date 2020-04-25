@@ -5,6 +5,7 @@ module cardinal {n : Level } (O : Ordinals {n}) where
 open import zf
 open import logic
 import OD 
+import OPair
 open import Data.Nat renaming ( zero to Zero ; suc to Suc ;  ℕ to Nat ; _⊔_ to _n⊔_ ) 
 open import Relation.Binary.PropositionalEquality
 open import Data.Nat.Properties 
@@ -16,6 +17,7 @@ open import Relation.Binary.Core
 open inOrdinal O
 open OD O
 open OD.OD
+open OPair O
 
 open _∧_
 open _∨_

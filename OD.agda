@@ -316,14 +316,14 @@ OD→ZF   = record {
        ;   power→ = power→  
        ;   power← = power← 
        ;   extensionality = λ {A} {B} {w} → extensionality {A} {B} {w} 
-       -- ;   ε-induction = {!!}
+       ;   ε-induction = ε-induction 
        ;   infinity∅ = infinity∅
        ;   infinity = infinity
        ;   selection = λ {X} {ψ} {y} → selection {X} {ψ} {y}
        ;   replacement← = replacement←
        ;   replacement→ = replacement→
-       ;   choice-func = choice-func
-       ;   choice = choice
+       -- ;   choice-func = choice-func
+       -- ;   choice = choice
      } where
 
          pair→ : ( x y t : ZFSet  ) →  (x , y)  ∋ t  → ( t == x ) ∨ ( t == y ) 

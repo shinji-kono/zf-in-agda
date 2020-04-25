@@ -19,7 +19,7 @@ record IsZF {n m : Level }
      (Select :  (X : ZFSet  ) → ( ψ : (x : ZFSet ) → Set m ) → ZFSet ) 
      (Replace : ZFSet → ( ZFSet → ZFSet ) → ZFSet )
      (infinite : ZFSet)
-       : Set (suc (n ⊔ m)) where
+       : Set (suc (n ⊔ suc m)) where
   field
      isEquivalence : IsEquivalence {n} {m} {ZFSet} _≈_ 
      -- ∀ x ∀ y ∃ z ∀ t ( z ∋ t → t ≈ x ∨ t  ≈ y)
@@ -53,9 +53,9 @@ record IsZF {n m : Level }
      -- minimal : (x : ZFSet ) → ¬ (x ≈ ∅) → ZFSet 
      -- regularity : ∀( x : ZFSet  ) → (not : ¬ (x ≈ ∅)) → (  minimal x not  ∈ x ∧  (  minimal x not  ∩ x  ≈ ∅ ) )
      -- another form of regularity
-     -- ε-induction : { ψ : ZFSet → Set m}
-     --         → ( {x : ZFSet } → ({ y : ZFSet } →  x ∋ y → ψ y ) → ψ x )
-     --         → (x : ZFSet ) → ψ x
+     ε-induction : { ψ : ZFSet → Set (suc m)}
+              → ( {x : ZFSet } → ({ y : ZFSet } →  x ∋ y → ψ y ) → ψ x )
+              → (x : ZFSet ) → ψ x
      -- infinity : ∃ A ( ∅ ∈ A ∧ ∀ x ∈ A ( x ∪ { x } ∈ A ) )
      infinity∅ :  ∅ ∈ infinite
      infinity :  ∀( x : ZFSet  ) → x ∈ infinite →  ( x ∪ ｛ x ｝) ∈ infinite 
@@ -64,10 +64,10 @@ record IsZF {n m : Level }
      replacement← : {ψ : ZFSet → ZFSet} → ∀ ( X x : ZFSet  ) → x ∈ X → ψ x ∈  Replace X ψ 
      replacement→ : {ψ : ZFSet → ZFSet} → ∀ ( X x : ZFSet  ) →  ( lt : x ∈  Replace X ψ ) → ¬ ( ∀ (y : ZFSet)  →  ¬ ( x ≈ ψ y ) )
      -- ∀ X [ ∅ ∉ X → (∃ f : X → ⋃ X ) → ∀ A ∈ X ( f ( A ) ∈ A ) ]
-     choice-func : (X : ZFSet ) → {x : ZFSet } → ¬ ( x ≈ ∅ ) → ( X ∋ x ) → ZFSet
-     choice : (X : ZFSet  ) → {A : ZFSet } → ( X∋A : X ∋ A ) → (not : ¬ ( A ≈ ∅ )) → A ∋ choice-func X not X∋A
+     -- choice-func : (X : ZFSet ) → {x : ZFSet } → ¬ ( x ≈ ∅ ) → ( X ∋ x ) → ZFSet
+     -- choice : (X : ZFSet  ) → {A : ZFSet } → ( X∋A : X ∋ A ) → (not : ¬ ( A ≈ ∅ )) → A ∋ choice-func X not X∋A
 
-record ZF {n m : Level } : Set (suc (n ⊔ m)) where
+record ZF {n m : Level } : Set (suc (n ⊔ suc m)) where
   infixr  210 _,_
   infixl  200 _∋_ 
   infixr  220 _≈_
