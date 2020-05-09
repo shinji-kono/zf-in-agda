@@ -5,6 +5,7 @@ module BAlgbra {n : Level } (O : Ordinals {n})   where
 open import zf
 open import logic
 import OD 
+import ODC
 
 open import Relation.Nullary
 open import Relation.Binary
@@ -40,7 +41,7 @@ A ＼ B = record { def = λ x → def A x ∧ ( ¬ ( def B x ) ) }
         lemma4 {y} z | case1 refl = double-neg (case1 ( subst (λ k → def k x ) oiso (proj2 z)) )
         lemma4 {y} z | case2 refl = double-neg (case2 ( subst (λ k → def k x ) oiso (proj2 z)) )
         lemma3 : (((u : Ordinals.ord O) → ¬ def (A , B) u ∧ def (ord→od u) x) → ⊥) → def (A ∪ B) x
-        lemma3 not = double-neg-eilm (FExists _ lemma4 not)   -- choice
+        lemma3 not = ODC.double-neg-eilm O (FExists _ lemma4 not)   -- choice
     lemma2 :  {x : Ordinal} → def (A ∪ B) x → def (Union (A , B)) x
     lemma2 {x} (case1 A∋x) = subst (λ k → def (Union (A , B)) k) diso ( IsZF.union→ isZF (A , B) (ord→od x) A
        (record { proj1 = case1 refl ; proj2 = subst (λ k → def A k) (sym diso) A∋x}))

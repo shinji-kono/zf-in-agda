@@ -48,11 +48,7 @@ record IsZF {n m : Level }
      power← : ∀( A t : ZFSet  ) → ( ∀ {x}  →  _⊆_ t A {x})  → Power A ∋ t 
      -- extensionality : ∀ z ( z ∈ x ⇔ z ∈ y ) ⇒ ∀ w ( x ∈ w ⇔ y ∈ w )
      extensionality :  { A B w : ZFSet  } → ( (z : ZFSet) → ( A ∋ z ) ⇔ (B ∋ z)  ) → ( A ∈ w ⇔ B ∈ w )
-     -- This form of regurality forces choice function
-     -- regularity : ∀ x ( x ≠ ∅ → ∃ y ∈ x ( y ∩ x = ∅ ) )
-     -- minimal : (x : ZFSet ) → ¬ (x ≈ ∅) → ZFSet 
-     -- regularity : ∀( x : ZFSet  ) → (not : ¬ (x ≈ ∅)) → (  minimal x not  ∈ x ∧  (  minimal x not  ∩ x  ≈ ∅ ) )
-     -- another form of regularity
+     -- regularity without minimum
      ε-induction : { ψ : ZFSet → Set (suc m)}
               → ( {x : ZFSet } → ({ y : ZFSet } →  x ∋ y → ψ y ) → ψ x )
               → (x : ZFSet ) → ψ x
@@ -63,9 +59,6 @@ record IsZF {n m : Level }
      -- replacement : ∀ x ∀ y ∀ z ( ( ψ ( x , y ) ∧ ψ ( x , z ) ) → y = z ) → ∀ X ∃ A ∀ y ( y ∈ A ↔ ∃ x ∈ X ψ ( x , y ) )
      replacement← : {ψ : ZFSet → ZFSet} → ∀ ( X x : ZFSet  ) → x ∈ X → ψ x ∈  Replace X ψ 
      replacement→ : {ψ : ZFSet → ZFSet} → ∀ ( X x : ZFSet  ) →  ( lt : x ∈  Replace X ψ ) → ¬ ( ∀ (y : ZFSet)  →  ¬ ( x ≈ ψ y ) )
-     -- ∀ X [ ∅ ∉ X → (∃ f : X → ⋃ X ) → ∀ A ∈ X ( f ( A ) ∈ A ) ]
-     -- choice-func : (X : ZFSet ) → {x : ZFSet } → ¬ ( x ≈ ∅ ) → ( X ∋ x ) → ZFSet
-     -- choice : (X : ZFSet  ) → {A : ZFSet } → ( X∋A : X ∋ A ) → (not : ¬ ( A ≈ ∅ )) → A ∋ choice-func X not X∋A
 
 record ZF {n m : Level } : Set (suc (n ⊔ suc m)) where
   infixr  210 _,_

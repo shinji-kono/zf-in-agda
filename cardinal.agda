@@ -5,6 +5,7 @@ module cardinal {n : Level } (O : Ordinals {n}) where
 open import zf
 open import logic
 import OD 
+import ODC
 import OPair
 open import Data.Nat renaming ( zero to Zero ; suc to Suc ;  ℕ to Nat ; _⊔_ to _n⊔_ ) 
 open import Relation.Binary.PropositionalEquality
@@ -29,7 +30,7 @@ open _==_
 
     
 ∋-p : (A x : OD ) → Dec ( A ∋ x ) 
-∋-p A x with p∨¬p ( A ∋ x )
+∋-p A x with ODC.p∨¬p O ( A ∋ x )
 ∋-p A x | case1 t = yes t
 ∋-p A x | case2 t = no t
 
@@ -59,17 +60,17 @@ record Func←cd { dom cod : OD } {f : Ordinal }  : Set n where
       func→od∈Func-1 :  Func dom cod ∋  func→od func-1 dom
  
 od→func : { dom cod : OD } → {f : Ordinal }  → def (Func dom cod ) f  → Func←cd {dom} {cod} {f} 
-od→func {dom} {cod} {f} lt = record { func-1 = λ x → sup-o ( λ y → lemma x y ) ; func→od∈Func-1 = record { proj1 = {!!} ; proj2 = {!!} } } where
+od→func {dom} {cod} {f} lt = record { func-1 = λ x → sup-o ( λ y → lemma x {!!} ) ; func→od∈Func-1 = record { proj1 = {!!} ; proj2 = {!!} } } where
    lemma : Ordinal → Ordinal → Ordinal
    lemma x y with IsZF.power→ isZF (dom ⊗ cod) (ord→od f) (subst (λ k → def (Power (dom ⊗ cod)) k ) (sym diso) lt ) | ∋-p (ord→od f) (ord→od y)
    lemma x y | p | no n  = o∅
-   lemma x y | p | yes f∋y = lemma2 (proj1 (double-neg-eilm ( p {ord→od y} f∋y ))) where -- p : {y : OD} → f ∋ y → ¬ ¬ (dom ⊗ cod ∋ y) 
+   lemma x y | p | yes f∋y = lemma2 (proj1 (ODC.double-neg-eilm O ( p {ord→od y} f∋y ))) where -- p : {y : OD} → f ∋ y → ¬ ¬ (dom ⊗ cod ∋ y) 
            lemma2 : {p : Ordinal} → ord-pair p  → Ordinal
-           lemma2 (pair x1 y1) with decp ( x1 ≡ x)
+           lemma2 (pair x1 y1) with ODC.decp O ( x1 ≡ x)
            lemma2 (pair x1 y1) | yes p = y1
            lemma2 (pair x1 y1) | no ¬p = o∅
    fod : OD
-   fod = Replace dom ( λ x →  < x , ord→od (sup-o ( λ y → lemma (od→ord x) y )) > )
+   fod = Replace dom ( λ x →  < x , ord→od (sup-o ( λ y → lemma (od→ord x) {!!} )) > )
 
 
 open Func←cd
@@ -128,15 +129,15 @@ record Cardinal  (X  : OD ) : Set n where
 
 cardinal :  (X  : OD ) → Cardinal X
 cardinal  X = record {
-       cardinal = sup-o ( λ x → proj1 ( cardinal-p x) )
+       cardinal = sup-o ( λ x → proj1 ( cardinal-p {!!}) )
      ; conto = onto
      ; cmax = cmax
    } where
     cardinal-p : (x  : Ordinal ) →  ( Ordinal  ∧ Dec (Onto X (Ord x) ) )
-    cardinal-p x with p∨¬p ( Onto X (Ord x)  ) 
+    cardinal-p x with ODC.p∨¬p O ( Onto X (Ord x)  ) 
     cardinal-p x | case1 True  = record { proj1 = x  ; proj2 = yes True }
     cardinal-p x | case2 False = record { proj1 = o∅ ; proj2 = no False }
-    S = sup-o (λ x → proj1 (cardinal-p x))
+    S = sup-o (λ x → proj1 (cardinal-p {!!}))
     lemma1 :  (x : Ordinal) → ((y : Ordinal) → y o< x → Lift (suc n) (y o< (osuc S) → Onto X (Ord y))) →
                     Lift (suc n) (x o< (osuc S) → Onto X (Ord x) )
     lemma1 x prev with trio< x (osuc S)
@@ -153,9 +154,9 @@ cardinal  X = record {
     ... | lift t = t <-osuc  
     cmax : (y : Ordinal) → S o< y → ¬ Onto X (Ord y) 
     cmax y lt ontoy = o<> lt (o<-subst  {_} {_} {y} {S}
-       (sup-o<  {λ x → proj1 ( cardinal-p x)}{y}  ) lemma refl ) where
+       (sup-o<  {λ x → proj1 ( cardinal-p {!!})}{{!!}}  ) lemma refl ) where
           lemma : proj1 (cardinal-p y) ≡ y
-          lemma with  p∨¬p ( Onto X (Ord y) )
+          lemma with  ODC.p∨¬p O ( Onto X (Ord y) )
           lemma | case1 x = refl
           lemma | case2 not = ⊥-elim ( not ontoy )
 

@@ -81,7 +81,7 @@ module in-countable-ordinal {n : Level} where
 
    import ordinal
 
-   open  ordinal.C-Ordinal-with-choice 
+   -- open  ordinal.C-Ordinal-with-choice 
 
    Hω2 : Filter (Power (Power infinite))
    Hω2 = {!!}
