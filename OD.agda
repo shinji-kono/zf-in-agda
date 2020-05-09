@@ -52,6 +52,40 @@ open  _==_
 eq→ ( ⇔→==  {x} {y}  eq ) {z} m = proj1 eq m 
 eq← ( ⇔→==  {x} {y}  eq ) {z} m = proj2 eq m 
 
+-- next assumptions are our axiom
+--  it defines a subset of OD, which is called HOD, usually defined as
+--     HOD = { x | TC x ⊆ OD }
+--  where TC x is a transitive clusure of x, i.e. Union of all elemnts of all subset of x
+
+record ODAxiom : Set (suc n) where      
+  -- OD can be iso to a subset of Ordinal ( by means of Godel Set )
+ field
+  od→ord : OD  → Ordinal 
+  ord→od : Ordinal  → OD  
+  c<→o<  :  {x y : OD  }   → def y ( od→ord x ) → od→ord x o< od→ord y
+  oiso   :  {x : OD }      → ord→od ( od→ord x ) ≡ x
+  diso   :  {x : Ordinal } → od→ord ( ord→od x ) ≡ x
+  ==→o≡ : { x y : OD  } → (x == y) → x ≡ y
+  -- supermum as Replacement Axiom ( corresponding Ordinal of OD has maximum )
+  sup-o  :  ( OD → Ordinal ) →  Ordinal 
+  sup-o< :  { ψ : OD →  Ordinal } → ∀ {x : OD } → ψ x  o<  sup-o ψ 
+  -- contra-position of mimimulity of supermum required in Power Set Axiom which we don't use
+  -- sup-x  : {n : Level } → ( OD → Ordinal ) →  Ordinal 
+  -- sup-lb : {n : Level } → { ψ : OD →  Ordinal } → {z : Ordinal }  →  z o< sup-o ψ → z o< osuc (ψ (sup-x ψ))
+
+postulate  odAxiom : ODAxiom
+open ODAxiom odAxiom
+
+data One : Set n where
+  OneObj : One
+
+-- Ordinals in OD , the maximum
+Ords : OD
+Ords = record { def = λ x → One }
+
+maxod : {x : OD} → od→ord x o< od→ord Ords
+maxod {x} = c<→o< OneObj
+
 -- Ordinal in OD ( and ZFSet ) Transitive Set
 Ord : ( a : Ordinal  ) → OD 
 Ord  a = record { def = λ y → y o< a }  
@@ -59,37 +93,6 @@ Ord  a = record { def = λ y → y o< a }
 od∅ : OD  
 od∅  = Ord o∅ 
 
--- next assumptions are our axiom
---  it defines a subset of OD, which is called HOD, usually defined as
---     HOD = { x | TC x ⊆ OD }
---  where TC x is a transitive clusure of x, i.e. Union of all elemnts of all subset of x
-
-postulate      
-  -- OD can be iso to a subset of Ordinal ( by means of Godel Set )
-  od→ord : OD  → Ordinal 
-  ord→od : Ordinal  → OD  
-  c<→o<  :  {x y : OD  }   → def y ( od→ord x ) → od→ord x o< od→ord y
-  oiso   :  {x : OD }      → ord→od ( od→ord x ) ≡ x
-  diso   :  {x : Ordinal } → od→ord ( ord→od x ) ≡ x
-  ==→o≡ : { x y : OD  } → (x == y) → x ≡ y
-  -- next assumption causes ∀ x ∋ ∅ . It menas only an ordinal is allowed as OD
-  --   o<→c<  : {n : Level} {x y : Ordinal  } → x o< y → def (ord→od y) x 
-  --   ord→od x ≡ Ord x results the same
-  -- supermum as Replacement Axiom ( corresponding Ordinal of OD has maximum )
-  sup-o  :  ( OD → Ordinal ) →  Ordinal 
-  sup-o< :  { ψ : OD →  Ordinal } → ∀ {x : OD } → ψ x  o<  sup-o ψ 
-  -- contra-position of mimimulity of supermum required in Power Set Axiom
-  -- sup-x  : {n : Level } → ( Ordinal  → Ordinal ) →  Ordinal 
-  -- sup-lb : {n : Level } → { ψ : Ordinal  →  Ordinal } → {z : Ordinal }  →  z o< sup-o ψ → z o< osuc (ψ (sup-x ψ))
-
-data One : Set n where
-  OneObj : One
-
-Ords : OD
-Ords = record { def = λ x → One }
-
-maxod : {x : OD} → od→ord x o< od→ord Ords
-maxod {x} = c<→o< OneObj
 
 o<→c<→OD=Ord : ( {x y : Ordinal  } → x o< y → def (ord→od y) x ) → {x : OD } →  x ≡ Ord (od→ord x)
 o<→c<→OD=Ord o<→c< {x} = ==→o≡ ( record { eq→ = lemma1 ; eq← = lemma2 } ) where
@@ -256,8 +259,8 @@ OD→ZF   = record {
     A ∈ B = B ∋ A
     Power : OD  → OD 
     Power A = Replace (Def (Ord (od→ord A))) ( λ x → A ∩ x )
-    ｛_｝ : ZFSet → ZFSet
-    ｛ x ｝ = ( x ,  x )
+    -- ｛_｝ : ZFSet → ZFSet
+    -- ｛ x ｝ = ( x ,  x )
 
     data infinite-d  : ( x : Ordinal  ) → Set n where
         iφ :  infinite-d o∅

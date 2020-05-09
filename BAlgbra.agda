@@ -18,6 +18,7 @@ open import Data.Nat renaming ( zero to Zero ; suc to Suc ;  ℕ to Nat ; _⊔_ 
 open inOrdinal O
 open OD O
 open OD.OD
+open ODAxiom odAxiom
 
 open _∧_
 open _∨_

@@ -19,6 +19,7 @@ open inOrdinal O
 open OD O
 open OD.OD
 open OPair O
+open ODAxiom odAxiom
 
 open _∧_
 open _∨_
