@@ -38,7 +38,29 @@ function showElement(layer){
 <author> Shinji KONO</author>
 
 <hr/>
-<h2><a name="content000">Programming Mathematics</a></h2>
+<h2><a name="content000">ZF in Agda</a></h2>
+
+<pre>
+    zf.agda            axiom of ZF
+    zfc.agda           axiom of choice
+    Ordinals.agda      axiom of Ordinals
+    ordinal.agda       countable model of Ordinals
+    OD.agda            model of ZF based on Ordinal Definable Set with assumptions
+    ODC.agda           Law of exclude middle from axiom of choice assumptions
+    LEMC.agda          model of choice with assumption of the Law of exclude middle 
+    OPair.agda         ordered pair on OD
+    BAlgbra.agda       Boolean algebra on OD (not yet done)
+    filter.agda        Filter on OD (not yet done)
+    cardinal.agda      Caedinal number on OD (not yet done)
+    logic.agda         some basics on logic
+    nat.agda           some basics on Nat
+
+</pre>
+
+<hr/>
+<h2><a name="content001">Programming Mathematics</a></h2>
+
+<p>
 Programming is processing data structure with λ terms.
 <p>
 We are going to handle Mathematics in intuitionistic logic with λ terms.
@@ -49,7 +71,7 @@ Programming ZF Set Theory in Agda
 <p>
 
 <hr/>
-<h2><a name="content001">Target</a></h2>
+<h2><a name="content002">Target</a></h2>
 
 <pre>
    Describe ZF axioms in Agda
@@ -67,7 +89,7 @@ ZF in Agda https://github.com/shinji-kono/zf-in-agda
 <p>
 
 <hr/>
-<h2><a name="content002">Why Set Theory</a></h2>
+<h2><a name="content003">Why Set Theory</a></h2>
 If we can formulate Set theory, it suppose to work on any mathematical theory.
 <p>
 Set Theory is a difficult point for beginners especially axiom of choice.
@@ -80,7 +102,7 @@ This is done during from May to September.
 <p>
 
 <hr/>
-<h2><a name="content003">Agda and Intuitionistic Logic </a></h2>
+<h2><a name="content004">Agda and Intuitionistic Logic </a></h2>
 Curry Howard Isomorphism
 <p>
 
@@ -102,7 +124,7 @@ Coq is specialized in proof assistance such as command and tactics .
 <p>
 
 <hr/>
-<h2><a name="content004">Introduction of Agda </a></h2>
+<h2><a name="content005">Introduction of Agda </a></h2>
 A length of a list of type A.
 <p>
 
@@ -121,7 +143,7 @@ Set is a base type (which may have a level ).
 <p>
 
 <hr/>
-<h2><a name="content005">data ( Sum type )</a></h2>
+<h2><a name="content006">data ( Sum type )</a></h2>
 A data type which as exclusive multiple constructors. A similar one as
 union in C or case class in Scala.
 <p>
@@ -148,7 +170,7 @@ Natural number can be defined as a usual way.
 </pre>
 
 <hr/>
-<h2><a name="content006"> A → B means "A implies B"</a></h2>
+<h2><a name="content007"> A → B means "A implies B"</a></h2>
 
 <p>
 In Agda, a type can be a value of a variable, which is usually called dependent type.
@@ -172,7 +194,7 @@ can be a function from a proof of A to a proof of B.
 <p>
 
 <hr/>
-<h2><a name="content007">introduction と elimination</a></h2>
+<h2><a name="content008">introduction と elimination</a></h2>
 For a logical operator, there are two types of inference, an introduction and an elimination.
 <p>
 
@@ -220,7 +242,7 @@ This makes currying of function easy.
 <p>
 
 <hr/>
-<h2><a name="content008"> To prove A → B </a></h2>
+<h2><a name="content009"> To prove A → B </a></h2>
 Make a left type as an argument. (intros in Coq)
 <p>
 
@@ -236,7 +258,7 @@ insufficient proof or instance (Yellow), Non-termination, the proof is completed
 <p>
 
 <hr/>
-<h2><a name="content009"> A ∧ B</a></h2>
+<h2><a name="content010"> A ∧ B</a></h2>
 Well known conjunction's introduction and elimination is as follow.
 <p>
 
@@ -250,7 +272,7 @@ We can introduce a corresponding structure in our functional programming languag
 <p>
 
 <hr/>
-<h2><a name="content010"> record</a></h2>
+<h2><a name="content011"> record</a></h2>
 
 <pre>
    record _∧_ A B : Set
@@ -286,7 +308,7 @@ Defining record can be recursively, but we don't use the recursion here.
 <p>
 
 <hr/>
-<h2><a name="content011"> Mathematical structure</a></h2>
+<h2><a name="content012"> Mathematical structure</a></h2>
 We have types of elements and the relationship in a mathematical structure.
 <p>
 
@@ -317,7 +339,7 @@ Fields of Ordinal is existential objects in the mathematical structure.
 <p>
 
 <hr/>
-<h2><a name="content012"> A Model and a theory</a></h2>
+<h2><a name="content013"> A Model and a theory</a></h2>
 Agda record is a type, so we can write it in the argument, but is it really exists?
 <p>
 If we have a value of the record, it simply exists, that is, we need to create all the existence
@@ -334,7 +356,7 @@ model, it exists. Pretty Obvious.
 <p>
 
 <hr/>
-<h2><a name="content013"> postulate と module</a></h2>
+<h2><a name="content014"> postulate と module</a></h2>
 Agda proofs are separated by modules, which are large records.
 <p>
 postulates are assumptions. We can assume a type without proofs.
@@ -357,7 +379,7 @@ postulate can be inconsistent, which result everything has a proof.
 <p>
 
 <hr/>
-<h2><a name="content014"> A ∨ B</a></h2>
+<h2><a name="content015"> A ∨ B</a></h2>
 
 <pre>
     data _∨_ (A B : Set) : Set where
@@ -386,7 +408,7 @@ Proof schema of ∨ is omit due to the complexity.
 <p>
 
 <hr/>
-<h2><a name="content015"> Negation</a></h2>
+<h2><a name="content016"> Negation</a></h2>
 
 <pre>
        ⊥
@@ -422,7 +444,7 @@ A negation can be defined using ⊥ like this.
 </pre>
 
 <hr/>
-<h2><a name="content016">Equality </a></h2>
+<h2><a name="content017">Equality </a></h2>
 
 <p>
 All the value in Agda are terms. If we have the same normalized form, two terms are equal.
@@ -456,7 +478,7 @@ The elimination of equality is a substitution in a term.
 </pre>
 
 <hr/>
-<h2><a name="content017">Equivalence relation</a></h2>
+<h2><a name="content018">Equivalence relation</a></h2>
 
 <p>
 
@@ -473,7 +495,7 @@ The elimination of equality is a substitution in a term.
 </pre>
 
 <hr/>
-<h2><a name="content018">Ordering</a></h2>
+<h2><a name="content019">Ordering</a></h2>
 
 <p>
 Relation is a predicate on two value which has a same type.
@@ -494,7 +516,7 @@ Defining order is the definition of this type with predicate or a data.
 </pre>
 
 <hr/>
-<h2><a name="content019">Quantifier</a></h2>
+<h2><a name="content020">Quantifier</a></h2>
 
 <p>
 Handling quantifier in an intuitionistic logic requires special cares.
@@ -518,7 +540,7 @@ usage of ∃ x in a logical expression.
 <p>
 
 <hr/>
-<h2><a name="content020">Can we do math in this way?</a></h2>
+<h2><a name="content021">Can we do math in this way?</a></h2>
 Yes, we can. Actually we have Principia Mathematica by Russell and Whitehead (with out computer support).
 <p>
 In some sense, this story is a reprinting of the work, (but Principia Mathematica has a different formulation than ZF).
@@ -531,7 +553,7 @@ In some sense, this story is a reprinting of the work, (but Principia Mathematic
 </pre>
 
 <hr/>
-<h2><a name="content021">Things which Agda cannot prove</a></h2>
+<h2><a name="content022">Things which Agda cannot prove</a></h2>
 
 <p>
 The infamous Internal Parametricity is a limitation of Agda, it cannot prove so called Free Theorem, which
@@ -561,7 +583,7 @@ If we cannot prove something, we can safely postulate it unless it leads a contr
 </pre>
 
 <hr/>
-<h2><a name="content022">Classical story of ZF Set Theory</a></h2>
+<h2><a name="content023">Classical story of ZF Set Theory</a></h2>
 
 <p>
 Assuming ZF, constructing  a model of ZF is a flow of classical Set Theory, which leads
@@ -577,7 +599,7 @@ constructed based on these assumptions.
 <p>
 
 <hr/>
-<h2><a name="content023">Ordinals</a></h2>
+<h2><a name="content024">Ordinals</a></h2>
 Ordinals are our intuition of infinite things, which has ∅ and orders on the things.
 It also has a successor osuc.
 <p>
@@ -597,7 +619,7 @@ of successor. It is given from outside, which make it possible to have higher or
 <p>
 
 <hr/>
-<h2><a name="content024">Axiom of Ordinals</a></h2>
+<h2><a name="content025">Axiom of Ordinals</a></h2>
 Properties of infinite things. We request a transfinite induction, which states that if
 some properties are satisfied below all possible ordinals, the properties are true on all
 ordinals.
@@ -625,7 +647,7 @@ Any two ordinal can be compared, that is less, equal or more, that is total orde
 </pre>
 
 <hr/>
-<h2><a name="content025">Concrete Ordinals</a></h2>
+<h2><a name="content026">Concrete Ordinals</a></h2>
 
 <p>
 We can define a list like structure with level, which is a kind of two dimensional infinite array.
@@ -658,7 +680,7 @@ structure.
 </pre>
 
 <hr/>
-<h2><a name="content026">Model of Ordinals</a></h2>
+<h2><a name="content027">Model of Ordinals</a></h2>
 
 <p>
 It is easy to show OrdinalD and its order satisfies the axioms of Ordinals.
@@ -667,7 +689,7 @@ So our Ordinals has a mode. This means axiom of Ordinals are consistent.
 <p>
 
 <hr/>
-<h2><a name="content027">Debugging axioms using Model</a></h2>
+<h2><a name="content028">Debugging axioms using Model</a></h2>
 Whether axiom is correct or not can be checked by a validity on a mode.
 <p>
 If not, we may fix the axioms or the model, such as the definitions of the order.
@@ -676,7 +698,7 @@ We can also ask whether the inputs exist.
 <p>
 
 <hr/>
-<h2><a name="content028">Countable Ordinals can contains uncountable set?</a></h2>
+<h2><a name="content029">Countable Ordinals can contains uncountable set?</a></h2>
 Yes, the ordinals contains any level of infinite Set in the axioms.
 <p>
 If we handle real-number in the model, only countable number of real-number is used.
@@ -694,7 +716,7 @@ We don't show the definition of cardinal number here.
 <p>
 
 <hr/>
-<h2><a name="content029">What is Set</a></h2>
+<h2><a name="content030">What is Set</a></h2>
 The word Set in Agda is not a Set of ZF Set, but it is a type (why it is named Set?).
 <p>
 From naive point view, a set i a list, but in Agda, elements have all the same type.
@@ -704,7 +726,7 @@ Finite set may be written in finite series of ∨, but ...
 <p>
 
 <hr/>
-<h2><a name="content030">We don't ask the contents of Set. It can be anything.</a></h2>
+<h2><a name="content031">We don't ask the contents of Set. It can be anything.</a></h2>
 From empty set φ, we can think a set contains a φ, and a pair of φ and the set, and so on,
 and all of them, and again we repeat this.
 <p>
@@ -722,7 +744,7 @@ But in our case, we have no ZF theory, so we are going to use Ordinals.
 <p>
 
 <hr/>
-<h2><a name="content031">Ordinal Definable Set</a></h2>
+<h2><a name="content032">Ordinal Definable Set</a></h2>
 We can define a sbuset of Ordinals using predicates. What is a subset?
 <p>
 
@@ -751,7 +773,7 @@ but we don't care about it.
 <p>
 
 <hr/>
-<h2><a name="content032">∋ in OD</a></h2>
+<h2><a name="content033">∋ in OD</a></h2>
 OD is a predicate on Ordinals and it does not contains OD directly. If we have a mapping
 <p>
 
@@ -778,7 +800,7 @@ In ψ : Ordinal → Set,  if A is a  record { def = λ x → ψ x } , then
 </pre>
 
 <hr/>
-<h2><a name="content033">1 to 1 mapping between an OD and an Ordinal</a></h2>
+<h2><a name="content034">1 to 1 mapping between an OD and an Ordinal</a></h2>
 
 <p>
 
@@ -800,7 +822,7 @@ state it.
 <p>
 
 <hr/>
-<h2><a name="content034">Order preserving in the mapping of OD and Ordinal</a></h2>
+<h2><a name="content035">Order preserving in the mapping of OD and Ordinal</a></h2>
 Ordinals have the order and OD has a natural order based on inclusion ( def / ∋ ).
 <p>
 
@@ -833,7 +855,7 @@ the model.
 <p>
 
 <hr/>
-<h2><a name="content035">ISO</a></h2>
+<h2><a name="content036">ISO</a></h2>
 It also requires isomorphisms, 
 <p>
 
@@ -844,7 +866,7 @@ It also requires isomorphisms,
 </pre>
 
 <hr/>
-<h2><a name="content036">Various Sets</a></h2>
+<h2><a name="content037">Various Sets</a></h2>
 
 <p>
 In classical Set Theory, there is a hierarchy call L, which can be defined by a predicate.
@@ -860,7 +882,7 @@ In classical Set Theory, there is a hierarchy call L, which can be defined by a 
 </pre>
 
 <hr/>
-<h2><a name="content037">Fixes on ZF to intuitionistic logic</a></h2>
+<h2><a name="content038">Fixes on ZF to intuitionistic logic</a></h2>
 
 <p>
 We use ODs as Sets in ZF, and defines record ZF, that is, we have to define
@@ -878,10 +900,10 @@ ZFのrecord </a>
 <p>
 
 <hr/>
-<h2><a name="content038">Pure logical axioms</a></h2>
+<h2><a name="content039">Pure logical axioms</a></h2>
 
 <pre>
-   empty, pair, select, ε-inductioninfinity
+   empty, pair, select, ε-induction??infinity
 
 </pre>
 These are logical relations among OD.
@@ -913,7 +935,7 @@ Union (x , ( x , x )) should be an direct successor of x, but we cannot prove it
 <p>
 
 <hr/>
-<h2><a name="content039">Axiom of Pair</a></h2>
+<h2><a name="content040">Axiom of Pair</a></h2>
 In the Tanaka's book, axiom of pair is as follows.
 <p>
 
@@ -940,7 +962,7 @@ This is already written in Agda, so we use these as axioms. All inputs have ∀.
 <p>
 
 <hr/>
-<h2><a name="content040">pair in OD</a></h2>
+<h2><a name="content041">pair in OD</a></h2>
 OD is an equation on Ordinals, we can simply write axiom of pair in the OD.
 <p>
 
@@ -953,7 +975,7 @@ OD is an equation on Ordinals, we can simply write axiom of pair in the OD.
 <p>
 
 <hr/>
-<h2><a name="content041">Validity of Axiom of Pair</a></h2>
+<h2><a name="content042">Validity of Axiom of Pair</a></h2>
 Assuming ZFSet is OD, we are going to prove pair→ .
 <p>
 
@@ -994,7 +1016,7 @@ But we haven't defined == yet.
 <p>
 
 <hr/>
-<h2><a name="content042">Equality of OD and Axiom of Extensionality </a></h2>
+<h2><a name="content043">Equality of OD and Axiom of Extensionality </a></h2>
 OD is defined by a predicates, if we compares normal form of the predicates, even if
 it contains the same elements, it may be different, which is no good as an equality of
 Sets.
@@ -1056,7 +1078,7 @@ where
 </pre>
 
 <hr/>
-<h2><a name="content043">Validity of Axiom of Extensionality</a></h2>
+<h2><a name="content044">Validity of Axiom of Extensionality</a></h2>
 
 <p>
 If we can derive (w ∋ A) ⇔ (w ∋ B) from A == B, the axiom becomes valid, but it seems impossible, so we assumes
@@ -1079,7 +1101,7 @@ This assumption means we may have an equivalence set on any predicates.
 <p>
 
 <hr/>
-<h2><a name="content044">Non constructive assumptions so far</a></h2>
+<h2><a name="content045">Non constructive assumptions so far</a></h2>
 We have correspondence between OD and Ordinals and one directional order preserving.
 <p>
 We also have equality assumption.
@@ -1096,7 +1118,7 @@ We also have equality assumption.
 </pre>
 
 <hr/>
-<h2><a name="content045">Axiom which have negation form</a></h2>
+<h2><a name="content046">Axiom which have negation form</a></h2>
 
 <p>
 
@@ -1120,7 +1142,7 @@ If we have an assumption of law of exclude middle, we can recover the original A
 <p>
 
 <hr/>
-<h2><a name="content046">Union </a></h2>
+<h2><a name="content047">Union </a></h2>
 The original form of the Axiom of Union is
 <p>
 
@@ -1172,7 +1194,7 @@ which checks existence using contra-position.
 <p>
 
 <hr/>
-<h2><a name="content047">Axiom of replacement</a></h2>
+<h2><a name="content048">Axiom of replacement</a></h2>
 We can replace the elements of a set by a function and it becomes a set. From the book, 
 <p>
 
@@ -1216,7 +1238,7 @@ We omit the proof of the validity, but it is rather straight forward.
 <p>
 
 <hr/>
-<h2><a name="content048">Validity of Power Set Axiom</a></h2>
+<h2><a name="content049">Validity of Power Set Axiom</a></h2>
 The original Power Set Axiom is this.
 <p>
 
@@ -1307,7 +1329,7 @@ Using this, we can prove,
 </pre>
 
 <hr/>
-<h2><a name="content049">Axiom of regularity, Axiom of choice, ε-induction</a></h2>
+<h2><a name="content050">Axiom of regularity, Axiom of choice, ε-induction</a></h2>
 
 <p>
 Axiom of regularity requires non self intersectable elements (which is called minimum), if we
@@ -1354,7 +1376,7 @@ It does not requires ∅ ∉ X .
 <p>
 
 <hr/>
-<h2><a name="content050">Axiom of choice and Law of Excluded Middle</a></h2>
+<h2><a name="content051">Axiom of choice and Law of Excluded Middle</a></h2>
 In our model, since OD has a mapping to Ordinals, it has evident order, which means well ordering theorem is valid,
 but it don't have correct form of the axiom yet. They say well ordering axiom is equivalent to the axiom of choice,
 but it requires law of the exclude middle.
@@ -1374,13 +1396,13 @@ and Law of Excluded Middle is equivalent in our mode.
 <p>
 
 <hr/>
-<h2><a name="content051">Relation-ship among ZF axiom</a></h2>
+<h2><a name="content052">Relation-ship among ZF axiom</a></h2>
 <img src="fig/axiom-dependency.svg">
 
 <p>
 
 <hr/>
-<h2><a name="content052">Non constructive assumption in our model</a></h2>
+<h2><a name="content053">Non constructive assumption in our model</a></h2>
 mapping between OD and Ordinals
 <p>
 
@@ -1418,7 +1440,7 @@ Axiom of choice and strong axiom of regularity.
 </pre>
 
 <hr/>
-<h2><a name="content053">So it this correct?</a></h2>
+<h2><a name="content054">So it this correct?</a></h2>
 
 <p>
 Our axiom are syntactically the same in the text book, but negations are slightly different.
@@ -1438,7 +1460,7 @@ Several inference on our model or our axioms are basically parallel to the set t
 <p>
 
 <hr/>
-<h2><a name="content054">How to use Agda Set Theory</a></h2>
+<h2><a name="content055">How to use Agda Set Theory</a></h2>
 Assuming record ZF, classical set theory can be developed. If necessary, axiom of choice can be
 postulated or assuming law of excluded middle.
 <p>
@@ -1449,7 +1471,7 @@ ZF record itself is not necessary, for example, topology theory without ZF can b
 <p>
 
 <hr/>
-<h2><a name="content055">Topos and Set Theory</a></h2>
+<h2><a name="content056">Topos and Set Theory</a></h2>
 Topos is a mathematical structure in Category Theory, which is a Cartesian closed category which has a
 sub-object classifier. 
 <p>
@@ -1467,7 +1489,7 @@ Our Agda model is a proof theoretic version of it.
 <p>
 
 <hr/>
-<h2><a name="content056">Cardinal number and Continuum hypothesis</a></h2>
+<h2><a name="content057">Cardinal number and Continuum hypothesis</a></h2>
 Axiom of choice is required to define cardinal number
 <p>
 definition of cardinal number is not yet done
@@ -1485,7 +1507,7 @@ Possible representation of continuum hypothesis is this.
 </pre>
 
 <hr/>
-<h2><a name="content057">Filter</a></h2>
+<h2><a name="content058">Filter</a></h2>
 
 <p>
 filter is a dual of ideal on boolean algebra or lattice. Existence on natural number
@@ -1508,7 +1530,7 @@ This may be simpler than classical forcing theory ( not yet done).
 <p>
 
 <hr/>
-<h2><a name="content058">Programming Mathematics</a></h2>
+<h2><a name="content059">Programming Mathematics</a></h2>
 Mathematics is a functional programming in Agda where proof is a value of a variable. The mathematical
 structure are
 <p>
@@ -1533,7 +1555,7 @@ are proved in Agda.
 <p>
 
 <hr/>
-<h2><a name="content059">link</a></h2>
+<h2><a name="content060">link</a></h2>
 Summer school of foundation of mathematics (in Japanese)<br> <a href="https://www.sci.shizuoka.ac.jp/~math/yorioka/ss2019/">https://www.sci.shizuoka.ac.jp/~math/yorioka/ss2019/</a>
 <p>
 Foundation of axiomatic set theory (in Japanese)<br> <a href="https://www.sci.shizuoka.ac.jp/~math/yorioka/ss2019/sakai0.pdf">https://www.sci.shizuoka.ac.jp/~math/yorioka/ss2019/sakai0.pdf
@@ -1553,67 +1575,68 @@ Category theory in Agda source
 </div>
 <ol class="side" id="menu">
 Constructing ZF Set Theory in Agda 
-<li><a href="#content000">  Programming Mathematics</a>
-<li><a href="#content001">  Target</a>
-<li><a href="#content002">  Why Set Theory</a>
-<li><a href="#content003">  Agda and Intuitionistic Logic </a>
-<li><a href="#content004">  Introduction of Agda </a>
-<li><a href="#content005">  data ( Sum type )</a>
-<li><a href="#content006">   A → B means "A implies B"</a>
-<li><a href="#content007">  introduction と elimination</a>
-<li><a href="#content008">   To prove A → B </a>
-<li><a href="#content009">   A ∧ B</a>
-<li><a href="#content010">   record</a>
-<li><a href="#content011">   Mathematical structure</a>
-<li><a href="#content012">   A Model and a theory</a>
-<li><a href="#content013">   postulate と module</a>
-<li><a href="#content014">   A ∨ B</a>
-<li><a href="#content015">   Negation</a>
-<li><a href="#content016">  Equality </a>
-<li><a href="#content017">  Equivalence relation</a>
-<li><a href="#content018">  Ordering</a>
-<li><a href="#content019">  Quantifier</a>
-<li><a href="#content020">  Can we do math in this way?</a>
-<li><a href="#content021">  Things which Agda cannot prove</a>
-<li><a href="#content022">  Classical story of ZF Set Theory</a>
-<li><a href="#content023">  Ordinals</a>
-<li><a href="#content024">  Axiom of Ordinals</a>
-<li><a href="#content025">  Concrete Ordinals</a>
-<li><a href="#content026">  Model of Ordinals</a>
-<li><a href="#content027">  Debugging axioms using Model</a>
-<li><a href="#content028">  Countable Ordinals can contains uncountable set?</a>
-<li><a href="#content029">  What is Set</a>
-<li><a href="#content030">  We don't ask the contents of Set. It can be anything.</a>
-<li><a href="#content031">  Ordinal Definable Set</a>
-<li><a href="#content032">  ∋ in OD</a>
-<li><a href="#content033">  1 to 1 mapping between an OD and an Ordinal</a>
-<li><a href="#content034">  Order preserving in the mapping of OD and Ordinal</a>
-<li><a href="#content035">  ISO</a>
-<li><a href="#content036">  Various Sets</a>
-<li><a href="#content037">  Fixes on ZF to intuitionistic logic</a>
-<li><a href="#content038">  Pure logical axioms</a>
-<li><a href="#content039">  Axiom of Pair</a>
-<li><a href="#content040">  pair in OD</a>
-<li><a href="#content041">  Validity of Axiom of Pair</a>
-<li><a href="#content042">  Equality of OD and Axiom of Extensionality </a>
-<li><a href="#content043">  Validity of Axiom of Extensionality</a>
-<li><a href="#content044">  Non constructive assumptions so far</a>
-<li><a href="#content045">  Axiom which have negation form</a>
-<li><a href="#content046">  Union </a>
-<li><a href="#content047">  Axiom of replacement</a>
-<li><a href="#content048">  Validity of Power Set Axiom</a>
-<li><a href="#content049">  Axiom of regularity, Axiom of choice, ε-induction</a>
-<li><a href="#content050">  Axiom of choice and Law of Excluded Middle</a>
-<li><a href="#content051">  Relation-ship among ZF axiom</a>
-<li><a href="#content052">  Non constructive assumption in our model</a>
-<li><a href="#content053">  So it this correct?</a>
-<li><a href="#content054">  How to use Agda Set Theory</a>
-<li><a href="#content055">  Topos and Set Theory</a>
-<li><a href="#content056">  Cardinal number and Continuum hypothesis</a>
-<li><a href="#content057">  Filter</a>
-<li><a href="#content058">  Programming Mathematics</a>
-<li><a href="#content059">  link</a>
+<li><a href="#content000">  ZF in Agda</a>
+<li><a href="#content001">  Programming Mathematics</a>
+<li><a href="#content002">  Target</a>
+<li><a href="#content003">  Why Set Theory</a>
+<li><a href="#content004">  Agda and Intuitionistic Logic </a>
+<li><a href="#content005">  Introduction of Agda </a>
+<li><a href="#content006">  data ( Sum type )</a>
+<li><a href="#content007">   A → B means "A implies B"</a>
+<li><a href="#content008">  introduction と elimination</a>
+<li><a href="#content009">   To prove A → B </a>
+<li><a href="#content010">   A ∧ B</a>
+<li><a href="#content011">   record</a>
+<li><a href="#content012">   Mathematical structure</a>
+<li><a href="#content013">   A Model and a theory</a>
+<li><a href="#content014">   postulate と module</a>
+<li><a href="#content015">   A ∨ B</a>
+<li><a href="#content016">   Negation</a>
+<li><a href="#content017">  Equality </a>
+<li><a href="#content018">  Equivalence relation</a>
+<li><a href="#content019">  Ordering</a>
+<li><a href="#content020">  Quantifier</a>
+<li><a href="#content021">  Can we do math in this way?</a>
+<li><a href="#content022">  Things which Agda cannot prove</a>
+<li><a href="#content023">  Classical story of ZF Set Theory</a>
+<li><a href="#content024">  Ordinals</a>
+<li><a href="#content025">  Axiom of Ordinals</a>
+<li><a href="#content026">  Concrete Ordinals</a>
+<li><a href="#content027">  Model of Ordinals</a>
+<li><a href="#content028">  Debugging axioms using Model</a>
+<li><a href="#content029">  Countable Ordinals can contains uncountable set?</a>
+<li><a href="#content030">  What is Set</a>
+<li><a href="#content031">  We don't ask the contents of Set. It can be anything.</a>
+<li><a href="#content032">  Ordinal Definable Set</a>
+<li><a href="#content033">  ∋ in OD</a>
+<li><a href="#content034">  1 to 1 mapping between an OD and an Ordinal</a>
+<li><a href="#content035">  Order preserving in the mapping of OD and Ordinal</a>
+<li><a href="#content036">  ISO</a>
+<li><a href="#content037">  Various Sets</a>
+<li><a href="#content038">  Fixes on ZF to intuitionistic logic</a>
+<li><a href="#content039">  Pure logical axioms</a>
+<li><a href="#content040">  Axiom of Pair</a>
+<li><a href="#content041">  pair in OD</a>
+<li><a href="#content042">  Validity of Axiom of Pair</a>
+<li><a href="#content043">  Equality of OD and Axiom of Extensionality </a>
+<li><a href="#content044">  Validity of Axiom of Extensionality</a>
+<li><a href="#content045">  Non constructive assumptions so far</a>
+<li><a href="#content046">  Axiom which have negation form</a>
+<li><a href="#content047">  Union </a>
+<li><a href="#content048">  Axiom of replacement</a>
+<li><a href="#content049">  Validity of Power Set Axiom</a>
+<li><a href="#content050">  Axiom of regularity, Axiom of choice, ε-induction</a>
+<li><a href="#content051">  Axiom of choice and Law of Excluded Middle</a>
+<li><a href="#content052">  Relation-ship among ZF axiom</a>
+<li><a href="#content053">  Non constructive assumption in our model</a>
+<li><a href="#content054">  So it this correct?</a>
+<li><a href="#content055">  How to use Agda Set Theory</a>
+<li><a href="#content056">  Topos and Set Theory</a>
+<li><a href="#content057">  Cardinal number and Continuum hypothesis</a>
+<li><a href="#content058">  Filter</a>
+<li><a href="#content059">  Programming Mathematics</a>
+<li><a href="#content060">  link</a>
 </ol>
 
-<hr/>  Shinji KONO /  Sat Jan 11 20:04:01 2020
+<hr/>  Shinji KONO /  Sat May  9 16:41:10 2020
 </body></html>

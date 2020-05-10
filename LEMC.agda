@@ -32,6 +32,12 @@ record choiced  ( X : OD) : Set (suc n) where
 
 open choiced
 
+double-neg-eilm : {A : Set (suc n)} → ¬ ¬ A → A      -- we don't have this in intutionistic logic
+double-neg-eilm  {A} notnot with p∨¬p A                         -- assuming axiom of choice
+... | case1 p = p
+... | case2 ¬p = ⊥-elim ( notnot ¬p )
+
+
 OD→ZFC : ZFC
 OD→ZFC   = record { 
     ZFSet = OD 
@@ -84,4 +90,48 @@ OD→ZFC   = record {
                             eq→ = λ {x} lt → ⊥-elim  (nn x (def→o< lt) lt) 
                           ; eq← = λ {x} lt → ⊥-elim ( ¬x<0 lt )
                         }
+         record Minimal (x : OD)  : Set (suc n) where
+           field
+               min : OD
+               x∋min :   x ∋ min 
+               min-empty :  (y : OD ) → ¬ ( min ∋ y) ∧ (x ∋ y)
+         open Minimal
+         open _∧_
+         --
+         --  from https://math.stackexchange.com/questions/2973777/is-it-possible-to-prove-regularity-with-transfinite-induction-only
+         --
+         induction : {x : OD} → ({y : OD} → x ∋ y → (u : OD ) → (u∋x : u ∋ y) → Minimal u )
+              →  (u : OD ) → (u∋x : u ∋ x) → Minimal u 
+         induction {x} prev u u∋x with p∨¬p ((y : OD) → ¬ (x ∋ y) ∧ (u ∋ y))
+         ... | case1 P =
+              record { min = x
+                ;     x∋min = u∋x
+                ;     min-empty = P
+              } 
+         ... | case2 NP =  min2 where
+              p : OD
+              p  = record { def = λ y1 → def x  y1 ∧ def u y1 }
+              np : ¬ (p == od∅)
+              np p∅ =  NP (λ y p∋y → ∅< p∋y p∅ ) 
+              y1choice : choiced p
+              y1choice = choice-func p np
+              y1 : OD
+              y1 = a-choice y1choice
+              y1prop : (x ∋ y1) ∧ (u ∋ y1)
+              y1prop = is-in y1choice
+              min2 : Minimal u
+              min2 = prev (proj1 y1prop) u (proj2 y1prop)
+         Min2 : (x : OD) → (u : OD ) → (u∋x : u ∋ x) → Minimal u 
+         Min2 x u u∋x = (ε-induction {λ y →  (u : OD ) → (u∋x : u ∋ y) → Minimal u  } induction x u u∋x ) 
+         cx : {x : OD} →  ¬ (x == od∅ ) → choiced x 
+         cx {x} nx = choice-func x nx
+         minimal : (x : OD  ) → ¬ (x == od∅ ) → OD 
+         minimal x not = min (Min2 (a-choice (cx not) ) x (is-in (cx not))) 
+         x∋minimal : (x : OD  ) → ( ne : ¬ (x == od∅ ) ) → def x ( od→ord ( minimal x ne ) )
+         x∋minimal x ne = x∋min (Min2 (a-choice (cx ne) ) x (is-in (cx ne))) 
+         minimal-1 : (x : OD  ) → ( ne : ¬ (x == od∅ ) ) → (y : OD ) → ¬ ( def (minimal x ne) (od→ord y)) ∧ (def x (od→ord  y) )
+         minimal-1 x ne y = min-empty (Min2 (a-choice (cx ne) ) x (is-in (cx ne))) y
+
+
+
          

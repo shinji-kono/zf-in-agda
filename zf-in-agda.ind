@@ -2,6 +2,24 @@
 
 --author: Shinji KONO
 
+--ZF in Agda
+
+    zf.agda            axiom of ZF
+    zfc.agda           axiom of choice
+    Ordinals.agda      axiom of Ordinals
+    ordinal.agda       countable model of Ordinals
+    OD.agda            model of ZF based on Ordinal Definable Set with assumptions
+    ODC.agda           Law of exclude middle from axiom of choice assumptions
+    LEMC.agda          model of choice with assumption of the Law of exclude middle 
+    OPair.agda         ordered pair on OD
+
+    BAlgbra.agda       Boolean algebra on OD (not yet done)
+    filter.agda        Filter on OD (not yet done)
+    cardinal.agda      Caedinal number on OD (not yet done)
+
+    logic.agda         some basics on logic
+    nat.agda           some basics on Nat
+
 --Programming Mathematics
 
 Programming is processing data structure with λ terms.
@@ -620,7 +638,7 @@ ZFのrecord
 
 --Pure logical axioms
 
-   empty, pair, select, ε-induction��infinity
+   empty, pair, select, ε-induction??infinity
 
 These are logical relations among OD.
 
