@@ -1,0 +1,55 @@
+<html>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+
+<pre>
+    record ZF {n m : Level } : Set (suc (n ⊔ m)) where
+      field
+         ZFSet : Set n
+         _∋_ : ( A x : ZFSet  ) → Set m
+         _≈_ : ( A B : ZFSet  ) → Set m
+         ∅  : ZFSet
+         _,_ : ( A B : ZFSet  ) → ZFSet
+         Union : ( A : ZFSet  ) → ZFSet
+         Power : ( A : ZFSet  ) → ZFSet
+         Select :  (X : ZFSet  ) → ( ψ : (x : ZFSet ) → Set m ) → ZFSet
+         Replace : ZFSet → ( ZFSet → ZFSet ) → ZFSet
+         infinite : ZFSet
+         isZF : IsZF ZFSet _∋_ _≈_ ∅ _,_ Union Power Select Replace infinite
+    record IsZF {n m : Level }
+         (ZFSet : Set n)
+         (_∋_ : ( A x : ZFSet  ) → Set m)
+         (_≈_ : Rel ZFSet m)
+         (∅  : ZFSet)
+         (_,_ : ( A B : ZFSet  ) → ZFSet)
+         (Union : ( A : ZFSet  ) → ZFSet)
+         (Power : ( A : ZFSet  ) → ZFSet)
+         (Select :  (X : ZFSet  ) → ( ψ : (x : ZFSet ) → Set m ) → ZFSet )
+         (Replace : ZFSet → ( ZFSet → ZFSet ) → ZFSet )
+         (infinite : ZFSet)
+           : Set (suc (n ⊔ m)) where
+      field
+         isEquivalence : IsEquivalence {n} {m} {ZFSet} _≈_
+         pair→ : ( x y t : ZFSet  ) →  (x , y)  ∋ t  → ( t ≈ x ) ∨ ( t ≈ y )
+         pair← : ( x y t : ZFSet  ) →  ( t ≈ x ) ∨ ( t ≈ y )  →  (x , y)  ∋ t
+         union→ : ( X z u : ZFSet ) → ( X ∋ u ) ∧ (u ∋ z ) → Union X ∋ z  
+         union← : ( X z : ZFSet ) → (X∋z : Union X ∋ z ) →  ¬  ( (u : ZFSet ) → ¬ ((X ∋  u) ∧ (u ∋ z )))
+         empty :  ∀( x : ZFSet  ) → ¬ ( ∅ ∋ x )
+         power→ : ∀( A t : ZFSet  ) → Power A ∋ t → ∀ {x}  →  t ∋ x → ¬ ¬ ( A ∋ x ) -- _⊆_ t A {x}
+         power← : ∀( A t : ZFSet  ) → ( ∀ {x}  →  _⊆_ t A {x})  → Power A ∋ t 
+         extensionality :  { A B w : ZFSet  } → ( (z : ZFSet) → ( A ∋ z ) ⇔ (B ∋ z)  ) → ( A ∈ w ⇔ B ∈ w )
+         regularity : ∀ x ( x ≠ ∅ → ∃ y ∈ x ( y ∩ x = ∅ ) )
+         minimal : (x : ZFSet ) → ¬ (x ≈ ∅) → ZFSet 
+         regularity : ∀( x : ZFSet  ) → (not : ¬ (x ≈ ∅)) → (  minimal x not  ∈ x ∧  (  minimal x not  ∩ x  ≈ ∅ ) )
+         ε-induction : { ψ : ZFSet → Set m}
+                  → ( {x : ZFSet } → ({ y : ZFSet } →  x ∋ y → ψ y ) → ψ x )
+                  → (x : ZFSet ) → ψ x
+         infinity∅ :  ∅ ∈ infinite
+         infinity :  ∀( x : ZFSet  ) → x ∈ infinite →  ( x ∪ ｛ x ｝) ∈ infinite
+         selection : { ψ : ZFSet → Set m } → ∀ { X y : ZFSet  } →  ( ( y ∈ X ) ∧ ψ y ) ⇔ (y ∈  Select X ψ )
+         replacement← : {ψ : ZFSet → ZFSet} → ∀ ( X x : ZFSet  ) → x ∈ X → ψ x ∈  Replace X ψ
+         replacement→ : {ψ : ZFSet → ZFSet} → ∀ ( X x : ZFSet  ) →  ( lt : x ∈  Replace X ψ ) → ¬ ( ∀ (y : ZFSet)  →  ¬ ( x ≈ ψ y ) )
+         choice-func : (X : ZFSet ) → {x : ZFSet } → ¬ ( x ≈ ∅ ) → ( X ∋ x ) → ZFSet
+         choice : (X : ZFSet  ) → {A : ZFSet } → ( X∋A : X ∋ A ) → (not : ¬ ( A ≈ ∅ )) → A ∋ choice-func X not X∋A
+</div>
+<hr/> Shinji KONO <kono@ie.u-ryukyu.ac.jp> /  Fri Jan 10 12:24:29 2020
+</body></html>

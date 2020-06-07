@@ -246,7 +246,7 @@ OD→ZF   = record {
     ; infinite = infinite
     ; isZF = isZF 
  } where
-    ZFSet = OD 
+    ZFSet = OD             -- is less than Ords because of maxod
     Select : (X : OD  ) → ((x : OD  ) → Set n ) → OD 
     Select X ψ = record { def = λ x →  ( def X x ∧ ψ ( ord→od x )) }
     Replace : OD  → (OD  → OD  ) → OD 
@@ -260,7 +260,7 @@ OD→ZF   = record {
     Power : OD  → OD 
     Power A = Replace (Def (Ord (od→ord A))) ( λ x → A ∩ x )
     -- ｛_｝ : ZFSet → ZFSet
-    -- ｛ x ｝ = ( x ,  x )
+    -- ｛ x ｝ = ( x ,  x )     -- it works but we don't use 
 
     data infinite-d  : ( x : Ordinal  ) → Set n where
         iφ :  infinite-d o∅

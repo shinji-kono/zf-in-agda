@@ -43,8 +43,11 @@ record Filter  ( L : OD  ) : Set (suc n) where
 
 open Filter
 
+L⊆L : (L : OD) → L ⊆ L
+L⊆L L = record { incl = λ {x} lt → lt }
+
 L-filter : {L : OD} → (P : Filter L ) → {p : OD} → filter P ∋ p → filter P ∋ L
-L-filter {L} P {p} lt = filter1 P {p} {L} {!!} lt {!!}
+L-filter {L} P {p} lt = filter1 P {p} {L} (L⊆L L) lt {!!}
 
 prime-filter : {L : OD} → Filter L → ∀ {p q : OD } → Set n
 prime-filter {L} P {p} {q} =  filter P ∋ ( p ∪ q) → ( filter P ∋ p ) ∨ ( filter P ∋ q )
@@ -83,7 +86,7 @@ module in-countable-ordinal {n : Level} where
    import ordinal
 
    -- open  ordinal.C-Ordinal-with-choice 
-
+   -- both Power and infinite is too ZF, it is better to use simpler one
    Hω2 : Filter (Power (Power infinite))
    Hω2 = {!!}
 

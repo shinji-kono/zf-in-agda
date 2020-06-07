@@ -32,12 +32,6 @@ record choiced  ( X : OD) : Set (suc n) where
 
 open choiced
 
-double-neg-eilm : {A : Set (suc n)} → ¬ ¬ A → A      -- we don't have this in intutionistic logic
-double-neg-eilm  {A} notnot with p∨¬p A                         -- assuming axiom of choice
-... | case1 p = p
-... | case2 ¬p = ⊥-elim ( notnot ¬p )
-
-
 OD→ZFC : ZFC
 OD→ZFC   = record { 
     ZFSet = OD 
