@@ -53,9 +53,19 @@ eq→ ( ⇔→==  {x} {y}  eq ) {z} m = proj1 eq m
 eq← ( ⇔→==  {x} {y}  eq ) {z} m = proj2 eq m 
 
 -- next assumptions are our axiom
---  it defines a subset of OD, which is called HOD, usually defined as
+--  In classical Set Theory, HOD is used, as a subset of OD, 
 --     HOD = { x | TC x ⊆ OD }
---  where TC x is a transitive clusure of x, i.e. Union of all elemnts of all subset of x
+--  where TC x is a transitive clusure of x, i.e. Union of all elemnts of all subset of x.
+--  This is not possible because we don't have V yet.
+--  We simply assume V=OD here.
+--
+--  We also assumes ODs are isomorphic to Ordinals, which is ususally proved by Goedel number tricks.
+--  ODs have an ovbious maximum, but Ordinals are not. This means, od→ord is not an on-to mapping.
+--
+--  ==→o≡ is necessary to prove axiom of extensionality.
+--
+--  In classical Set Theory, sup is defined by Uion. Since we are working on constructive logic,
+--  we need explict assumption on sup.
 
 record ODAxiom : Set (suc n) where      
   -- OD can be iso to a subset of Ordinal ( by means of Godel Set )
