@@ -13,14 +13,19 @@ open import Relation.Nullary
 open import Relation.Binary
 open import Relation.Binary.Core
 
-record IsOrdinals {n : Level} (ord : Set n)  (o∅ : ord ) (osuc : ord → ord )  (_o<_ : ord → ord → Set n) : Set (suc (suc n)) where
+record IsOrdinals {n : Level} (ord : Set n)  (o∅ : ord ) (osuc : ord → ord )  (_o<_ : ord → ord → Set n) (next : ord → ord ) : Set (suc (suc n)) where
    field
      Otrans :  {x y z : ord }  → x o< y → y o< z → x o< z
      OTri : Trichotomous {n} _≡_  _o<_ 
      ¬x<0 :   { x  : ord  } → ¬ ( x o< o∅  )
      <-osuc :  { x : ord  } → x o< osuc x
      osuc-≡< :  { a x : ord  } → x o< osuc a  →  (x ≡ a ) ∨ (x o< a)  
-     TransFinite : { ψ : ord  → Set (suc n) }
+     not-limit :  ( x : ord  ) → Dec ( ¬ ((y : ord) → ¬ (x ≡ osuc y) ))
+     next-limit : { y : ord } → (y o< next y ) ∧  ((x : ord) → x o< next y → osuc x o< next y )
+     TransFinite : { ψ : ord  → Set n }
+          → ( (x : ord)  → ( (y : ord  ) → y o< x → ψ y ) → ψ x )
+          →  ∀ (x : ord)  → ψ x
+     TransFinite1 : { ψ : ord  → Set (suc n) }
           → ( (x : ord)  → ( (y : ord  ) → y o< x → ψ y ) → ψ x )
           →  ∀ (x : ord)  → ψ x
 
@@ -31,7 +36,8 @@ record Ordinals {n : Level} : Set (suc (suc n)) where
      o∅ : ord
      osuc : ord → ord
      _o<_ : ord → ord → Set n
-     isOrdinal : IsOrdinals ord o∅ osuc _o<_
+     next :  ord → ord
+     isOrdinal : IsOrdinals ord o∅ osuc _o<_ next
 
 module inOrdinal  {n : Level} (O : Ordinals {n} ) where
 
@@ -47,11 +53,16 @@ module inOrdinal  {n : Level} (O : Ordinals {n} ) where
         o∅ :   Ordinal  
         o∅ = Ordinals.o∅ O
 
+        next :   Ordinal → Ordinal
+        next = Ordinals.next O
+
         ¬x<0 = IsOrdinals.¬x<0 (Ordinals.isOrdinal O)
         osuc-≡< = IsOrdinals.osuc-≡<  (Ordinals.isOrdinal O)
         <-osuc = IsOrdinals.<-osuc  (Ordinals.isOrdinal O)
         TransFinite = IsOrdinals.TransFinite  (Ordinals.isOrdinal O)
-        
+        TransFinite1 = IsOrdinals.TransFinite1  (Ordinals.isOrdinal O)
+        next-limit = IsOrdinals.next-limit  (Ordinals.isOrdinal O)
+
         o<-dom :   { x y : Ordinal } → x o< y → Ordinal 
         o<-dom  {x} _ = x
 
@@ -104,7 +115,7 @@ module inOrdinal  {n : Level} (O : Ordinals {n} ) where
         proj1 (osuc2 x y) ox<ooy | case2 ox<oy = ordtrans <-osuc ox<oy 
 
         _o≤_ :  Ordinal → Ordinal → Set  n
-        a o≤ b  = (a ≡ b)  ∨ ( a o< b )
+        a o≤ b  = a o< osuc b -- (a ≡ b)  ∨ ( a o< b )
 
 
         xo<ab :  {oa ob : Ordinal } → ( {ox : Ordinal } → ox o< oa  → ox o< ob ) → oa o< osuc ob
@@ -119,13 +130,13 @@ module inOrdinal  {n : Level} (O : Ordinals {n} ) where
         maxα x y | tri> ¬a ¬b c = x
         maxα x y | tri≈ ¬a refl ¬c = x
 
-        minα :    Ordinal  →  Ordinal  → Ordinal
-        minα  x y with trio<  x  y
-        minα x y | tri< a ¬b ¬c = x
-        minα x y | tri> ¬a ¬b c = y
-        minα x y | tri≈ ¬a refl ¬c = x
+        omin :    Ordinal  →  Ordinal  → Ordinal
+        omin  x y with trio<  x  y
+        omin x y | tri< a ¬b ¬c = x
+        omin x y | tri> ¬a ¬b c = y
+        omin x y | tri≈ ¬a refl ¬c = x
 
-        min1 :   {x y z : Ordinal  } → z o< x → z o< y → z o< minα x y
+        min1 :   {x y z : Ordinal  } → z o< x → z o< y → z o< omin x y
         min1  {x} {y} {z} z<x z<y with trio<  x y
         min1  {x} {y} {z} z<x z<y | tri< a ¬b ¬c = z<x
         min1  {x} {y} {z} z<x z<y | tri≈ ¬a refl ¬c = z<x
@@ -176,11 +187,14 @@ module inOrdinal  {n : Level} (O : Ordinals {n} ) where
 
         open _∧_
 
+        o≤-refl :  { i  j : Ordinal } → i ≡ j → i o≤ j
+        o≤-refl {i} {j} eq = subst (λ k → i o< osuc k ) eq <-osuc
         OrdTrans :  Transitive  _o≤_
-        OrdTrans (case1 refl) (case1 refl) = case1 refl
-        OrdTrans (case1 refl) (case2 lt2) = case2 lt2
-        OrdTrans (case2 lt1) (case1 refl) = case2 lt1
-        OrdTrans (case2 x) (case2 y) = case2 (ordtrans x y)
+        OrdTrans a≤b b≤c with osuc-≡< a≤b | osuc-≡< b≤c
+        OrdTrans a≤b b≤c | case1 refl | case1 refl = <-osuc
+        OrdTrans a≤b b≤c | case1 refl | case2 a≤c = ordtrans a≤c <-osuc
+        OrdTrans a≤b b≤c | case2 a≤c | case1 refl = ordtrans a≤c <-osuc
+        OrdTrans a≤b b≤c | case2 a<b | case2 b<c = ordtrans (ordtrans a<b  b<c) <-osuc
 
         OrdPreorder :   Preorder n n n
         OrdPreorder  = record { Carrier = Ordinal
@@ -188,7 +202,7 @@ module inOrdinal  {n : Level} (O : Ordinals {n} ) where
            ; _∼_   = _o≤_
            ; isPreorder   = record {
                 isEquivalence = record { refl = refl  ; sym = sym ; trans = trans }
-                ; reflexive     = case1 
+                ; reflexive     = o≤-refl
                 ; trans         = OrdTrans 
              }
          }
@@ -198,4 +212,12 @@ module inOrdinal  {n : Level} (O : Ordinals {n} ) where
           → (exists : ¬ (∀ y → ¬ ( ψ y ) ))
           → ¬ p
         FExists  {m} {l} ψ {p} P = contra-position ( λ p y ψy → P {y} ψy p ) 
+
+        record OrdinalSubset (maxordinal : Ordinal) : Set (suc n) where
+          field
+            os→ : (x : Ordinal) → x o< maxordinal → Ordinal
+            os← : Ordinal → Ordinal
+            os←limit : (x : Ordinal) → os← x o< maxordinal
+            os-iso← : {x : Ordinal} →  os→  (os← x) (os←limit x) ≡ x
+            os-iso→ : {x : Ordinal} → (lt : x o< maxordinal ) →  os← (os→ x lt) ≡ x
 

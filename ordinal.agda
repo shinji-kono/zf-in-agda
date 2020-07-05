@@ -211,6 +211,7 @@ C-Ordinal {n} = record {
    ; o∅ = o∅
    ; osuc = osuc
    ; _o<_ = _o<_
+   ; next = next
    ; isOrdinal = record {
        Otrans = ordtrans
      ; OTri = trio<
@@ -218,18 +219,41 @@ C-Ordinal {n} = record {
      ; <-osuc = <-osuc
      ; osuc-≡< = osuc-≡<
      ; TransFinite = TransFinite1
+     ; TransFinite1 = TransFinite2
+     ; not-limit = not-limit
+     ; next-limit = next-limit
    }
   } where
+     next : Ordinal {suc n} → Ordinal {suc n}
+     next (ordinal lv ord) = ordinal (Suc lv) (Φ (Suc lv))
+     next-limit : {y : Ordinal} → (y o< next y) ∧ ((x : Ordinal) → x o< next y → osuc x o< next y)
+     next-limit {y} = record { proj1 = case1 a<sa ; proj2 = lemma } where
+         lemma :  (x : Ordinal) → x o< next y → osuc x o< next y
+         lemma x (case1 lt) = case1 lt
+     not-limit : (x : Ordinal) → Dec (¬ ((y : Ordinal) → ¬ (x ≡ osuc y)))
+     not-limit (ordinal lv (Φ lv)) = no (λ not → not (λ y () ))
+     not-limit (ordinal lv (OSuc lv ox)) = yes (λ not → not (ordinal lv ox) refl )
      ord1 : Set (suc n)
      ord1 = Ordinal {suc n}
-     TransFinite1 : { ψ : ord1  → Set (suc (suc n)) }
+     TransFinite1 : { ψ : ord1  → Set (suc n) }
           → ( (x : ord1)  → ( (y : ord1  ) → y o< x → ψ y ) → ψ x )
           →  ∀ (x : ord1)  → ψ x
-     TransFinite1 {ψ} lt x = TransFinite {n} {suc (suc n)} {ψ} caseΦ caseOSuc x where
+     TransFinite1 {ψ} lt x = TransFinite {n} {suc n} {ψ} caseΦ caseOSuc x where
         caseΦ : (lx : Nat) → ((x₁ : Ordinal) → x₁ o< ordinal lx (Φ lx) → ψ x₁) →
             ψ (record { lv = lx ; ord = Φ lx })
         caseΦ lx prev = lt (ordinal lx (Φ lx) ) prev
         caseOSuc :  (lx : Nat) (x₁ : OrdinalD lx) → ((y : Ordinal) → y o< ordinal lx (OSuc lx x₁) → ψ y) →
             ψ (record { lv = lx ; ord = OSuc lx x₁ })
         caseOSuc lx ox prev = lt (ordinal lx (OSuc lx ox)) prev 
+     TransFinite2 : { ψ : ord1  → Set (suc (suc n)) }
+          → ( (x : ord1)  → ( (y : ord1  ) → y o< x → ψ y ) → ψ x )
+          →  ∀ (x : ord1)  → ψ x
+     TransFinite2 {ψ} lt x = TransFinite {n} {suc (suc n)} {ψ} caseΦ caseOSuc x where
+        caseΦ : (lx : Nat) → ((x₁ : Ordinal) → x₁ o< ordinal lx (Φ lx) → ψ x₁) →
+            ψ (record { lv = lx ; ord = Φ lx })
+        caseΦ lx prev = lt (ordinal lx (Φ lx) ) prev
+        caseOSuc :  (lx : Nat) (x₁ : OrdinalD lx) → ((y : Ordinal) → y o< ordinal lx (OSuc lx x₁) → ψ y) →
+            ψ (record { lv = lx ; ord = OSuc lx x₁ })
+        caseOSuc lx ox prev = lt (ordinal lx (OSuc lx ox)) prev 
+
 
