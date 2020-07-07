@@ -96,22 +96,25 @@ record ODAxiom : Set (suc n) where
   od→ord : HOD  → Ordinal 
   ord→od : Ordinal  → HOD  
   c<→o<  :  {x y : HOD  }   → def (od y) ( od→ord x ) → od→ord x o< od→ord y
-  ⊆→o≤  :   {y z : HOD  }   → ({x : Ordinal} → def (od y) x → def (od z) x ) → od→ord y o< osuc (od→ord z)
+  ⊆→o≤   :  {y z : HOD  }   → ({x : Ordinal} → def (od y) x → def (od z) x ) → od→ord y o< osuc (od→ord z)
   oiso   :  {x : HOD }      → ord→od ( od→ord x ) ≡ x
   diso   :  {x : Ordinal }  → od→ord ( ord→od x ) ≡ x
-  ==→o≡ : { x y : HOD  }    → (od x == od y) → x ≡ y
-  sup-o  :  (A : HOD) → (( x : Ordinal ) → def (od A) x →  Ordinal ) →  Ordinal 
+  ==→o≡  :  {x y : HOD  }   → (od x == od y) → x ≡ y
+  sup-o  :  (A : HOD) → (     ( x : Ordinal ) → def (od A) x →  Ordinal ) →  Ordinal 
   sup-o< :  (A : HOD) → { ψ : ( x : Ordinal ) → def (od A) x →  Ordinal } → ∀ {x : Ordinal } → (lt : def (od A) x ) → ψ x lt o<  sup-o A ψ 
 
 postulate  odAxiom : ODAxiom
 open ODAxiom odAxiom
 
--- maxod : {x : OD} → od→ord x o< od→ord Ords
--- maxod {x} = c<→o< OneObj
+-- OD ⇔ Ordinal leads a contradiction, so we need bounded HOD
+¬OD-order : ( od→ord : OD  → Ordinal ) → ( ord→od : Ordinal  → OD ) → ( { x y : OD  }  → def y ( od→ord x ) → od→ord x o< od→ord y) → ⊥
+¬OD-order od→ord ord→od c<→o< = osuc-< <-osuc (c<→o< {Ords} OneObj )
 
--- we have not this contradiction
--- bad-bad : ⊥
--- bad-bad = osuc-< <-osuc (c<→o< { record { od = record { def = λ x → One };  <odmax = {!!} } } OneObj)
+-- Open supreme upper bound leads a contradition, so we use domain restriction on sup
+¬open-sup : ( sup-o : (Ordinal →  Ordinal ) → Ordinal) → ((ψ : Ordinal →  Ordinal ) → (x : Ordinal) → ψ x  o<  sup-o ψ ) → ⊥
+¬open-sup sup-o sup-o< = o<> <-osuc (sup-o< next-ord (sup-o next-ord)) where
+   next-ord : Ordinal → Ordinal
+   next-ord x = osuc x
 
 -- Ordinal in OD ( and ZFSet ) Transitive Set
 Ord : ( a : Ordinal  ) → HOD 
@@ -125,13 +128,13 @@ od∅  = Ord o∅
 odef : HOD → Ordinal → Set n
 odef A x = def ( od A ) x
 
-o<→c<→HOD=Ord : ( {x y : Ordinal  } → x o< y → odef (ord→od y) x ) → {x : HOD } →  x ≡ Ord (od→ord x)
+-- If we have reverse of c<→o<, everything becomes Ordinal
+o<→c<→HOD=Ord : ( o<→c< : {x y : Ordinal  } → x o< y → odef (ord→od y) x ) → {x : HOD } →  x ≡ Ord (od→ord x)
 o<→c<→HOD=Ord o<→c< {x} = ==→o≡ ( record { eq→ = lemma1 ; eq← = lemma2 } ) where
    lemma1 : {y : Ordinal} → odef x y → odef (Ord (od→ord x)) y
    lemma1 {y} lt = subst ( λ k → k o< od→ord x ) diso (c<→o< {ord→od y} {x} (subst (λ k → odef x k ) (sym diso) lt))
    lemma2 : {y : Ordinal} → odef (Ord (od→ord x)) y → odef x y
    lemma2 {y} lt = subst (λ k → odef k y ) oiso (o<→c< {y} {od→ord x} lt )
-
 
 _∋_ : ( a x : HOD  ) → Set n
 _∋_  a x  = odef a ( od→ord x )
@@ -208,6 +211,7 @@ is-o∅ x | tri< a ¬b ¬c = no ¬b
 is-o∅ x | tri≈ ¬a b ¬c = yes b
 is-o∅ x | tri> ¬a ¬b c = no ¬b
 
+-- the pair
 _,_ : HOD  → HOD  → HOD 
 x , y = record { od = record { def = λ t → (t ≡ od→ord x ) ∨ ( t ≡ od→ord y ) } ; odmax = omax (od→ord x)  (od→ord y) ; <odmax = lemma }  where
     lemma : {t : Ordinal} → (t ≡ od→ord x) ∨ (t ≡ od→ord y) → t o< omax (od→ord x) (od→ord y)
@@ -221,8 +225,6 @@ x , y = record { od = record { def = λ t → (t ≡ od→ord x ) ∨ ( t ≡ od
 in-codomain : (X : HOD  ) → ( ψ : HOD  → HOD  ) → OD 
 in-codomain  X ψ = record { def = λ x → ¬ ( (y : Ordinal ) → ¬ ( odef X y ∧  ( x ≡ od→ord (ψ (ord→od y )))))  }
 
--- Power Set of X ( or constructible by λ y → odef X (od→ord y )
-
 ZFSubset : (A x : HOD  ) → HOD 
 ZFSubset A x =  record { od = record { def = λ y → odef A y ∧  odef x y } ; odmax = omin (odmax A) (odmax x) ; <odmax = lemma }  where --   roughly x = A → Set 
      lemma : {y : Ordinal} → def (od A) y ∧ def (od x) y → y o< omin (odmax A) (odmax x)
@@ -235,14 +237,29 @@ record _⊆_ ( A B : HOD   ) : Set (suc n) where
 open _⊆_
 infixr  220 _⊆_
 
+od⊆→o≤  : {x y : HOD } → x ⊆ y → od→ord x o< osuc (od→ord y)
+od⊆→o≤ {x} {y} lt  =  ⊆→o≤ {x} {y} (λ {z} x>z  → subst (λ k → def (od y) k ) diso (incl lt (subst (λ k → def (od x) k ) (sym diso) x>z )))
+
+-- if we have od→ord (x , x) ≡ osuc (od→ord x),  ⊆→o≤ → c<→o<
+pair<y : {x y : HOD } → y ∋ x  → od→ord (x , x) o< osuc (od→ord y)
+pair<y {x} {y} y∋x = ⊆→o≤ lemma where
+   lemma : {z : Ordinal} → def (od (x , x)) z → def (od y) z
+   lemma (case1 refl) = y∋x
+   lemma (case2 refl) = y∋x
+
+-- ⊆→o≤→c<→o< : ({x : HOD} → od→ord (x , x) ≡ osuc (od→ord x) )
+--    →  ({y z : HOD  }   → ({x : Ordinal} → def (od y) x → def (od z) x ) → od→ord y o< osuc (od→ord z) )
+--    →   {x y : HOD  }   → def (od y) ( od→ord x ) → od→ord x o< od→ord y 
+-- ⊆→o≤→c<→o< peq ⊆→o≤ {x} {y} y∋x with trio< (od→ord x) (od→ord y)
+-- ⊆→o≤→c<→o< peq ⊆→o≤ {x} {y} y∋x | tri< a ¬b ¬c = a
+-- ⊆→o≤→c<→o< peq ⊆→o≤ {x} {y} y∋x | tri≈ ¬a b ¬c = ⊥-elim ( o<¬≡ (peq {x}) (pair<y (subst (λ k → def (od k)  (od→ord x)) {!!} y∋x)))
+-- ⊆→o≤→c<→o< peq ⊆→o≤ {x} {y} y∋x | tri> ¬a ¬b c = ⊥-elim ( o<¬≡ (peq {x}) (pair<y (subst (λ k → def (od k)  (od→ord x)) {!!} y∋x)))
+
 subset-lemma : {A x : HOD  } → ( {y : HOD } →  x ∋ y → ZFSubset A x ∋  y ) ⇔  ( x ⊆ A  )
 subset-lemma  {A} {x} = record {
       proj1 = λ lt  → record { incl = λ x∋z → proj1 (lt x∋z)  }
     ; proj2 = λ x⊆A lt → record { proj1 = incl x⊆A lt ; proj2 = lt } 
    } 
-
-od⊆→o≤  : {x y : HOD } → x ⊆ y → od→ord x o< osuc (od→ord y)
-od⊆→o≤ {x} {y} lt  =  ⊆→o≤ {x} {y} (λ {z} x>z  → subst (λ k → def (od y) k ) diso (incl lt (subst (λ k → def (od x) k ) (sym diso) x>z )))
 
 power< : {A x : HOD  } → x ⊆ A → Ord (osuc (od→ord A)) ∋ x
 power< {A} {x} x⊆A = ⊆→o≤  (λ {y} x∋y → subst (λ k →  def (od A) k) diso (lemma y x∋y ) ) where
@@ -260,6 +277,7 @@ open import Data.Unit
      ε-induction-ord : (ox : Ordinal) { oy : Ordinal } → oy o< ox → ψ (ord→od oy)
      ε-induction-ord ox {oy} lt = TransFinite {λ oy → ψ (ord→od oy)} induction oy
 
+-- level trick (what'a shame)
 ε-induction1 : { ψ : HOD  → Set (suc n)}
    → ( {x : HOD } → ({ y : HOD } →  x ∋ y → ψ y ) → ψ x )
    → (x : HOD ) → ψ x
@@ -321,7 +339,7 @@ HOD→ZF   = record {
     Power : HOD  → HOD 
     Power A = Replace (OPwr (Ord (od→ord A))) ( λ x → A ∩ x )
     -- ｛_｝ : ZFSet → ZFSet
-    -- ｛ x ｝ = ( x ,  x )     -- it works but we don't use 
+    -- ｛ x ｝ = ( x ,  x )     -- better to use (x , x) directly
 
     data infinite-d  : ( x : Ordinal  ) → Set n where
         iφ :  infinite-d o∅

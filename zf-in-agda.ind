@@ -54,7 +54,10 @@ It has some amount of difficulty and self circulating discussion.
 
 I'm planning to do it in my old age, but I'm enough age now.
 
-This is done during from May to September.
+if you familier with Agda, you can skip to 
+<a href="#set-theory"> 
+there
+</a>
 
 --Agda and Intuitionistic Logic 
 
@@ -262,7 +265,8 @@ postulate can be written the middle of a proof.
 
 postulate can be constructive.
 
-postulate can be inconsistent, which result everything has a proof.
+postulate can be inconsistent, which result everything has a proof. Actualy this assumption
+doesnot work for Ordinals, we discuss this later.
 
 -- A ∨ B
 
@@ -403,6 +407,7 @@ If we cannot prove something, we can safely postulate it unless it leads a contr
  
 --Classical story of ZF Set Theory
 
+<a name="set-theory">
 Assuming ZF, constructing  a model of ZF is a flow of classical Set Theory, which leads
 a relative consistency proof of the Set Theory.
 Ordinal number is used in the flow. 
@@ -453,7 +458,7 @@ Any two ordinal can be compared, that is less, equal or more, that is total orde
           → ( (x : ord)  → ( (y : ord  ) → y o< x → ψ y ) → ψ x )
           →  ∀ (x : ord)  → ψ x
 
---Concrete Ordinals
+--Concrete Ordinals or Countable Ordinals
 
 We can define a list like structure with level, which is a kind of two dimensional infinite array.
 
@@ -525,6 +530,9 @@ ZF, so this kind of thing is allowed.
 
 But in our case, we have no ZF theory, so we are going to use Ordinals.
 
+The idea is to use an ordinal as a pointer to a record which defines a Set.
+If the recored defines a series of Ordinals which is a pointer to the Set. 
+This record  looks like a Set.
 
 --Ordinal Definable Set
 
@@ -540,75 +548,92 @@ is an Ordinal Definable Set (OD). In Agda, OD is defined as follows.
 
 Ordinals itself is not a set in a ZF Set theory but a class. In OD, 
 
-   record { def = λ x → true }
+   data One : Set n where
+      OneObj : One
 
-means Ordinals itself, so ODs are larger than a notion of ZF Set Theory,
-but we don't care about it.
+   record { def = λ x → One }
+
+means it accepets all Ordinals, i.e. this is Ordinals itself, so ODs are larger than ZF Set.
+You can say OD is a class in ZF Set Theory term.
 
 
---∋ in OD
+--OD is not ZF Set
 
-OD is a predicate on Ordinals and it does not contains OD directly. If we have a mapping
+If we have 1 to 1 mapping between an OD and an Ordinal, OD contains several ODs and OD looks like
+a Set.  The idea is to use an ordinal as a pointer to OD.
+Unfortunately this scheme does not work well. As we saw OD includes all Ordinals, 
+which is a maximum of OD, but Ordinals has no maximum at all. So we have a contradction like
 
-      od→ord : OD  → Ordinal 
+   ¬OD-order : ( od→ord : OD  → Ordinal ) 
+      → ( ord→od : Ordinal  → OD ) → ( { x y : OD  }  → def y ( od→ord x ) → od→ord x o< od→ord y) → ⊥
+   ¬OD-order od→ord ord→od c<→o< = ?
 
-we may check an OD is an element of the OD using def.
+Actualy we can prove this contrdction, so we need some restrctions on OD.
+
+This is a kind of Russel paradox, that is if OD contains everything, what happens if it contains itself.
+
+-- HOD : Hereditarily Ordinal Definable
+
+What we need is a bounded OD, the containment is limited by an ordinal.
+
+    record HOD : Set (suc n) where
+      field
+        od : OD
+        odmax : Ordinal
+        <odmax : {y : Ordinal} → def od y → y o< odmax
+
+In classical Set Theory, HOD stands for Hereditarily Ordinal Definable, which means
+
+     HOD = { x | TC x ⊆ OD }
+
+TC x is all transitive closure of x, that is elements of x and following all elements of them are all OD. But 
+what is x? In this case, x is an Set which we don't have yet. In our case, HOD is a bounded OD. 
+
+--1 to 1 mapping between an HOD and an Ordinal
+
+HOD is a predicate on Ordinals and the solution is bounded by some ordinal. If we have a mapping
+
+  od→ord : HOD  → Ordinal 
+  ord→od : Ordinal  → HOD  
+  oiso   :  {x : HOD }      → ord→od ( od→ord x ) ≡ x
+  diso   :  {x : Ordinal } → od→ord ( ord→od x ) ≡ x
+
+we can check an HOD is an element of the OD using def.
 
 A ∋ x can be define as follows.
 
-    _∋_ : ( A x : OD  ) → Set n
-    _∋_  A x  = def A ( od→ord x )
+    _∋_ : ( A x : HOD  ) → Set n
+    _∋_  A x  = def (od A) ( od→ord x )
 
 In ψ : Ordinal → Set,  if A is a  record { def = λ x → ψ x } , then
 
     A x = def A ( od→ord x ) = ψ (od→ord x)
 
---1 to 1 mapping between an OD and an Ordinal
-
-  od→ord : OD  → Ordinal 
-  ord→od : Ordinal  → OD  
-  oiso   :  {x : OD }      → ord→od ( od→ord x ) ≡ x
-  diso   :  {x : Ordinal } → od→ord ( ord→od x ) ≡ x
-
 They say the existing of the mappings can be proved in Classical Set Theory, but we
 simply assumes these non constructively.
-
-We use postulate, it may contains additional restrictions which are not clear now. 
-It look like the mapping should be a subset of Ordinals, but we don't explicitly
-state it.
 
 <center><img src="fig/ord-od-mapping.svg"></center>
 
 --Order preserving in the mapping of OD and Ordinal
 
-Ordinals have the order and OD has a natural order based on inclusion ( def / ∋ ).
+Ordinals have the order and HOD has a natural order based on inclusion ( def / ∋ ).
 
-     def y ( od→ord x )
+     def (od y) ( od→ord x )
 
-An elements of OD should be defined before the OD, that is, an ordinal corresponding an elements
+An elements of HOD should be defined before the HOD, that is, an ordinal corresponding an elements
 have to be smaller than the corresponding ordinal of the containing OD.
+We also assumes subset is always smaller. This is necessary to make a limit of Power Set.
 
-  c<→o<  :  {x y : OD  }   → def y ( od→ord x ) → od→ord x o< od→ord y
+  c<→o<  :  {x y : HOD  }   → def (od y) ( od→ord x ) → od→ord x o< od→ord y
+  ⊆→o≤   :  {y z : HOD  }   → ({x : Ordinal} → def (od y) x → def (od z) x ) → od→ord y o< osuc (od→ord z)
 
-This is also said to be provable in classical Set Theory, but we simply assumes it.
-
-OD has an order based on the corresponding ordinal, but it may not have corresponding def / ∋
-relation. This means the reverse order preservation, 
+If wa assumes reverse order preservation, 
 
   o<→c<  : {n : Level} {x y : Ordinal  } → x o< y → def (ord→od y) x 
 
-is not valid. If we assumes it, ∀ x ∋ ∅ becomes true, which manes all OD becomes Ordinals in
-the model.
+∀ x ∋ ∅ becomes true, which manes all OD becomes Ordinals in the model.
 
 <center><img src="fig/ODandOrdinals.svg"></center>
-
---ISO
-
-It also requires isomorphisms, 
-
-  oiso   :  {x : OD }      → ord→od ( od→ord x ) ≡ x
-  diso   :  {x : Ordinal } → od→ord ( ord→od x ) ≡ x
-
 
 --Various Sets
 
@@ -617,6 +642,7 @@ In classical Set Theory, there is a hierarchy call L, which can be defined by a 
     Ordinal / things satisfies axiom of Ordinal / extension of natural number 
     V / hierarchical construction of Set from φ   
     L / hierarchical predicate definable construction of Set from φ   
+    HOD / Hereditarily Ordinal Definable
     OD / equational formula on Ordinals 
     Agda Set / Type / it also has a level
 
@@ -682,8 +708,10 @@ This is already written in Agda, so we use these as axioms. All inputs have ∀.
 
 OD is an equation on Ordinals, we can simply write axiom of pair in the OD.
 
-    _,_ : OD  → OD  → OD 
-    x , y = record { def = λ t → (t ≡ od→ord x ) ∨ ( t ≡ od→ord y ) } 
+    _,_ : HOD  → HOD  → HOD 
+    x , y = record { od = record { def = λ t → (t ≡ od→ord x ) ∨ ( t ≡ od→ord y ) } ; odmax = ? ; <odmax = ? }
+
+It is easy to find out odmax from odmax of x and y.
 
 ≡ is an equality of λ terms, but please not that this is equality on Ordinals.
 
@@ -741,9 +769,9 @@ x ==  y can be defined in this way.
          eq→ : ∀ { x : Ordinal  } → def a x → def b x
          eq← : ∀ { x : Ordinal  } → def b x → def a x
 
-Actually, (z : OD) → (A ∋ z) ⇔ (B ∋ z) implies A == B.
+Actually, (z : HOD) → (A ∋ z) ⇔ (B ∋ z) implies od A == od B.
 
-    extensionality0 : {A B : OD } → ((z : OD) → (A ∋ z) ⇔ (B ∋ z)) → A == B
+    extensionality0 : {A B : HOD } → ((z : HOD) → (A ∋ z) ⇔ (B ∋ z)) → od A == od B
     eq→ (extensionality0 {A} {B} eq ) {x} d = ?
     eq← (extensionality0 {A} {B} eq ) {x} d = ?
 
@@ -751,41 +779,38 @@ Actually, (z : OD) → (A ∋ z) ⇔ (B ∋ z) implies A == B.
 
 Actual proof is rather complicated.
 
-   eq→ (extensionality0 {A} {B} eq ) {x} d = def-iso  {A} {B} (sym diso) (proj1 (eq (ord→od x))) d
-   eq← (extensionality0 {A} {B} eq ) {x} d = def-iso  {B} {A} (sym diso) (proj2 (eq (ord→od x))) d
+   eq→ (extensionality0 {A} {B} eq ) {x} d = odef-iso  {A} {B} (sym diso) (proj1 (eq (ord→od x))) d
+   eq← (extensionality0 {A} {B} eq ) {x} d = odef-iso  {B} {A} (sym diso) (proj2 (eq (ord→od x))) d
 
 where
 
-   def-iso : {A B : OD } {x y : Ordinal } → x ≡ y  → (def A y → def B y)  → def A x → def B x
-   def-iso refl t = t
+   odef-iso : {A B : HOD } {x y : Ordinal } → x ≡ y  → (def A (od y) → def (od B) y)  → def (od A) x → def (od B) x
+   odef-iso refl t = t
 
 --Validity of Axiom of Extensionality
 
-If we can derive (w ∋ A) ⇔ (w ∋ B) from A == B, the axiom becomes valid, but it seems impossible, 
+If we can derive (w ∋ A) ⇔ (w ∋ B) from od A == od B, the axiom becomes valid, but it seems impossible, 
 so we assumes
 
-  ==→o≡ : { x y : OD  } → (x == y) → x ≡ y
+  ==→o≡ : { x y : HOD  } → (od x == od y) → x ≡ y
 
 Using this, we have
 
-    extensionality : {A B w : OD  } → ((z : OD ) → (A ∋ z) ⇔ (B ∋ z)) → (w ∋ A) ⇔ (w ∋ B)
+    extensionality : {A B w : HOD  } → ((z : HOD ) → (A ∋ z) ⇔ (B ∋ z)) → (w ∋ A) ⇔ (w ∋ B)
     proj1 (extensionality {A} {B} {w} eq ) d = subst (λ k → w ∋ k) ( ==→o≡ (extensionality0 {A} {B} eq) ) d
-    proj2 (extensionality {A} {B} {w} eq ) d = subst (λ k → w ∋ k) (sym ( ==→o≡ (extensionality0 {A} {B} eq) )) d
-
-This assumption means we may have an equivalence set on any predicates.
+    proj2 (extensionality {A} {B} {w} eq ) d = subst (λ k → w ∋ k) (sym ( ==→o≡ (extensionality0 {A} {B} eq) )) d 
 
 --Non constructive assumptions so far
 
-We have correspondence between OD and Ordinals and one directional order preserving.
-
-We also have equality assumption.
-
-  od→ord : OD  → Ordinal
-  ord→od : Ordinal  → OD
-  oiso   :  {x : OD }      → ord→od ( od→ord x ) ≡ x
-  diso   :  {x : Ordinal } → od→ord ( ord→od x ) ≡ x
-  c<→o<  :  {x y : OD  }   → def y ( od→ord x ) → od→ord x o< od→ord y
-  ==→o≡ : { x y : OD  } → (x == y) → x ≡ y
+  od→ord : HOD  → Ordinal 
+  ord→od : Ordinal  → HOD  
+  c<→o<  :  {x y : HOD  }   → def (od y) ( od→ord x ) → od→ord x o< od→ord y
+  ⊆→o≤   :  {y z : HOD  }   → ({x : Ordinal} → def (od y) x → def (od z) x ) → od→ord y o< osuc (od→ord z)
+  oiso   :  {x : HOD }      → ord→od ( od→ord x ) ≡ x
+  diso   :  {x : Ordinal }  → od→ord ( ord→od x ) ≡ x
+  ==→o≡  :  {x y : HOD  }   → (od x == od y) → x ≡ y
+  sup-o  :  (A : HOD) → (     ( x : Ordinal ) → def (od A) x →  Ordinal ) →  Ordinal 
+  sup-o< :  (A : HOD) → { ψ : ( x : Ordinal ) → def (od A) x →  Ordinal } → ∀ {x : Ordinal } → (lt : def (od A) x ) → ψ x lt o<  sup-o A ψ 
 
 
 --Axiom which have negation form
