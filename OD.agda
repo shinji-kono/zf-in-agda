@@ -106,6 +106,10 @@ record ODAxiom : Set (suc n) where
 postulate  odAxiom : ODAxiom
 open ODAxiom odAxiom
 
+-- possible order restriction
+hod-ord< :  {x : HOD } → Set n
+hod-ord< {x} =  od→ord x o< next (odmax x)
+
 -- OD ⇔ Ordinal leads a contradiction, so we need bounded HOD
 ¬OD-order : ( od→ord : OD  → Ordinal ) → ( ord→od : Ordinal  → OD ) → ( { x y : OD  }  → def y ( od→ord x ) → od→ord x o< od→ord y) → ⊥
 ¬OD-order od→ord ord→od c<→o< = osuc-< <-osuc (c<→o< {Ords} OneObj )
@@ -212,12 +216,32 @@ is-o∅ x | tri≈ ¬a b ¬c = yes b
 is-o∅ x | tri> ¬a ¬b c = no ¬b
 
 -- the pair
-_,_ : HOD  → HOD  → HOD 
+_,_ : HOD  → HOD  → HOD  
 x , y = record { od = record { def = λ t → (t ≡ od→ord x ) ∨ ( t ≡ od→ord y ) } ; odmax = omax (od→ord x)  (od→ord y) ; <odmax = lemma }  where
     lemma : {t : Ordinal} → (t ≡ od→ord x) ∨ (t ≡ od→ord y) → t o< omax (od→ord x) (od→ord y)
     lemma {t} (case1 refl) = omax-x  _ _
     lemma {t} (case2 refl) = omax-y  _ _
 
+pair-xx<xy : {x y : HOD} → od→ord (x , x) o< osuc (od→ord (x , y) )
+pair-xx<xy {x} {y} = ⊆→o≤  lemma where
+   lemma : {z : Ordinal} → def (od (x , x)) z → def (od (x , y)) z
+   lemma {z} (case1 refl) = case1 refl
+   lemma {z} (case2 refl) = case1 refl
+
+--  another form of infinite
+-- pair-ord< :  {x : Ordinal } → Set n
+pair-ord< : {x : HOD } → ( {y : HOD } → od→ord y o< next (odmax y) ) → od→ord ( x , x ) o< next (od→ord x)
+pair-ord< {x} ho< = subst (λ k → od→ord (x , x) o< k ) lemmab0 lemmab1  where
+       lemmab0 : next (odmax (x , x)) ≡ next (od→ord x)
+       lemmab0 = trans (cong (λ k → next k) (omxx _)) (sym nexto≡)
+       lemmab1 : od→ord (x , x) o< next ( odmax (x , x))
+       lemmab1 = ho<
+
+pair<y : {x y : HOD } → y ∋ x  → od→ord (x , x) o< osuc (od→ord y)
+pair<y {x} {y} y∋x = ⊆→o≤ lemma where
+   lemma : {z : Ordinal} → def (od (x , x)) z → def (od y) z
+   lemma (case1 refl) = y∋x
+   lemma (case2 refl) = y∋x
 
 -- open import Relation.Binary.HeterogeneousEquality as HE using (_≅_ ) 
 -- postulate f-extensionality : { n : Level}  → Relation.Binary.PropositionalEquality.Extensionality n (suc n)
@@ -241,19 +265,21 @@ od⊆→o≤  : {x y : HOD } → x ⊆ y → od→ord x o< osuc (od→ord y)
 od⊆→o≤ {x} {y} lt  =  ⊆→o≤ {x} {y} (λ {z} x>z  → subst (λ k → def (od y) k ) diso (incl lt (subst (λ k → def (od x) k ) (sym diso) x>z )))
 
 -- if we have od→ord (x , x) ≡ osuc (od→ord x),  ⊆→o≤ → c<→o<
-pair<y : {x y : HOD } → y ∋ x  → od→ord (x , x) o< osuc (od→ord y)
-pair<y {x} {y} y∋x = ⊆→o≤ lemma where
-   lemma : {z : Ordinal} → def (od (x , x)) z → def (od y) z
-   lemma (case1 refl) = y∋x
-   lemma (case2 refl) = y∋x
-
--- ⊆→o≤→c<→o< : ({x : HOD} → od→ord (x , x) ≡ osuc (od→ord x) )
---    →  ({y z : HOD  }   → ({x : Ordinal} → def (od y) x → def (od z) x ) → od→ord y o< osuc (od→ord z) )
---    →   {x y : HOD  }   → def (od y) ( od→ord x ) → od→ord x o< od→ord y 
--- ⊆→o≤→c<→o< peq ⊆→o≤ {x} {y} y∋x with trio< (od→ord x) (od→ord y)
--- ⊆→o≤→c<→o< peq ⊆→o≤ {x} {y} y∋x | tri< a ¬b ¬c = a
--- ⊆→o≤→c<→o< peq ⊆→o≤ {x} {y} y∋x | tri≈ ¬a b ¬c = ⊥-elim ( o<¬≡ (peq {x}) (pair<y (subst (λ k → def (od k)  (od→ord x)) {!!} y∋x)))
--- ⊆→o≤→c<→o< peq ⊆→o≤ {x} {y} y∋x | tri> ¬a ¬b c = ⊥-elim ( o<¬≡ (peq {x}) (pair<y (subst (λ k → def (od k)  (od→ord x)) {!!} y∋x)))
+⊆→o≤→c<→o< : ({x : HOD} → od→ord (x , x) ≡ osuc (od→ord x) )
+   →  ({y z : HOD  }   → ({x : Ordinal} → def (od y) x → def (od z) x ) → od→ord y o< osuc (od→ord z) )
+   →   {x y : HOD  }   → def (od y) ( od→ord x ) → od→ord x o< od→ord y 
+⊆→o≤→c<→o< peq ⊆→o≤ {x} {y} y∋x with trio< (od→ord x) (od→ord y)
+⊆→o≤→c<→o< peq ⊆→o≤ {x} {y} y∋x | tri< a ¬b ¬c = a
+⊆→o≤→c<→o< peq ⊆→o≤ {x} {y} y∋x | tri≈ ¬a b ¬c = ⊥-elim ( o<¬≡ (peq {x}) (pair<y (subst (λ k → k ∋ x) (sym ( ==→o≡ {x} {y} (ord→== b))) y∋x )))
+⊆→o≤→c<→o< peq ⊆→o≤ {x} {y} y∋x | tri> ¬a ¬b c =
+  ⊥-elim ( o<> (⊆→o≤ {x , x} {y} y⊆x,x ) lemma1 ) where
+    lemma : {z : Ordinal} → (z ≡ od→ord x) ∨ (z ≡ od→ord x) → od→ord x ≡ z
+    lemma (case1 refl) = refl
+    lemma (case2 refl) = refl
+    y⊆x,x : {z : Ordinals.ord O} → def (od (x , x)) z → def (od y) z
+    y⊆x,x {z} lt = subst (λ k → def (od y) k ) (lemma lt) y∋x 
+    lemma1 : osuc (od→ord y) o< od→ord (x , x)
+    lemma1 = subst (λ k → osuc (od→ord y) o< k ) (sym (peq {x})) (osucc c ) 
 
 subset-lemma : {A x : HOD  } → ( {y : HOD } →  x ∋ y → ZFSubset A x ∋  y ) ⇔  ( x ⊆ A  )
 subset-lemma  {A} {x} = record {
@@ -347,10 +373,10 @@ HOD→ZF   = record {
                 infinite-d  (od→ord ( Union (ord→od x , (ord→od x , ord→od x ) ) ))
 
     -- ω can be diverged in our case, since we have no restriction on the corresponding ordinal of a pair.
-    -- We simply assumes nfinite-d y has a maximum.
+    -- We simply assumes infinite-d y has a maximum.
     -- 
-    -- This means that many of OD cannot be HODs because of the od→ord mapping divergence.
-    -- We should have some axioms to prevent this, but it may complicate thins.
+    -- This means that many of OD may not be HODs because of the od→ord mapping divergence.
+    -- We should have some axioms to prevent this such as od→ord x o< next (odmax x).
     -- 
     postulate
         ωmax : Ordinal
@@ -358,6 +384,32 @@ HOD→ZF   = record {
 
     infinite : HOD 
     infinite = record { od = record { def = λ x → infinite-d x } ; odmax = ωmax ; <odmax = <ωmax } 
+
+    infinite' : ({x : HOD} → od→ord x o< next (odmax x)) → HOD 
+    infinite' ho< = record { od = record { def = λ x → infinite-d x } ; odmax = next o∅ ; <odmax = lemma }  where
+        u : (y : Ordinal ) → HOD
+        u y = Union (ord→od y , (ord→od y , ord→od y))
+        lemma : {y : Ordinal} → infinite-d y → y o< next o∅
+        lemma {o∅} iφ = x<nx
+        lemma (isuc {y} x) = lemma2 where
+            lemma0 : y o< next o∅
+            lemma0 = lemma x
+            lemma8 : od→ord (ord→od y , ord→od y) o< next (odmax (ord→od y , ord→od y))
+            lemma8 = ho<
+            ---           (x,y) < next (omax x y) < next (osuc y) = next y 
+            lemmaa : {x y : HOD} → od→ord x o< od→ord y → od→ord (x , y) o< next (od→ord y)
+            lemmaa {x} {y} x<y = subst (λ k → od→ord (x , y) o< k ) (sym nexto≡) (subst (λ k → od→ord (x , y) o< next k ) (sym (omax< _ _ x<y)) ho< )
+            lemma81 : od→ord (ord→od y , ord→od y) o< next (od→ord (ord→od y))
+            lemma81 = nexto=n (subst (λ k →  od→ord (ord→od y , ord→od y) o< k ) (cong (λ k → next k) (omxx _)) lemma8)
+            lemma9 : od→ord (ord→od y , (ord→od y , ord→od y)) o< next (od→ord (ord→od y , ord→od y))
+            lemma9 = lemmaa (c<→o< (case1 refl))
+            lemma71 : od→ord (ord→od y , (ord→od y , ord→od y)) o< next (od→ord (ord→od y))
+            lemma71 = next< lemma81 lemma9
+            lemma1 : od→ord (u y) o< next (osuc (od→ord (ord→od y , (ord→od y , ord→od y))))
+            lemma1 = ho<
+            lemma2 : od→ord (u y) o< next o∅
+            lemma2 = next< lemma0 (next< (subst (λ k → od→ord (ord→od y , (ord→od y , ord→od y)) o< next k) diso lemma71 ) (nexto=n lemma1))
+        
 
     _=h=_ : (x y : HOD) → Set n
     x =h= y  = od x == od y

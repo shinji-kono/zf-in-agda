@@ -2,7 +2,7 @@ Tue Jul 23 11:02:50 JST 2019
 
     define cardinals 
     prove CH in OD→ZF
-    define Ultra filter
+    define Ultra filter  ... done
     define L M : ZF ZFSet = M is an OD
     define L N : ZF ZFSet = N = G M (G is a generic fitler on M )
     prove ¬ CH on L N
@@ -10,7 +10,7 @@ Tue Jul 23 11:02:50 JST 2019
 
 Mon Jul  8 19:43:37 JST 2019
 
-    ordinal-definable.agda assumes all ZF Set are ordinals, that it too restrictive
+    ordinal-definable.agda assumes all ZF Set are ordinals, that it too restrictive  ... fixed
 
     remove ord-Ord  and prove with some assuption in HOD.agda
         union, power set, replace, inifinite

@@ -20,8 +20,7 @@ record IsOrdinals {n : Level} (ord : Set n)  (o∅ : ord ) (osuc : ord → ord )
      ¬x<0 :   { x  : ord  } → ¬ ( x o< o∅  )
      <-osuc :  { x : ord  } → x o< osuc x
      osuc-≡< :  { a x : ord  } → x o< osuc a  →  (x ≡ a ) ∨ (x o< a)  
-     not-limit :  ( x : ord  ) → Dec ( ¬ ((y : ord) → ¬ (x ≡ osuc y) ))
-     next-limit : { y : ord } → (y o< next y ) ∧  ((x : ord) → x o< next y → osuc x o< next y )
+     not-limit-p :  ( x : ord  ) → Dec ( ¬ ((y : ord) → ¬ (x ≡ osuc y) ))
      TransFinite : { ψ : ord  → Set n }
           → ( (x : ord)  → ( (y : ord  ) → y o< x → ψ y ) → ψ x )
           →  ∀ (x : ord)  → ψ x
@@ -29,6 +28,11 @@ record IsOrdinals {n : Level} (ord : Set n)  (o∅ : ord ) (osuc : ord → ord )
           → ( (x : ord)  → ( (y : ord  ) → y o< x → ψ y ) → ψ x )
           →  ∀ (x : ord)  → ψ x
 
+record IsNext {n : Level } (ord : Set n)  (o∅ : ord ) (osuc : ord → ord )  (_o<_ : ord → ord → Set n) (next : ord → ord ) : Set (suc (suc n)) where
+   field
+     x<nx :    { y : ord } → (y o< next y )
+     osuc<nx : { x y : ord } → x o< next y → osuc x o< next y 
+     ¬nx<nx :  {x y : ord} → y o< x → x o< next y →  ¬ ((z : ord) → ¬ (x ≡ osuc z)) 
 
 record Ordinals {n : Level} : Set (suc (suc n)) where
    field
@@ -38,6 +42,7 @@ record Ordinals {n : Level} : Set (suc (suc n)) where
      _o<_ : ord → ord → Set n
      next :  ord → ord
      isOrdinal : IsOrdinals ord o∅ osuc _o<_ next
+     isNext : IsNext ord o∅ osuc _o<_ next
 
 module inOrdinal  {n : Level} (O : Ordinals {n} ) where
 
@@ -61,7 +66,10 @@ module inOrdinal  {n : Level} (O : Ordinals {n} ) where
         <-osuc = IsOrdinals.<-osuc  (Ordinals.isOrdinal O)
         TransFinite = IsOrdinals.TransFinite  (Ordinals.isOrdinal O)
         TransFinite1 = IsOrdinals.TransFinite1  (Ordinals.isOrdinal O)
-        next-limit = IsOrdinals.next-limit  (Ordinals.isOrdinal O)
+
+        x<nx = IsNext.x<nx (Ordinals.isNext O)
+        osuc<nx = IsNext.osuc<nx (Ordinals.isNext O) 
+        ¬nx<nx = IsNext.¬nx<nx (Ordinals.isNext O) 
 
         o<-dom :   { x y : Ordinal } → x o< y → Ordinal 
         o<-dom  {x} _ = x
@@ -105,6 +113,12 @@ module inOrdinal  {n : Level} (O : Ordinals {n} ) where
         osucc {ox} {oy} oy<ox | tri> ¬a ¬b c with  osuc-≡< c
         osucc {ox} {oy} oy<ox | tri> ¬a ¬b c | case1 eq = ⊥-elim (o<¬≡ (sym eq) oy<ox)
         osucc {ox} {oy} oy<ox | tri> ¬a ¬b c | case2 lt = ⊥-elim (o<> lt oy<ox)
+
+        osucprev :  {ox oy : Ordinal } → osuc oy o< osuc ox  → oy o< ox  
+        osucprev {ox} {oy} oy<ox with trio< oy ox
+        osucprev {ox} {oy} oy<ox | tri< a ¬b ¬c = a
+        osucprev {ox} {oy} oy<ox | tri≈ ¬a b ¬c = ⊥-elim (o<¬≡ (cong (λ k → osuc k) b) oy<ox )
+        osucprev {ox} {oy} oy<ox | tri> ¬a ¬b c = ⊥-elim (o<> (osucc c) oy<ox )
 
         open _∧_
 
@@ -212,6 +226,30 @@ module inOrdinal  {n : Level} (O : Ordinals {n} ) where
           → (exists : ¬ (∀ y → ¬ ( ψ y ) ))
           → ¬ p
         FExists  {m} {l} ψ {p} P = contra-position ( λ p y ψy → P {y} ψy p ) 
+
+        next< : {x y z : Ordinal} → x o< next z  → y o< next x → y o< next z
+        next< {x} {y} {z} x<nz y<nx with trio< y (next z)
+        next< {x} {y} {z} x<nz y<nx | tri< a ¬b ¬c = a
+        next< {x} {y} {z} x<nz y<nx | tri≈ ¬a b ¬c = ⊥-elim (¬nx<nx x<nz (subst (λ k → k o< next x) b y<nx)
+           (λ w nz=ow → o<¬≡ nz=ow (subst₂ (λ j k → j o< k ) (sym nz=ow) nz=ow (osuc<nx (subst (λ k → w o< k ) (sym nz=ow) <-osuc) ))))
+        next< {x} {y} {z} x<nz y<nx | tri> ¬a ¬b c = ⊥-elim (¬nx<nx x<nz (ordtrans c y<nx )
+           (λ w nz=ow → o<¬≡ (sym nz=ow) (osuc<nx (subst (λ k → w o< k ) (sym nz=ow) <-osuc ))))
+
+        osuc< : {x y : Ordinal} → osuc x ≡ y → x o< y
+        osuc< {x} {y} refl = <-osuc 
+
+        nexto=n : {x y : Ordinal} → x o< next (osuc y)  → x o< next y 
+        nexto=n {x} {y} x<noy = next< (osuc<nx x<nx) x<noy
+
+        nexto≡ : {x : Ordinal} → next x ≡ next (osuc x)  
+        nexto≡ {x} with trio< (next x) (next (osuc x) ) 
+        --    next x o< next (osuc x ) ->  osuc x o< next x o< next (osuc x) -> next x ≡ osuc z -> z o o< next x -> osuc z o< next x -> next x o< next x
+        nexto≡ {x} | tri< a ¬b ¬c = ⊥-elim (¬nx<nx (osuc<nx  x<nx ) a
+           (λ z eq → o<¬≡ (sym eq) (osuc<nx  (osuc< (sym eq)))))
+        nexto≡ {x} | tri≈ ¬a b ¬c = b
+        --    next (osuc x) o< next x ->  osuc x o< next (osuc x) o< next x -> next (osuc x) ≡ osuc z -> z o o< next (osuc x) ...
+        nexto≡ {x} | tri> ¬a ¬b c = ⊥-elim (¬nx<nx (ordtrans <-osuc x<nx) c
+           (λ z eq → o<¬≡ (sym eq) (osuc<nx  (osuc< (sym eq)))))
 
         record OrdinalSubset (maxordinal : Ordinal) : Set (suc n) where
           field

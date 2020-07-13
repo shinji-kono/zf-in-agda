@@ -98,7 +98,9 @@ It has some amount of difficulty and self circulating discussion.
 <p>
 I'm planning to do it in my old age, but I'm enough age now.
 <p>
-This is done during from May to September.
+if you familier with Agda, you can skip to <a href="#set-theory"> 
+there
+</a>
 <p>
 
 <hr/>
@@ -375,7 +377,8 @@ postulate can be written the middle of a proof.
 <p>
 postulate can be constructive.
 <p>
-postulate can be inconsistent, which result everything has a proof.
+postulate can be inconsistent, which result everything has a proof. Actualy this assumption
+doesnot work for Ordinals, we discuss this later.
 <p>
 
 <hr/>
@@ -586,6 +589,7 @@ If we cannot prove something, we can safely postulate it unless it leads a contr
 <h2><a name="content023">Classical story of ZF Set Theory</a></h2>
 
 <p>
+<a name="set-theory">
 Assuming ZF, constructing  a model of ZF is a flow of classical Set Theory, which leads
 a relative consistency proof of the Set Theory.
 Ordinal number is used in the flow. 
@@ -647,7 +651,7 @@ Any two ordinal can be compared, that is less, equal or more, that is total orde
 </pre>
 
 <hr/>
-<h2><a name="content026">Concrete Ordinals</a></h2>
+<h2><a name="content026">Concrete Ordinals or Countable Ordinals</a></h2>
 
 <p>
 We can define a list like structure with level, which is a kind of two dimensional infinite array.
@@ -742,6 +746,9 @@ ZF, so this kind of thing is allowed.
 <p>
 But in our case, we have no ZF theory, so we are going to use Ordinals.
 <p>
+The idea is to use an ordinal as a pointer to a record which defines a Set.
+If the recored defines a series of Ordinals which is a pointer to the Set. This record  looks like a Set.
+<p>
 
 <hr/>
 <h2><a name="content032">Ordinal Definable Set</a></h2>
@@ -765,30 +772,76 @@ Ordinals itself is not a set in a ZF Set theory but a class. In OD,
 <p>
 
 <pre>
-   record { def = λ x → true }
+   data One : Set n where
+      OneObj : One
+   record { def = λ x → One }
 
 </pre>
-means Ordinals itself, so ODs are larger than a notion of ZF Set Theory,
-but we don't care about it.
+means it accepets all Ordinals, i.e. this is Ordinals itself, so ODs are larger than ZF Set.
+You can say OD is a class in ZF Set Theory term.
 <p>
 
 <hr/>
-<h2><a name="content033">∋ in OD</a></h2>
-OD is a predicate on Ordinals and it does not contains OD directly. If we have a mapping
+<h2><a name="content033">OD is not ZF Set</a></h2>
+If we have 1 to 1 mapping between an OD and an Ordinal, OD contains several ODs and OD looks like
+a Set.  The idea is to use an ordinal as a pointer to OD.
+Unfortunately this scheme does not work well. As we saw OD includes all Ordinals, which is a maximum of OD, but Ordinals has no maximum at all. So we have a contradction like
 <p>
 
 <pre>
-      od→ord : OD  → Ordinal 
+   ¬OD-order : ( od→ord : OD  → Ordinal ) 
+      → ( ord→od : Ordinal  → OD ) → ( { x y : OD  }  → def y ( od→ord x ) → od→ord x o&lt; od→ord y) → ⊥
+   ¬OD-order od→ord ord→od c&lt;→o&lt; = ?
 
 </pre>
-we may check an OD is an element of the OD using def.
+Actualy we can prove this contrdction, so we need some restrctions on OD.
+<p>
+This is a kind of Russel paradox, that is if OD contains everything, what happens if it contains itself.
+<p>
+
+<hr/>
+<h2><a name="content034"> HOD : Hereditarily Ordinal Definable</a></h2>
+What we need is a bounded OD, the containment is limited by an ordinal.
+<p>
+
+<pre>
+    record HOD : Set (suc n) where
+      field
+        od : OD
+        odmax : Ordinal
+        &lt;odmax : {y : Ordinal} → def od y → y o&lt; odmax
+
+</pre>
+In classical Set Theory, HOD stands for Hereditarily Ordinal Definable, which means
+<p>
+
+<pre>
+     HOD = { x | TC x ⊆ OD }
+
+</pre>
+TC x is all transitive closure of x, that is elements of x and following all elements of them are all OD. But what is x? In this case, x is an Set which we don't have yet. In our case, HOD is a bounded OD. 
+<p>
+
+<hr/>
+<h2><a name="content035">1 to 1 mapping between an HOD and an Ordinal</a></h2>
+HOD is a predicate on Ordinals and the solution is bounded by some ordinal. If we have a mapping
+<p>
+
+<pre>
+  od→ord : HOD  → Ordinal 
+  ord→od : Ordinal  → HOD  
+  oiso   :  {x : HOD }      → ord→od ( od→ord x ) ≡ x
+  diso   :  {x : Ordinal } → od→ord ( ord→od x ) ≡ x
+
+</pre>
+we can check an HOD is an element of the OD using def.
 <p>
 A ∋ x can be define as follows.
 <p>
 
 <pre>
-    _∋_ : ( A x : OD  ) → Set n
-    _∋_  A x  = def A ( od→ord x )
+    _∋_ : ( A x : HOD  ) → Set n
+    _∋_  A x  = def (od A) ( od→ord x )
 
 </pre>
 In ψ : Ordinal → Set,  if A is a  record { def = λ x → ψ x } , then
@@ -798,77 +851,47 @@ In ψ : Ordinal → Set,  if A is a  record { def = λ x → ψ x } , then
     A x = def A ( od→ord x ) = ψ (od→ord x)
 
 </pre>
-
-<hr/>
-<h2><a name="content034">1 to 1 mapping between an OD and an Ordinal</a></h2>
-
-<p>
-
-<pre>
-  od→ord : OD  → Ordinal 
-  ord→od : Ordinal  → OD  
-  oiso   :  {x : OD }      → ord→od ( od→ord x ) ≡ x
-  diso   :  {x : Ordinal } → od→ord ( ord→od x ) ≡ x
-
-</pre>
 They say the existing of the mappings can be proved in Classical Set Theory, but we
 simply assumes these non constructively.
-<p>
-We use postulate, it may contains additional restrictions which are not clear now. It look like the mapping should be a subset of Ordinals, but we don't explicitly
-state it.
 <p>
 <img src="fig/ord-od-mapping.svg">
 
 <p>
 
 <hr/>
-<h2><a name="content035">Order preserving in the mapping of OD and Ordinal</a></h2>
-Ordinals have the order and OD has a natural order based on inclusion ( def / ∋ ).
+<h2><a name="content036">Order preserving in the mapping of OD and Ordinal</a></h2>
+Ordinals have the order and HOD has a natural order based on inclusion ( def / ∋ ).
 <p>
 
 <pre>
-     def y ( od→ord x )
+     def (od y) ( od→ord x )
 
 </pre>
-An elements of OD should be defined before the OD, that is, an ordinal corresponding an elements
+An elements of HOD should be defined before the HOD, that is, an ordinal corresponding an elements
 have to be smaller than the corresponding ordinal of the containing OD.
+We also assumes subset is always smaller. This is necessary to make a limit of Power Set.
 <p>
 
 <pre>
-  c&lt;→o&lt;  :  {x y : OD  }   → def y ( od→ord x ) → od→ord x o&lt; od→ord y
+  c&lt;→o&lt;  :  {x y : HOD  }   → def (od y) ( od→ord x ) → od→ord x o&lt; od→ord y
+  ⊆→o≤   :  {y z : HOD  }   → ({x : Ordinal} → def (od y) x → def (od z) x ) → od→ord y o&lt; osuc (od→ord z)
 
 </pre>
-This is also said to be provable in classical Set Theory, but we simply assumes it.
-<p>
-OD has an order based on the corresponding ordinal, but it may not have corresponding def / ∋relation. This means the reverse order preservation, 
+If wa assumes reverse order preservation, 
 <p>
 
 <pre>
   o&lt;→c&lt;  : {n : Level} {x y : Ordinal  } → x o&lt; y → def (ord→od y) x 
 
 </pre>
-is not valid. If we assumes it, ∀ x ∋ ∅ becomes true, which manes all OD becomes Ordinals in
-the model.
+∀ x ∋ ∅ becomes true, which manes all OD becomes Ordinals in the model.
 <p>
 <img src="fig/ODandOrdinals.svg">
 
 <p>
 
 <hr/>
-<h2><a name="content036">ISO</a></h2>
-It also requires isomorphisms, 
-<p>
-
-<pre>
-  oiso   :  {x : OD }      → ord→od ( od→ord x ) ≡ x
-  diso   :  {x : Ordinal } → od→ord ( ord→od x ) ≡ x
-
-</pre>
-
-<hr/>
 <h2><a name="content037">Various Sets</a></h2>
-
-<p>
 In classical Set Theory, there is a hierarchy call L, which can be defined by a predicate.
 <p>
 
@@ -876,6 +899,7 @@ In classical Set Theory, there is a hierarchy call L, which can be defined by a 
     Ordinal / things satisfies axiom of Ordinal / extension of natural number 
     V / hierarchical construction of Set from φ   
     L / hierarchical predicate definable construction of Set from φ   
+    HOD / Hereditarily Ordinal Definable
     OD / equational formula on Ordinals 
     Agda Set / Type / it also has a level
 
@@ -967,10 +991,12 @@ OD is an equation on Ordinals, we can simply write axiom of pair in the OD.
 <p>
 
 <pre>
-    _,_ : OD  → OD  → OD 
-    x , y = record { def = λ t → (t ≡ od→ord x ) ∨ ( t ≡ od→ord y ) } 
+    _,_ : HOD  → HOD  → HOD 
+    x , y = record { od = record { def = λ t → (t ≡ od→ord x ) ∨ ( t ≡ od→ord y ) } ; odmax = ? ; &lt;odmax = ? }
 
 </pre>
+It is easy to find out odmax from odmax of x and y.
+<p>
 ≡ is an equality of λ terms, but please not that this is equality on Ordinals.
 <p>
 
@@ -1049,11 +1075,11 @@ x ==  y can be defined in this way.
          eq← : ∀ { x : Ordinal  } → def b x → def a x
 
 </pre>
-Actually, (z : OD) → (A ∋ z) ⇔ (B ∋ z) implies A == B.
+Actually, (z : HOD) → (A ∋ z) ⇔ (B ∋ z) implies od A == od B.
 <p>
 
 <pre>
-    extensionality0 : {A B : OD } → ((z : OD) → (A ∋ z) ⇔ (B ∋ z)) → A == B
+    extensionality0 : {A B : HOD } → ((z : HOD) → (A ∋ z) ⇔ (B ∋ z)) → od A == od B
     eq→ (extensionality0 {A} {B} eq ) {x} d = ?
     eq← (extensionality0 {A} {B} eq ) {x} d = ?
 
@@ -1064,16 +1090,16 @@ Actual proof is rather complicated.
 <p>
 
 <pre>
-   eq→ (extensionality0 {A} {B} eq ) {x} d = def-iso  {A} {B} (sym diso) (proj1 (eq (ord→od x))) d
-   eq← (extensionality0 {A} {B} eq ) {x} d = def-iso  {B} {A} (sym diso) (proj2 (eq (ord→od x))) d
+   eq→ (extensionality0 {A} {B} eq ) {x} d = odef-iso  {A} {B} (sym diso) (proj1 (eq (ord→od x))) d
+   eq← (extensionality0 {A} {B} eq ) {x} d = odef-iso  {B} {A} (sym diso) (proj2 (eq (ord→od x))) d
 
 </pre>
 where
 <p>
 
 <pre>
-   def-iso : {A B : OD } {x y : Ordinal } → x ≡ y  → (def A y → def B y)  → def A x → def B x
-   def-iso refl t = t
+   odef-iso : {A B : HOD } {x y : Ordinal } → x ≡ y  → (def A (od y) → def (od B) y)  → def (od A) x → def (od B) x
+   odef-iso refl t = t
 
 </pre>
 
@@ -1081,39 +1107,38 @@ where
 <h2><a name="content044">Validity of Axiom of Extensionality</a></h2>
 
 <p>
-If we can derive (w ∋ A) ⇔ (w ∋ B) from A == B, the axiom becomes valid, but it seems impossible, so we assumes
+If we can derive (w ∋ A) ⇔ (w ∋ B) from od A == od B, the axiom becomes valid, but it seems impossible, so we assumes
 <p>
 
 <pre>
-  ==→o≡ : { x y : OD  } → (x == y) → x ≡ y
+  ==→o≡ : { x y : HOD  } → (od x == od y) → x ≡ y
 
 </pre>
 Using this, we have
 <p>
 
 <pre>
-    extensionality : {A B w : OD  } → ((z : OD ) → (A ∋ z) ⇔ (B ∋ z)) → (w ∋ A) ⇔ (w ∋ B)
+    extensionality : {A B w : HOD  } → ((z : HOD ) → (A ∋ z) ⇔ (B ∋ z)) → (w ∋ A) ⇔ (w ∋ B)
     proj1 (extensionality {A} {B} {w} eq ) d = subst (λ k → w ∋ k) ( ==→o≡ (extensionality0 {A} {B} eq) ) d
-    proj2 (extensionality {A} {B} {w} eq ) d = subst (λ k → w ∋ k) (sym ( ==→o≡ (extensionality0 {A} {B} eq) )) d
+    proj2 (extensionality {A} {B} {w} eq ) d = subst (λ k → w ∋ k) (sym ( ==→o≡ (extensionality0 {A} {B} eq) )) d 
 
 </pre>
-This assumption means we may have an equivalence set on any predicates.
-<p>
 
 <hr/>
 <h2><a name="content045">Non constructive assumptions so far</a></h2>
-We have correspondence between OD and Ordinals and one directional order preserving.
-<p>
-We also have equality assumption.
+
 <p>
 
 <pre>
-  od→ord : OD  → Ordinal
-  ord→od : Ordinal  → OD
-  oiso   :  {x : OD }      → ord→od ( od→ord x ) ≡ x
-  diso   :  {x : Ordinal } → od→ord ( ord→od x ) ≡ x
-  c&lt;→o&lt;  :  {x y : OD  }   → def y ( od→ord x ) → od→ord x o&lt; od→ord y
-  ==→o≡ : { x y : OD  } → (x == y) → x ≡ y
+  od→ord : HOD  → Ordinal 
+  ord→od : Ordinal  → HOD  
+  c&lt;→o&lt;  :  {x y : HOD  }   → def (od y) ( od→ord x ) → od→ord x o&lt; od→ord y
+  ⊆→o≤   :  {y z : HOD  }   → ({x : Ordinal} → def (od y) x → def (od z) x ) → od→ord y o&lt; osuc (od→ord z)
+  oiso   :  {x : HOD }      → ord→od ( od→ord x ) ≡ x
+  diso   :  {x : Ordinal }  → od→ord ( ord→od x ) ≡ x
+  ==→o≡  :  {x y : HOD  }   → (od x == od y) → x ≡ y
+  sup-o  :  (A : HOD) → (     ( x : Ordinal ) → def (od A) x →  Ordinal ) →  Ordinal 
+  sup-o&lt; :  (A : HOD) → { ψ : ( x : Ordinal ) → def (od A) x →  Ordinal } → ∀ {x : Ordinal } → (lt : def (od A) x ) → ψ x lt o&lt;  sup-o A ψ 
 
 </pre>
 
@@ -1601,17 +1626,17 @@ Constructing ZF Set Theory in Agda
 <li><a href="#content023">  Classical story of ZF Set Theory</a>
 <li><a href="#content024">  Ordinals</a>
 <li><a href="#content025">  Axiom of Ordinals</a>
-<li><a href="#content026">  Concrete Ordinals</a>
+<li><a href="#content026">  Concrete Ordinals or Countable Ordinals</a>
 <li><a href="#content027">  Model of Ordinals</a>
 <li><a href="#content028">  Debugging axioms using Model</a>
 <li><a href="#content029">  Countable Ordinals can contains uncountable set?</a>
 <li><a href="#content030">  What is Set</a>
 <li><a href="#content031">  We don't ask the contents of Set. It can be anything.</a>
 <li><a href="#content032">  Ordinal Definable Set</a>
-<li><a href="#content033">  ∋ in OD</a>
-<li><a href="#content034">  1 to 1 mapping between an OD and an Ordinal</a>
-<li><a href="#content035">  Order preserving in the mapping of OD and Ordinal</a>
-<li><a href="#content036">  ISO</a>
+<li><a href="#content033">  OD is not ZF Set</a>
+<li><a href="#content034">   HOD : Hereditarily Ordinal Definable</a>
+<li><a href="#content035">  1 to 1 mapping between an HOD and an Ordinal</a>
+<li><a href="#content036">  Order preserving in the mapping of OD and Ordinal</a>
 <li><a href="#content037">  Various Sets</a>
 <li><a href="#content038">  Fixes on ZF to intuitionistic logic</a>
 <li><a href="#content039">  Pure logical axioms</a>
@@ -1638,5 +1663,5 @@ Constructing ZF Set Theory in Agda
 <li><a href="#content060">  link</a>
 </ol>
 
-<hr/>  Shinji KONO /  Sat May  9 16:41:10 2020
+<hr/>  Shinji KONO /  Tue Jul  7 15:44:35 2020
 </body></html>

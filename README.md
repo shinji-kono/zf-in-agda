@@ -37,7 +37,7 @@ In Agda, OD is defined as follows.
 
 This is not a ZF Set, because it can contain entire Ordinals.
 
--- HOD : Hereditarily Ordinal Definable
+## HOD : Hereditarily Ordinal Definable
 
 What we need is a bounded OD, the containment is limited by an ordinal.
 
