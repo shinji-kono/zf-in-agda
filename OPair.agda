@@ -136,3 +136,24 @@ p-pi1 {x} {y} p = proj1 ( prod-eq ( ord→== (op-iso p) ))
 p-pi2 :  { x y : HOD } → (p : def ZFProduct (od→ord  < x , y >) ) →  π2 p ≡ y
 p-pi2 {x} {y} p = proj2 ( prod-eq ( ord→== (op-iso p)))
 
+_⊗_ : (A B : HOD) → HOD
+A ⊗ B  = Union ( Replace B (λ b → Replace A (λ a → < a , b > ) ))
+
+product→ : {A B a b : HOD} → A ∋ a → B ∋ b  → ( A ⊗ B ) ∋ < a , b >
+product→ {A} {B} {a} {b} A∋a B∋b = {!!}
+
+record IsProduct (A B p : HOD) (A⊗B∋p : (A ⊗ B ) ∋ p )  : Set (suc n) where
+  field
+    is-pair : def ZFProduct (od→ord p)
+    π1A : A ∋ π1 is-pair 
+    π2B : B ∋ π2 is-pair 
+
+product← : {A B a b p : HOD} → (lt : (A ⊗ B ) ∋ p )  → IsProduct A B p lt
+product← lt = record { is-pair = {!!} ; π1A = {!!} ; π2B = {!!} }
+
+ 
+ZFP  : (A B : HOD) → ( {x : HOD } → hod-ord< {x} ) → HOD
+ZFP  A B hod-ord< = record { od = record { def = λ x → def ZFProduct x ∧ ( { x : Ordinal } → (p : def ZFProduct x ) → checkAB p ) } ;
+        odmax = {!!} ; <odmax = {!!} } where
+    checkAB : { p : Ordinal } → def ZFProduct p → Set n
+    checkAB (pair x y) = odef A x ∧ odef B y

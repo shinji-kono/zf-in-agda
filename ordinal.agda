@@ -220,17 +220,22 @@ C-Ordinal {n} = record {
      ; osuc-≡< = osuc-≡<
      ; TransFinite = TransFinite1
      ; TransFinite1 = TransFinite2
-     ; not-limit = not-limit
-     ; next-limit = next-limit
+     ; not-limit-p = not-limit
+   } ;
+   isNext = record {
+        x<nx = x<nx 
+      ; osuc<nx = λ {x} {y} → osuc<nx {x} {y}
+      ; ¬nx<nx = ¬nx<nx 
    }
   } where
      next : Ordinal {suc n} → Ordinal {suc n}
      next (ordinal lv ord) = ordinal (Suc lv) (Φ (Suc lv))
-     next-limit : {y : Ordinal} → (y o< next y) ∧ ((x : Ordinal) → x o< next y → osuc x o< next y) ∧
-        ( (x : Ordinal) → y o< x → x o< next y →  ¬ ((z : Ordinal) → ¬ (x ≡ osuc z)  ))
-     next-limit {y} = record { proj1 = case1 a<sa ; proj2 = record { proj1 = lemma ; proj2 = lemma2 } } where
-         lemma :  (x : Ordinal) → x o< next y → osuc x o< next y
-         lemma x (case1 lt) = case1 lt
+     x<nx :    { y : Ordinal } → (y o< next y )
+     x<nx = case1 a<sa
+     osuc<nx : { x y : Ordinal } → x o< next y → osuc x o< next y 
+     osuc<nx (case1 lt) = case1 lt 
+     ¬nx<nx :  {x y : Ordinal} → y o< x → x o< next y →  ¬ ((z : Ordinal) → ¬ (x ≡ osuc z)) 
+     ¬nx<nx {x} {y} = lemma2 x where
          lemma2 : (x : Ordinal) → y o< x → x o< next y → ¬ ((z : Ordinal) → ¬ x ≡ osuc z)
          lemma2 (ordinal Zero (Φ 0)) (case2 ()) (case1 (s≤s z≤n)) not
          lemma2 (ordinal Zero (OSuc 0 dx)) (case2 Φ<) (case1 (s≤s z≤n)) not = not _ refl
@@ -239,6 +244,7 @@ C-Ordinal {n} = record {
          lemma2 (ordinal (Suc lx) (Φ (Suc lx))) (case1 x) (case1 (s≤s (s≤s lt))) not = lemma3 x lt where
              lemma3 : {n l : Nat} → (Suc (Suc n) ≤ Suc l) → l ≤ n → ⊥
              lemma3   (s≤s sn≤l) (s≤s l≤n) = lemma3 sn≤l l≤n
+
      not-limit : (x : Ordinal) → Dec (¬ ((y : Ordinal) → ¬ (x ≡ osuc y)))
      not-limit (ordinal lv (Φ lv)) = no (λ not → not (λ y () ))
      not-limit (ordinal lv (OSuc lv ox)) = yes (λ not → not (ordinal lv ox) refl )

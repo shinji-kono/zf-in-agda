@@ -341,7 +341,41 @@ Fields of Ordinal is existential objects in the mathematical structure.
 <p>
 
 <hr/>
-<h2><a name="content013"> A Model and a theory</a></h2>
+<h2><a name="content013"> Limit Ordinal</a></h2>
+If an ordinal is not a succesor of other, it is called limit ordinal. We need predicate to decide it.
+<p>
+
+<pre>
+     not-limit-p :  ( x : ord  ) → Dec ( ¬ ((y : ord) → ¬ (x ≡ osuc y) ))
+
+</pre>
+An ordinal may have an imeditate limit ordinal, we call it next x. Axiom of nrext is this.
+<p>
+
+<pre>
+    record IsNext {n : Level } (ord : Set n)  (o∅ : ord ) (osuc : ord → ord )  
+            (_o&lt;_ : ord → ord → Set n) (next : ord → ord ) : Set (suc (suc n)) where
+       field
+         x&lt;nx :    { y : ord } → (y o&lt; next y )
+         osuc&lt;nx : { x y : ord } → x o&lt; next y → osuc x o&lt; next y 
+         ¬nx&lt;nx :  {x y : ord} → y o&lt; x → x o&lt; next y →  ¬ ((z : ord) → ¬ (x ≡ osuc z)) 
+
+</pre>
+We show some intresting lemma.
+<p>
+
+<pre>
+        next&lt; : {x y z : Ordinal} → x o&lt; next z  → y o&lt; next x → y o&lt; next z
+        nexto=n : {x y : Ordinal} → x o&lt; next (osuc y)  → x o&lt; next y 
+        nexto≡ : {x : Ordinal} → next x ≡ next (osuc x)  
+        next-is-limit : {x y : Ordinal} → ¬ (next x ≡ osuc y)
+
+</pre>
+These are proved from the axiom. Our countable ordinal satisfies these.
+<p>
+
+<hr/>
+<h2><a name="content014"> A Model and a theory</a></h2>
 Agda record is a type, so we can write it in the argument, but is it really exists?
 <p>
 If we have a value of the record, it simply exists, that is, we need to create all the existence
@@ -358,7 +392,7 @@ model, it exists. Pretty Obvious.
 <p>
 
 <hr/>
-<h2><a name="content014"> postulate と module</a></h2>
+<h2><a name="content015"> postulate と module</a></h2>
 Agda proofs are separated by modules, which are large records.
 <p>
 postulates are assumptions. We can assume a type without proofs.
@@ -382,7 +416,7 @@ doesnot work for Ordinals, we discuss this later.
 <p>
 
 <hr/>
-<h2><a name="content015"> A ∨ B</a></h2>
+<h2><a name="content016"> A ∨ B</a></h2>
 
 <pre>
     data _∨_ (A B : Set) : Set where
@@ -411,7 +445,7 @@ Proof schema of ∨ is omit due to the complexity.
 <p>
 
 <hr/>
-<h2><a name="content016"> Negation</a></h2>
+<h2><a name="content017"> Negation</a></h2>
 
 <pre>
        ⊥
@@ -447,7 +481,7 @@ A negation can be defined using ⊥ like this.
 </pre>
 
 <hr/>
-<h2><a name="content017">Equality </a></h2>
+<h2><a name="content018">Equality </a></h2>
 
 <p>
 All the value in Agda are terms. If we have the same normalized form, two terms are equal.
@@ -481,7 +515,7 @@ The elimination of equality is a substitution in a term.
 </pre>
 
 <hr/>
-<h2><a name="content018">Equivalence relation</a></h2>
+<h2><a name="content019">Equivalence relation</a></h2>
 
 <p>
 
@@ -498,7 +532,7 @@ The elimination of equality is a substitution in a term.
 </pre>
 
 <hr/>
-<h2><a name="content019">Ordering</a></h2>
+<h2><a name="content020">Ordering</a></h2>
 
 <p>
 Relation is a predicate on two value which has a same type.
@@ -519,7 +553,7 @@ Defining order is the definition of this type with predicate or a data.
 </pre>
 
 <hr/>
-<h2><a name="content020">Quantifier</a></h2>
+<h2><a name="content021">Quantifier</a></h2>
 
 <p>
 Handling quantifier in an intuitionistic logic requires special cares.
@@ -543,7 +577,7 @@ usage of ∃ x in a logical expression.
 <p>
 
 <hr/>
-<h2><a name="content021">Can we do math in this way?</a></h2>
+<h2><a name="content022">Can we do math in this way?</a></h2>
 Yes, we can. Actually we have Principia Mathematica by Russell and Whitehead (with out computer support).
 <p>
 In some sense, this story is a reprinting of the work, (but Principia Mathematica has a different formulation than ZF).
@@ -556,7 +590,7 @@ In some sense, this story is a reprinting of the work, (but Principia Mathematic
 </pre>
 
 <hr/>
-<h2><a name="content022">Things which Agda cannot prove</a></h2>
+<h2><a name="content023">Things which Agda cannot prove</a></h2>
 
 <p>
 The infamous Internal Parametricity is a limitation of Agda, it cannot prove so called Free Theorem, which
@@ -586,7 +620,7 @@ If we cannot prove something, we can safely postulate it unless it leads a contr
 </pre>
 
 <hr/>
-<h2><a name="content023">Classical story of ZF Set Theory</a></h2>
+<h2><a name="content024">Classical story of ZF Set Theory</a></h2>
 
 <p>
 <a name="set-theory">
@@ -603,7 +637,7 @@ constructed based on these assumptions.
 <p>
 
 <hr/>
-<h2><a name="content024">Ordinals</a></h2>
+<h2><a name="content025">Ordinals</a></h2>
 Ordinals are our intuition of infinite things, which has ∅ and orders on the things.
 It also has a successor osuc.
 <p>
@@ -623,7 +657,7 @@ of successor. It is given from outside, which make it possible to have higher or
 <p>
 
 <hr/>
-<h2><a name="content025">Axiom of Ordinals</a></h2>
+<h2><a name="content026">Axiom of Ordinals</a></h2>
 Properties of infinite things. We request a transfinite induction, which states that if
 some properties are satisfied below all possible ordinals, the properties are true on all
 ordinals.
@@ -651,7 +685,7 @@ Any two ordinal can be compared, that is less, equal or more, that is total orde
 </pre>
 
 <hr/>
-<h2><a name="content026">Concrete Ordinals or Countable Ordinals</a></h2>
+<h2><a name="content027">Concrete Ordinals or Countable Ordinals</a></h2>
 
 <p>
 We can define a list like structure with level, which is a kind of two dimensional infinite array.
@@ -684,7 +718,7 @@ structure.
 </pre>
 
 <hr/>
-<h2><a name="content027">Model of Ordinals</a></h2>
+<h2><a name="content028">Model of Ordinals</a></h2>
 
 <p>
 It is easy to show OrdinalD and its order satisfies the axioms of Ordinals.
@@ -693,7 +727,7 @@ So our Ordinals has a mode. This means axiom of Ordinals are consistent.
 <p>
 
 <hr/>
-<h2><a name="content028">Debugging axioms using Model</a></h2>
+<h2><a name="content029">Debugging axioms using Model</a></h2>
 Whether axiom is correct or not can be checked by a validity on a mode.
 <p>
 If not, we may fix the axioms or the model, such as the definitions of the order.
@@ -702,7 +736,7 @@ We can also ask whether the inputs exist.
 <p>
 
 <hr/>
-<h2><a name="content029">Countable Ordinals can contains uncountable set?</a></h2>
+<h2><a name="content030">Countable Ordinals can contains uncountable set?</a></h2>
 Yes, the ordinals contains any level of infinite Set in the axioms.
 <p>
 If we handle real-number in the model, only countable number of real-number is used.
@@ -720,7 +754,7 @@ We don't show the definition of cardinal number here.
 <p>
 
 <hr/>
-<h2><a name="content030">What is Set</a></h2>
+<h2><a name="content031">What is Set</a></h2>
 The word Set in Agda is not a Set of ZF Set, but it is a type (why it is named Set?).
 <p>
 From naive point view, a set i a list, but in Agda, elements have all the same type.
@@ -730,7 +764,7 @@ Finite set may be written in finite series of ∨, but ...
 <p>
 
 <hr/>
-<h2><a name="content031">We don't ask the contents of Set. It can be anything.</a></h2>
+<h2><a name="content032">We don't ask the contents of Set. It can be anything.</a></h2>
 From empty set φ, we can think a set contains a φ, and a pair of φ and the set, and so on,
 and all of them, and again we repeat this.
 <p>
@@ -751,7 +785,7 @@ If the recored defines a series of Ordinals which is a pointer to the Set. This 
 <p>
 
 <hr/>
-<h2><a name="content032">Ordinal Definable Set</a></h2>
+<h2><a name="content033">Ordinal Definable Set</a></h2>
 We can define a sbuset of Ordinals using predicates. What is a subset?
 <p>
 
@@ -782,7 +816,7 @@ You can say OD is a class in ZF Set Theory term.
 <p>
 
 <hr/>
-<h2><a name="content033">OD is not ZF Set</a></h2>
+<h2><a name="content034">OD is not ZF Set</a></h2>
 If we have 1 to 1 mapping between an OD and an Ordinal, OD contains several ODs and OD looks like
 a Set.  The idea is to use an ordinal as a pointer to OD.
 Unfortunately this scheme does not work well. As we saw OD includes all Ordinals, which is a maximum of OD, but Ordinals has no maximum at all. So we have a contradction like
@@ -800,7 +834,7 @@ This is a kind of Russel paradox, that is if OD contains everything, what happen
 <p>
 
 <hr/>
-<h2><a name="content034"> HOD : Hereditarily Ordinal Definable</a></h2>
+<h2><a name="content035"> HOD : Hereditarily Ordinal Definable</a></h2>
 What we need is a bounded OD, the containment is limited by an ordinal.
 <p>
 
@@ -823,7 +857,7 @@ TC x is all transitive closure of x, that is elements of x and following all ele
 <p>
 
 <hr/>
-<h2><a name="content035">1 to 1 mapping between an HOD and an Ordinal</a></h2>
+<h2><a name="content036">1 to 1 mapping between an HOD and an Ordinal</a></h2>
 HOD is a predicate on Ordinals and the solution is bounded by some ordinal. If we have a mapping
 <p>
 
@@ -859,7 +893,7 @@ simply assumes these non constructively.
 <p>
 
 <hr/>
-<h2><a name="content036">Order preserving in the mapping of OD and Ordinal</a></h2>
+<h2><a name="content037">Order preserving in the mapping of OD and Ordinal</a></h2>
 Ordinals have the order and HOD has a natural order based on inclusion ( def / ∋ ).
 <p>
 
@@ -891,7 +925,7 @@ If wa assumes reverse order preservation,
 <p>
 
 <hr/>
-<h2><a name="content037">Various Sets</a></h2>
+<h2><a name="content038">Various Sets</a></h2>
 In classical Set Theory, there is a hierarchy call L, which can be defined by a predicate.
 <p>
 
@@ -906,7 +940,7 @@ In classical Set Theory, there is a hierarchy call L, which can be defined by a 
 </pre>
 
 <hr/>
-<h2><a name="content038">Fixes on ZF to intuitionistic logic</a></h2>
+<h2><a name="content039">Fixing ZF axom to fit intuitionistic logic</a></h2>
 
 <p>
 We use ODs as Sets in ZF, and defines record ZF, that is, we have to define
@@ -924,7 +958,7 @@ ZFのrecord </a>
 <p>
 
 <hr/>
-<h2><a name="content039">Pure logical axioms</a></h2>
+<h2><a name="content040">Pure logical axioms</a></h2>
 
 <pre>
    empty, pair, select, ε-induction??infinity
@@ -959,7 +993,7 @@ Union (x , ( x , x )) should be an direct successor of x, but we cannot prove it
 <p>
 
 <hr/>
-<h2><a name="content040">Axiom of Pair</a></h2>
+<h2><a name="content041">Axiom of Pair</a></h2>
 In the Tanaka's book, axiom of pair is as follows.
 <p>
 
@@ -986,7 +1020,7 @@ This is already written in Agda, so we use these as axioms. All inputs have ∀.
 <p>
 
 <hr/>
-<h2><a name="content041">pair in OD</a></h2>
+<h2><a name="content042">pair in OD</a></h2>
 OD is an equation on Ordinals, we can simply write axiom of pair in the OD.
 <p>
 
@@ -1001,7 +1035,7 @@ It is easy to find out odmax from odmax of x and y.
 <p>
 
 <hr/>
-<h2><a name="content042">Validity of Axiom of Pair</a></h2>
+<h2><a name="content043">Validity of Axiom of Pair</a></h2>
 Assuming ZFSet is OD, we are going to prove pair→ .
 <p>
 
@@ -1042,7 +1076,7 @@ But we haven't defined == yet.
 <p>
 
 <hr/>
-<h2><a name="content043">Equality of OD and Axiom of Extensionality </a></h2>
+<h2><a name="content044">Equality of OD and Axiom of Extensionality </a></h2>
 OD is defined by a predicates, if we compares normal form of the predicates, even if
 it contains the same elements, it may be different, which is no good as an equality of
 Sets.
@@ -1104,7 +1138,7 @@ where
 </pre>
 
 <hr/>
-<h2><a name="content044">Validity of Axiom of Extensionality</a></h2>
+<h2><a name="content045">Validity of Axiom of Extensionality</a></h2>
 
 <p>
 If we can derive (w ∋ A) ⇔ (w ∋ B) from od A == od B, the axiom becomes valid, but it seems impossible, so we assumes
@@ -1125,7 +1159,126 @@ Using this, we have
 </pre>
 
 <hr/>
-<h2><a name="content045">Non constructive assumptions so far</a></h2>
+<h2><a name="content046">Axiom of infinity</a></h2>
+
+<p>
+It means it has ω as a ZF Set. It is ususally written like this.
+<p>
+
+<pre>
+     ∃ A ( ∅ ∈ A ∧ ∀ x ∈ A ( x ∪ { x } ∈ A ) )
+
+</pre>
+x ∪ { x } is Union (x , (x , x)) in our notation. It contains existential quantifier, so we introduce a function 
+<p>
+
+<pre>
+     infinite : ZFSet
+     infinity∅ :  ∅ ∈ infinite
+     infinity :  ∀( x : ZFSet  ) → x ∈ infinite →  ( x ∪ ｛ x ｝) ∈ infinite 
+
+</pre>
+
+<hr/>
+<h2><a name="content047">ω in HOD</a></h2>
+
+<p>
+To define an OD which arrows od→ord (Union (x , (x , x))) as a predicate, we can use Agda data structure.
+<p>
+
+<pre>
+    data infinite-d  : ( x : Ordinal  ) → Set n where
+        iφ :  infinite-d o∅
+        isuc : {x : Ordinal  } →   infinite-d  x  →
+                infinite-d  (od→ord ( Union (ord→od x , (ord→od x , ord→od x ) ) ))
+
+</pre>
+It has simular structure as Data.Nat in Agda, and it defines a correspendence of HOD and the data structure. Now
+we can define HOD like this.
+<p>
+
+<pre>
+    infinite : HOD 
+    infinite = record { od = record { def = λ x → infinite-d x } ; odmax = ? ; &lt;odmax = ? } 
+
+</pre>
+So what is the bound of ω? Analyzing the definition, it depends on the value of od→ord (x , x), which
+cannot know the aboslute value. This is because we don't have constructive definition of od→ord : HOD → Ordinal.
+<p>
+
+<hr/>
+<h2><a name="content048">HOD Ordrinal mapping</a></h2>
+We have large freedom on HOD.  We reqest no minimality on odmax, so it may arbitrary larger.
+The address of HOD can be larger at least it have to be larger than the content's address.
+We only have a relative ordering such as
+<p>
+
+<pre>
+    pair-xx&lt;xy : {x y : HOD} → od→ord (x , x) o&lt; osuc (od→ord (x , y) )
+    pair&lt;y : {x y : HOD } → y ∋ x  → od→ord (x , x) o&lt; osuc (od→ord y)
+
+</pre>
+Basicaly, we cannot know the concrete address of HOD other than empty set.
+<p>
+<img src="fig/address-of-HOD.svg">
+
+<p>
+
+<hr/>
+<h2><a name="content049">Possible restriction on HOD</a></h2>
+We need some restriction on the HOD-Ordinal mapping. Simple one is this.
+<p>
+
+<pre>
+        ωmax : Ordinal
+        &lt;ωmax : {y : Ordinal} → infinite-d y → y o&lt; ωmax
+
+</pre>
+It depends on infinite-d and put no assuption on the other similar construction. A more general one may be
+<p>
+
+<pre>
+        hod-ord&lt; :  {x : HOD } → Set n
+        hod-ord&lt; {x} =  od→ord x o&lt; next (odmax x)
+
+</pre>
+next : Ordinal → Ordinal means imediate next limit ordinal of x. It supress unecessary space between address of HOD and
+its bound.
+<p>
+In other words, the space between address of HOD and its bound is arbitrary, it is possible to assume ω has no bound.
+This is the reason of necessity of Axiom of infinite.
+<p>
+
+<hr/>
+<h2><a name="content050">increment pase of address of HOD</a></h2>
+Assuming, hod-ord&lt; , we have 
+<p>
+
+<pre>
+    pair-ord&lt; : {x : HOD } → ( {y : HOD } → od→ord y o&lt; next (odmax y) ) → od→ord ( x , x ) o&lt; next (od→ord x)
+    pair-ord&lt; {x} ho&lt; = subst (λ k → od→ord (x , x) o&lt; k ) lemmab0 lemmab1  where
+           lemmab0 : next (odmax (x , x)) ≡ next (od→ord x)
+
+</pre>
+So the address of ( x , x) and Union (x , (x , x)) is restricted in the limit ordinal. This makes ω bound. We can prove
+<p>
+
+<pre>
+    infinite-bound : ({x : HOD} → od→ord x o&lt; next (odmax x)) → {y : Ordinal} → infinite-d y → y o&lt; next o∅
+
+</pre>
+We also notice that if we have od→ord (x , x) ≡ osuc (od→ord x),  c&lt;→o&lt; can be drived from ⊆→o≤ . 
+<p>
+
+<pre>
+    ⊆→o≤→c&lt;→o&lt; : ({x : HOD} → od→ord (x , x) ≡ osuc (od→ord x) )
+       →  ({y z : HOD  }   → ({x : Ordinal} → def (od y) x → def (od z) x ) → od→ord y o&lt; osuc (od→ord z) )
+       →   {x y : HOD  }   → def (od y) ( od→ord x ) → od→ord x o&lt; od→ord y 
+
+</pre>
+
+<hr/>
+<h2><a name="content051">Non constructive assumptions so far</a></h2>
 
 <p>
 
@@ -1143,7 +1296,7 @@ Using this, we have
 </pre>
 
 <hr/>
-<h2><a name="content046">Axiom which have negation form</a></h2>
+<h2><a name="content052">Axiom which have negation form</a></h2>
 
 <p>
 
@@ -1167,7 +1320,7 @@ If we have an assumption of law of exclude middle, we can recover the original A
 <p>
 
 <hr/>
-<h2><a name="content047">Union </a></h2>
+<h2><a name="content053">Union </a></h2>
 The original form of the Axiom of Union is
 <p>
 
@@ -1183,25 +1336,28 @@ Union requires the existence of b in  a ⊇ ∃ b ∋ x . We will use negation f
      union← : ( X z : ZFSet ) → (X∋z : Union X ∋ z ) →  ¬  ( (u : ZFSet ) → ¬ ((X ∋  u) ∧ (u ∋ z )))
 
 </pre>
-The definition of Union in OD is like this.
+The definition of Union in HOD is like this.
 <p>
 
 <pre>
-    Union : OD  → OD   
-    Union U = record { def = λ x → ¬ (∀ (u : Ordinal ) → ¬ ((def U u) ∧ (def (ord→od u) x)))  }
+    Union : HOD  → HOD   
+    Union U = record { od = record { def = λ x → ¬ (∀ (u : Ordinal ) → ¬ ((odef U u) ∧ (odef (ord→od u) x)))  }
+       ; odmax = osuc (od→ord U) ; &lt;odmax = ?  } 
 
 </pre>
+The bound of Union is evident, but its proof is rather complicated.
+<p>
 Proof of validity is straight forward.
 <p>
 
 <pre>
-         union→ :  (X z u : OD) → (X ∋ u) ∧ (u ∋ z) → Union X ∋ z
+         union→ :  (X z u : HOD) → (X ∋ u) ∧ (u ∋ z) → Union X ∋ z
          union→ X z u xx not = ⊥-elim ( not (od→ord u) ( record { proj1 = proj1 xx
-              ; proj2 = subst ( λ k → def k (od→ord z)) (sym oiso) (proj2 xx) } ))
-         union← :  (X z : OD) (X∋z : Union X ∋ z) →  ¬  ( (u : OD ) → ¬ ((X ∋  u) ∧ (u ∋ z )))
+              ; proj2 = subst ( λ k → odef k (od→ord z)) (sym oiso) (proj2 xx) } ))
+         union← :  (X z : HOD) (X∋z : Union X ∋ z) →  ¬  ( (u : HOD ) → ¬ ((X ∋  u) ∧ (u ∋ z )))
          union← X z UX∋z =  FExists _ lemma UX∋z where
-              lemma : {y : Ordinal} → def X y ∧ def (ord→od y) (od→ord z) → ¬ ((u : OD) → ¬ (X ∋ u) ∧ (u ∋ z))
-              lemma {y} xx not = not (ord→od y) record { proj1 = subst ( λ k → def X k ) (sym diso) (proj1 xx ) ; proj2 = proj2 xx }
+              lemma : {y : Ordinal} → odef X y ∧ odef (ord→od y) (od→ord z) → ¬ ((u : HOD) → ¬ (X ∋ u) ∧ (u ∋ z))
+              lemma {y} xx not = not (ord→od y) record { proj1 = subst ( λ k → odef X k ) (sym diso) (proj1 xx ) ; proj2 = proj2 xx } 
 
 </pre>
 where
@@ -1219,7 +1375,7 @@ which checks existence using contra-position.
 <p>
 
 <hr/>
-<h2><a name="content048">Axiom of replacement</a></h2>
+<h2><a name="content054">Axiom of replacement</a></h2>
 We can replace the elements of a set by a function and it becomes a set. From the book, 
 <p>
 
@@ -1231,7 +1387,7 @@ The existential quantifier can be related by a function,
 <p>
 
 <pre>
-     Replace : OD  → (OD  → OD  ) → OD
+     Replace : HOD  → (HOD  → HOD  ) → HOD
 
 </pre>
 The axioms becomes as follows.
@@ -1251,19 +1407,26 @@ negation form of existential quantifier in the definition.
     in-codomain  X ψ = record { def = λ x → ¬ ( (y : Ordinal ) → ¬ ( def X y ∧  ( x ≡ od→ord (ψ (ord→od y )))))  }
 
 </pre>
-Besides this upper bounds is required.
+in-codomain is a logical relation-ship, and it is written in OD.
 <p>
 
 <pre>
-    Replace : OD  → (OD  → OD  ) → OD 
-    Replace X ψ = record { def = λ x → (x o&lt; sup-o  ( λ x → od→ord (ψ (ord→od x )))) ∧ def (in-codomain X ψ) x }
+    Replace : HOD  → (HOD  → HOD) → HOD 
+    Replace X ψ = record { od = record { def = λ x → (x o&lt; sup-o X (λ y X∋y → od→ord (ψ (ord→od y)))) ∧ def (in-codomain X ψ) x }
+       ; odmax = rmax ; &lt;odmax = rmax&lt;} where 
+          rmax : Ordinal
+          rmax = sup-o X (λ y X∋y → od→ord (ψ (ord→od y)))
+          rmax&lt; :  {y : Ordinal} → (y o&lt; rmax) ∧ def (in-codomain X ψ) y → y o&lt; rmax
+          rmax&lt; lt = proj1 lt
 
 </pre>
-We omit the proof of the validity, but it is rather straight forward.
+The bbound of Replace is defined by supremum, that is, it is not limited in a limit ordinal of original ZF Set.
+<p>
+Once we have a bound, validity of the axiom is an easy task to check the logical relation-ship.
 <p>
 
 <hr/>
-<h2><a name="content049">Validity of Power Set Axiom</a></h2>
+<h2><a name="content055">Validity of Power Set Axiom</a></h2>
 The original Power Set Axiom is this.
 <p>
 
@@ -1300,15 +1463,17 @@ subset in a different form.
 <p>
 
 <pre>
-    ZFSubset : (A x : OD  ) → OD 
-    ZFSubset A x =  record { def = λ y → def A y ∧  def x y }  
+   ZFSubset : (A x : HOD  ) → HOD 
+   ZFSubset A x =  record { od = record { def = λ y → odef A y ∧  odef x y } ; odmax = omin (odmax A) (odmax x) ; &lt;odmax = lemma }  where 
+     lemma : {y : Ordinal} → def (od A) y ∧ def (od x) y → y o&lt; omin (odmax A) (odmax x)
+     lemma {y} and = min1 (&lt;odmax A (proj1 and)) (&lt;odmax x (proj2 and))
 
 </pre>
 We can prove, 
 <p>
 
 <pre>
-    ( {y : OD } → x ∋ y → ZFSubset A x ∋  y ) ⇔  ( x ⊆ A  ) 
+    ( {y : HOD } → x ∋ y → ZFSubset A x ∋  y ) ⇔  ( x ⊆ A  ) 
 
 </pre>
 We only have upper bound as an ordinal, but we have an obvious OD based on the order of Ordinals,
@@ -1334,27 +1499,27 @@ Creating Power Set of Ordinals is rather easy, then we use replacement axiom on 
 <p>
 
 <pre>
-     ∩-≡ :  { a b : OD  } → ({x : OD  } → (a ∋ x → b ∋ x)) → a == ( b ∩ a )
+     ∩-≡ :  { a b : HOD  } → ({x : HOD  } → (a ∋ x → b ∋ x)) → od a == od ( b ∩ a )
 
 </pre>
 In case of Ord a  intro of Power Set axiom becomes valid.
 <p>
 
 <pre>
-    ord-power← : (a : Ordinal ) (t : OD) → ({x : OD} → (t ∋ x → (Ord a) ∋ x)) → Def (Ord a) ∋ t
+    ord-power← : (a : Ordinal ) (t : HOD) → ({x : HOD} → (t ∋ x → (Ord a) ∋ x)) → OPwr (Ord a) ∋ t
 
 </pre>
 Using this, we can prove,
 <p>
 
 <pre>
-         power→ :  ( A t : OD) → Power A ∋ t → {x : OD} → t ∋ x → ¬ ¬ (A ∋ x)
-         power← :  (A t : OD) → ({x : OD} → (t ∋ x → A ∋ x)) → Power A ∋ t
+         power→ :  ( A t : HOD) → Power A ∋ t → {x : HOD} → t ∋ x → ¬ ¬ (A ∋ x)
+         power← :  (A t : HOD) → ({x : HOD} → (t ∋ x → A ∋ x)) → Power A ∋ t
 
 </pre>
 
 <hr/>
-<h2><a name="content050">Axiom of regularity, Axiom of choice, ε-induction</a></h2>
+<h2><a name="content056">Axiom of regularity, Axiom of choice, ε-induction</a></h2>
 
 <p>
 Axiom of regularity requires non self intersectable elements (which is called minimum), if we
@@ -1365,9 +1530,9 @@ choice also becomes valid.
 <p>
 
 <pre>
-  minimal : (x : OD  ) → ¬ (x == od∅ )→ OD
-  x∋minimal : (x : OD  ) → ( ne : ¬ (x == od∅ ) ) → def x ( od→ord ( minimal x ne ) )
-  minimal-1 : (x : OD  ) → ( ne : ¬ (x == od∅ ) ) → (y : OD ) → ¬ ( def (minimal x ne) (od→ord y)) ∧ (def x (od→ord  y) )
+  minimal : (x : HOD  ) → ¬ (x == od∅ )→ OD
+  x∋minimal : (x : HOD  ) → ( ne : ¬ (x == od∅ ) ) → def x ( od→ord ( minimal x ne ) )
+  minimal-1 : (x : HOD  ) → ( ne : ¬ (x == od∅ ) ) → (y : HOD ) → ¬ ( def (minimal x ne) (od→ord y)) ∧ (def x (od→ord  y) )
 
 </pre>
 We can avoid this using ε-induction (a predicate is valid on all set if the predicate is true on some element of set).
@@ -1375,9 +1540,9 @@ Assuming law of exclude middle, they say axiom of regularity will be proved, but
 <p>
 
 <pre>
-    ε-induction : { ψ : OD  → Set (suc n)}
-       → ( {x : OD } → ({ y : OD } →  x ∋ y → ψ y ) → ψ x )
-       → (x : OD ) → ψ x
+    ε-induction : { ψ : HOD  → Set (suc n)}
+       → ( {x : HOD } → ({ y : HOD } →  x ∋ y → ψ y ) → ψ x )
+       → (x : HOD ) → ψ x
 
 </pre>
 In our model, we assumes the mapping between Ordinals and OD, this is actually the TransFinite induction in Ordinals.
@@ -1401,8 +1566,8 @@ It does not requires ∅ ∉ X .
 <p>
 
 <hr/>
-<h2><a name="content051">Axiom of choice and Law of Excluded Middle</a></h2>
-In our model, since OD has a mapping to Ordinals, it has evident order, which means well ordering theorem is valid,
+<h2><a name="content057">Axiom of choice and Law of Excluded Middle</a></h2>
+In our model, since HOD has a mapping to Ordinals, it has evident order, which means well ordering theorem is valid,
 but it don't have correct form of the axiom yet. They say well ordering axiom is equivalent to the axiom of choice,
 but it requires law of the exclude middle.
 <p>
@@ -1412,7 +1577,7 @@ set is empty or not if we have an axiom of choice, so we have the law of the exc
 <p>
 
 <pre>
-    ppp :  { p : Set n } { a : OD  } → record { def = λ x → p } ∋ a → p
+    ppp :  { p : Set n } { a : HOD  } → record { def = λ x → p } ∋ a → p
     ppp  {p} {a} d = d
 
 </pre>
@@ -1421,51 +1586,59 @@ and Law of Excluded Middle is equivalent in our mode.
 <p>
 
 <hr/>
-<h2><a name="content052">Relation-ship among ZF axiom</a></h2>
+<h2><a name="content058">Relation-ship among ZF axiom</a></h2>
 <img src="fig/axiom-dependency.svg">
 
 <p>
 
 <hr/>
-<h2><a name="content053">Non constructive assumption in our model</a></h2>
-mapping between OD and Ordinals
+<h2><a name="content059">Non constructive assumption in our model</a></h2>
+mapping between HOD and Ordinals
 <p>
 
 <pre>
-  od→ord : OD  → Ordinal
+  od→ord : HOD  → Ordinal
   ord→od : Ordinal  → OD
-  oiso   :  {x : OD }      → ord→od ( od→ord x ) ≡ x
+  oiso   :  {x : HOD }      → ord→od ( od→ord x ) ≡ x
   diso   :  {x : Ordinal } → od→ord ( ord→od x ) ≡ x
-  c&lt;→o&lt;  :  {x y : OD  }   → def y ( od→ord x ) → od→ord x o&lt; od→ord y
+  c&lt;→o&lt;  :  {x y : HOD  }   → def y ( od→ord x ) → od→ord x o&lt; od→ord y
+  ⊆→o≤   :  {y z : HOD  }   → ({x : Ordinal} → def (od y) x → def (od z) x ) → od→ord y o&lt; osuc (od→ord z)
 
 </pre>
 Equivalence on OD
 <p>
 
 <pre>
-  ==→o≡ : { x y : OD  } → (x == y) → x ≡ y
+  ==→o≡ : { x y : HOD  } → (od x == od y) → x ≡ y
 
 </pre>
 Upper bound
 <p>
 
 <pre>
-  sup-o  :  ( Ordinal  → Ordinal ) →  Ordinal
-  sup-o&lt; :  { ψ : Ordinal  →  Ordinal } → ∀ {x : Ordinal } → ψ x  o&lt;  sup-o ψ
+  sup-o  :  (A : HOD) → (     ( x : Ordinal ) → def (od A) x →  Ordinal ) →  Ordinal 
+  sup-o&lt; :  (A : HOD) → { ψ : ( x : Ordinal ) → def (od A) x →  Ordinal } → ∀ {x : Ordinal } → (lt : def (od A) x ) → ψ x lt o&lt;  sup-o A ψ 
+
+</pre>
+In order to have bounded ω, 
+<p>
+
+<pre>
+  hod-ord&lt; : {x : HOD} →  od→ord x o&lt; next (odmax x)
 
 </pre>
 Axiom of choice and strong axiom of regularity.
 <p>
 
 <pre>
-  minimal : (x : OD  ) → ¬ (x == od∅ )→ OD
-  x∋minimal : (x : OD  ) → ( ne : ¬ (x == od∅ ) ) → def x ( od→ord ( minimal x ne ) )
-  minimal-1 : (x : OD  ) → ( ne : ¬ (x == od∅ ) ) → (y : OD ) → ¬ ( def (minimal x ne) (od→ord y)) ∧ (def x (od→ord  y) )
+  minimal : (x : HOD  ) → ¬ (x =h= od∅ )→ HOD 
+  x∋minimal : (x : HOD  ) → ( ne : ¬ (x =h= od∅ ) ) → odef x ( od→ord ( minimal x ne ) )
+  minimal-1 : (x : HOD  ) → ( ne : ¬ (x =h= od∅ ) ) → (y : HOD ) → ¬ ( odef (minimal x ne) (od→ord y)) ∧ (odef x (od→ord  y) )
 
 </pre>
 
 <hr/>
-<h2><a name="content054">So it this correct?</a></h2>
+<h2><a name="content060">So it this correct?</a></h2>
 
 <p>
 Our axiom are syntactically the same in the text book, but negations are slightly different.
@@ -1476,7 +1649,7 @@ Even if we assumes excluded middle, intuitionistic logic itself remains consiste
 <p>
 Except the upper bound, axioms are simple logical relation.
 <p>
-Proof of existence of mapping between OD and Ordinals are not obvious. We don't know we prove it or not.
+Proof of existence of mapping between HOD and Ordinals are not obvious. We don't know we prove it or not.
 <p>
 Existence of the Upper bounds is a pure assumption, if we have not limit on Ordinals, it may contradicts,
 but we don't have explicit upper limit on Ordinals.
@@ -1485,7 +1658,7 @@ Several inference on our model or our axioms are basically parallel to the set t
 <p>
 
 <hr/>
-<h2><a name="content055">How to use Agda Set Theory</a></h2>
+<h2><a name="content061">How to use Agda Set Theory</a></h2>
 Assuming record ZF, classical set theory can be developed. If necessary, axiom of choice can be
 postulated or assuming law of excluded middle.
 <p>
@@ -1496,7 +1669,7 @@ ZF record itself is not necessary, for example, topology theory without ZF can b
 <p>
 
 <hr/>
-<h2><a name="content056">Topos and Set Theory</a></h2>
+<h2><a name="content062">Topos and Set Theory</a></h2>
 Topos is a mathematical structure in Category Theory, which is a Cartesian closed category which has a
 sub-object classifier. 
 <p>
@@ -1514,7 +1687,7 @@ Our Agda model is a proof theoretic version of it.
 <p>
 
 <hr/>
-<h2><a name="content057">Cardinal number and Continuum hypothesis</a></h2>
+<h2><a name="content063">Cardinal number and Continuum hypothesis</a></h2>
 Axiom of choice is required to define cardinal number
 <p>
 definition of cardinal number is not yet done
@@ -1532,7 +1705,7 @@ Possible representation of continuum hypothesis is this.
 </pre>
 
 <hr/>
-<h2><a name="content058">Filter</a></h2>
+<h2><a name="content064">Filter</a></h2>
 
 <p>
 filter is a dual of ideal on boolean algebra or lattice. Existence on natural number
@@ -1540,13 +1713,13 @@ is depends on axiom of choice.
 <p>
 
 <pre>
-    record Filter  ( L : OD  ) : Set (suc n) where
+    record Filter  ( L : HOD  ) : Set (suc n) where
        field
            filter : OD
            proper : ¬ ( filter ∋ od∅ )
            inL :  filter ⊆ L 
-           filter1 : { p q : OD } →  q ⊆ L  → filter ∋ p →  p ⊆ q  → filter ∋ q
-           filter2 : { p q : OD } → filter ∋ p →  filter ∋ q  → filter ∋ (p ∩ q)
+           filter1 : { p q : HOD } →  q ⊆ L  → filter ∋ p →  p ⊆ q  → filter ∋ q
+           filter2 : { p q : HOD } → filter ∋ p →  filter ∋ q  → filter ∋ (p ∩ q)
 
 </pre>
 We may construct a model of non standard analysis or set theory.
@@ -1555,7 +1728,7 @@ This may be simpler than classical forcing theory ( not yet done).
 <p>
 
 <hr/>
-<h2><a name="content059">Programming Mathematics</a></h2>
+<h2><a name="content065">Programming Mathematics</a></h2>
 Mathematics is a functional programming in Agda where proof is a value of a variable. The mathematical
 structure are
 <p>
@@ -1580,7 +1753,7 @@ are proved in Agda.
 <p>
 
 <hr/>
-<h2><a name="content060">link</a></h2>
+<h2><a name="content066">link</a></h2>
 Summer school of foundation of mathematics (in Japanese)<br> <a href="https://www.sci.shizuoka.ac.jp/~math/yorioka/ss2019/">https://www.sci.shizuoka.ac.jp/~math/yorioka/ss2019/</a>
 <p>
 Foundation of axiomatic set theory (in Japanese)<br> <a href="https://www.sci.shizuoka.ac.jp/~math/yorioka/ss2019/sakai0.pdf">https://www.sci.shizuoka.ac.jp/~math/yorioka/ss2019/sakai0.pdf
@@ -1613,55 +1786,61 @@ Constructing ZF Set Theory in Agda
 <li><a href="#content010">   A ∧ B</a>
 <li><a href="#content011">   record</a>
 <li><a href="#content012">   Mathematical structure</a>
-<li><a href="#content013">   A Model and a theory</a>
-<li><a href="#content014">   postulate と module</a>
-<li><a href="#content015">   A ∨ B</a>
-<li><a href="#content016">   Negation</a>
-<li><a href="#content017">  Equality </a>
-<li><a href="#content018">  Equivalence relation</a>
-<li><a href="#content019">  Ordering</a>
-<li><a href="#content020">  Quantifier</a>
-<li><a href="#content021">  Can we do math in this way?</a>
-<li><a href="#content022">  Things which Agda cannot prove</a>
-<li><a href="#content023">  Classical story of ZF Set Theory</a>
-<li><a href="#content024">  Ordinals</a>
-<li><a href="#content025">  Axiom of Ordinals</a>
-<li><a href="#content026">  Concrete Ordinals or Countable Ordinals</a>
-<li><a href="#content027">  Model of Ordinals</a>
-<li><a href="#content028">  Debugging axioms using Model</a>
-<li><a href="#content029">  Countable Ordinals can contains uncountable set?</a>
-<li><a href="#content030">  What is Set</a>
-<li><a href="#content031">  We don't ask the contents of Set. It can be anything.</a>
-<li><a href="#content032">  Ordinal Definable Set</a>
-<li><a href="#content033">  OD is not ZF Set</a>
-<li><a href="#content034">   HOD : Hereditarily Ordinal Definable</a>
-<li><a href="#content035">  1 to 1 mapping between an HOD and an Ordinal</a>
-<li><a href="#content036">  Order preserving in the mapping of OD and Ordinal</a>
-<li><a href="#content037">  Various Sets</a>
-<li><a href="#content038">  Fixes on ZF to intuitionistic logic</a>
-<li><a href="#content039">  Pure logical axioms</a>
-<li><a href="#content040">  Axiom of Pair</a>
-<li><a href="#content041">  pair in OD</a>
-<li><a href="#content042">  Validity of Axiom of Pair</a>
-<li><a href="#content043">  Equality of OD and Axiom of Extensionality </a>
-<li><a href="#content044">  Validity of Axiom of Extensionality</a>
-<li><a href="#content045">  Non constructive assumptions so far</a>
-<li><a href="#content046">  Axiom which have negation form</a>
-<li><a href="#content047">  Union </a>
-<li><a href="#content048">  Axiom of replacement</a>
-<li><a href="#content049">  Validity of Power Set Axiom</a>
-<li><a href="#content050">  Axiom of regularity, Axiom of choice, ε-induction</a>
-<li><a href="#content051">  Axiom of choice and Law of Excluded Middle</a>
-<li><a href="#content052">  Relation-ship among ZF axiom</a>
-<li><a href="#content053">  Non constructive assumption in our model</a>
-<li><a href="#content054">  So it this correct?</a>
-<li><a href="#content055">  How to use Agda Set Theory</a>
-<li><a href="#content056">  Topos and Set Theory</a>
-<li><a href="#content057">  Cardinal number and Continuum hypothesis</a>
-<li><a href="#content058">  Filter</a>
-<li><a href="#content059">  Programming Mathematics</a>
-<li><a href="#content060">  link</a>
+<li><a href="#content013">   Limit Ordinal</a>
+<li><a href="#content014">   A Model and a theory</a>
+<li><a href="#content015">   postulate と module</a>
+<li><a href="#content016">   A ∨ B</a>
+<li><a href="#content017">   Negation</a>
+<li><a href="#content018">  Equality </a>
+<li><a href="#content019">  Equivalence relation</a>
+<li><a href="#content020">  Ordering</a>
+<li><a href="#content021">  Quantifier</a>
+<li><a href="#content022">  Can we do math in this way?</a>
+<li><a href="#content023">  Things which Agda cannot prove</a>
+<li><a href="#content024">  Classical story of ZF Set Theory</a>
+<li><a href="#content025">  Ordinals</a>
+<li><a href="#content026">  Axiom of Ordinals</a>
+<li><a href="#content027">  Concrete Ordinals or Countable Ordinals</a>
+<li><a href="#content028">  Model of Ordinals</a>
+<li><a href="#content029">  Debugging axioms using Model</a>
+<li><a href="#content030">  Countable Ordinals can contains uncountable set?</a>
+<li><a href="#content031">  What is Set</a>
+<li><a href="#content032">  We don't ask the contents of Set. It can be anything.</a>
+<li><a href="#content033">  Ordinal Definable Set</a>
+<li><a href="#content034">  OD is not ZF Set</a>
+<li><a href="#content035">   HOD : Hereditarily Ordinal Definable</a>
+<li><a href="#content036">  1 to 1 mapping between an HOD and an Ordinal</a>
+<li><a href="#content037">  Order preserving in the mapping of OD and Ordinal</a>
+<li><a href="#content038">  Various Sets</a>
+<li><a href="#content039">  Fixing ZF axom to fit intuitionistic logic</a>
+<li><a href="#content040">  Pure logical axioms</a>
+<li><a href="#content041">  Axiom of Pair</a>
+<li><a href="#content042">  pair in OD</a>
+<li><a href="#content043">  Validity of Axiom of Pair</a>
+<li><a href="#content044">  Equality of OD and Axiom of Extensionality </a>
+<li><a href="#content045">  Validity of Axiom of Extensionality</a>
+<li><a href="#content046">  Axiom of infinity</a>
+<li><a href="#content047">  ω in HOD</a>
+<li><a href="#content048">  HOD Ordrinal mapping</a>
+<li><a href="#content049">  Possible restriction on HOD</a>
+<li><a href="#content050">  increment pase of address of HOD</a>
+<li><a href="#content051">  Non constructive assumptions so far</a>
+<li><a href="#content052">  Axiom which have negation form</a>
+<li><a href="#content053">  Union </a>
+<li><a href="#content054">  Axiom of replacement</a>
+<li><a href="#content055">  Validity of Power Set Axiom</a>
+<li><a href="#content056">  Axiom of regularity, Axiom of choice, ε-induction</a>
+<li><a href="#content057">  Axiom of choice and Law of Excluded Middle</a>
+<li><a href="#content058">  Relation-ship among ZF axiom</a>
+<li><a href="#content059">  Non constructive assumption in our model</a>
+<li><a href="#content060">  So it this correct?</a>
+<li><a href="#content061">  How to use Agda Set Theory</a>
+<li><a href="#content062">  Topos and Set Theory</a>
+<li><a href="#content063">  Cardinal number and Continuum hypothesis</a>
+<li><a href="#content064">  Filter</a>
+<li><a href="#content065">  Programming Mathematics</a>
+<li><a href="#content066">  link</a>
 </ol>
 
-<hr/>  Shinji KONO /  Tue Jul  7 15:44:35 2020
+<hr/>  Shinji KONO /  Fri Jul 17 13:42:02 2020
 </body></html>

@@ -52,6 +52,9 @@ OD→ZFC   = record {
        choice-func = λ A {X} not A∋X → a-choice (choice-func X not );
        choice = λ A {X} A∋X not → is-in (choice-func X not)
      } where
+         --
+         -- the axiom choice from LEM and OD ordering
+         --
          choice-func :  (X : HOD ) → ¬ ( X =h= od∅ ) → choiced X
          choice-func  X not = have_to_find where
                  ψ : ( ox : Ordinal ) → Set (suc n)
@@ -88,6 +91,12 @@ OD→ZFC   = record {
                             eq→ = λ {x} lt → ⊥-elim  (nn x (odef→o< lt) lt) 
                           ; eq← = λ {x} lt → ⊥-elim ( ¬x<0 lt )
                         }
+
+         --
+         --  axiom regurality from ε-induction (using axiom of choice above)
+         --
+         --  from https://math.stackexchange.com/questions/2973777/is-it-possible-to-prove-regularity-with-transfinite-induction-only
+         --
          record Minimal (x : HOD)  : Set (suc n) where
            field
                min : HOD
@@ -95,9 +104,6 @@ OD→ZFC   = record {
                min-empty :  (y : HOD ) → ¬ ( min ∋ y) ∧ (x ∋ y)
          open Minimal
          open _∧_
-         --
-         --  from https://math.stackexchange.com/questions/2973777/is-it-possible-to-prove-regularity-with-transfinite-induction-only
-         --
          induction : {x : HOD} → ({y : HOD} → x ∋ y → (u : HOD ) → (u∋x : u ∋ y) → Minimal u )
               →  (u : HOD ) → (u∋x : u ∋ x) → Minimal u 
          induction {x} prev u u∋x with p∨¬p ((y : HOD) → ¬ (x ∋ y) ∧ (u ∋ y))

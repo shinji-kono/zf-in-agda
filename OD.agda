@@ -146,7 +146,7 @@ _∋_  a x  = odef a ( od→ord x )
 _c<_ : ( x a : HOD  ) → Set n
 x c< a = a ∋ x 
 
-cseq : {n : Level} →  HOD  →  HOD 
+cseq :  HOD  →  HOD 
 cseq x = record { od = record { def = λ y → odef x (osuc y) } ; odmax = osuc (odmax x) ; <odmax = lemma } where
     lemma : {y : Ordinal} → def (od x) (osuc y) → y o< osuc (odmax x)
     lemma {y} lt = ordtrans <-osuc (ordtrans (<odmax x lt) <-osuc ) 
@@ -154,7 +154,7 @@ cseq x = record { od = record { def = λ y → odef x (osuc y) } ; odmax = osuc 
 odef-subst :  {Z : HOD } {X : Ordinal  }{z : HOD } {x : Ordinal  }→ odef Z X → Z ≡ z  →  X ≡ x  →  odef z x
 odef-subst df refl refl = df
 
-otrans : {n : Level} {a x y : Ordinal  } → odef (Ord a) x → odef (Ord x) y → odef (Ord a) y
+otrans : {a x y : Ordinal  } → odef (Ord a) x → odef (Ord x) y → odef (Ord a) y
 otrans x<a y<x = ordtrans y<x x<a
 
 odef→o< :  {X : HOD } → {x : Ordinal } → odef X x → x o< od→ord X 
@@ -243,16 +243,19 @@ pair<y {x} {y} y∋x = ⊆→o≤ lemma where
    lemma (case1 refl) = y∋x
    lemma (case2 refl) = y∋x
 
+-- another possible restriction. We reqest no minimality on odmax, so it may arbitrary larger.
+odmax<od→ord  : { x y : HOD } → x ∋ y →  Set n
+odmax<od→ord {x} {y} x∋y = odmax x o< od→ord x
+
 -- open import Relation.Binary.HeterogeneousEquality as HE using (_≅_ ) 
 -- postulate f-extensionality : { n : Level}  → Relation.Binary.PropositionalEquality.Extensionality n (suc n)
 
 in-codomain : (X : HOD  ) → ( ψ : HOD  → HOD  ) → OD 
 in-codomain  X ψ = record { def = λ x → ¬ ( (y : Ordinal ) → ¬ ( odef X y ∧  ( x ≡ od→ord (ψ (ord→od y )))))  }
 
-ZFSubset : (A x : HOD  ) → HOD 
-ZFSubset A x =  record { od = record { def = λ y → odef A y ∧  odef x y } ; odmax = omin (odmax A) (odmax x) ; <odmax = lemma }  where --   roughly x = A → Set 
-     lemma : {y : Ordinal} → def (od A) y ∧ def (od x) y → y o< omin (odmax A) (odmax x)
-     lemma {y} and = min1 (<odmax A (proj1 and)) (<odmax x (proj2 and))
+_∩_ : ( A B : HOD ) → HOD 
+A ∩ B = record { od = record { def = λ x → odef A x ∧ odef B x }
+        ; odmax = omin (odmax A) (odmax B) ; <odmax = λ y → min1 (<odmax A (proj1 y)) (<odmax B (proj2 y))}
 
 record _⊆_ ( A B : HOD   ) : Set (suc n) where
   field 
@@ -281,7 +284,7 @@ od⊆→o≤ {x} {y} lt  =  ⊆→o≤ {x} {y} (λ {z} x>z  → subst (λ k → 
     lemma1 : osuc (od→ord y) o< od→ord (x , x)
     lemma1 = subst (λ k → osuc (od→ord y) o< k ) (sym (peq {x})) (osucc c ) 
 
-subset-lemma : {A x : HOD  } → ( {y : HOD } →  x ∋ y → ZFSubset A x ∋  y ) ⇔  ( x ⊆ A  )
+subset-lemma : {A x : HOD  } → ( {y : HOD } →  x ∋ y → (A ∩ x ) ∋  y ) ⇔  ( x ⊆ A  )
 subset-lemma  {A} {x} = record {
       proj1 = λ lt  → record { incl = λ x∋z → proj1 (lt x∋z)  }
     ; proj2 = λ x⊆A lt → record { proj1 = incl x⊆A lt ; proj2 = lt } 
@@ -337,9 +340,6 @@ HOD→ZF   = record {
           rmax = sup-o X (λ y X∋y → od→ord (ψ (ord→od y)))
           rmax< :  {y : Ordinal} → (y o< rmax) ∧ def (in-codomain X ψ) y → y o< rmax
           rmax< lt = proj1 lt
-    _∩_ : ( A B : ZFSet  ) → ZFSet
-    A ∩ B = record { od = record { def = λ x → odef A x ∧ odef B x }
-        ; odmax = omin (odmax A) (odmax B) ; <odmax = λ y → min1 (<odmax A (proj1 y)) (<odmax B (proj2 y))}
     Union : HOD  → HOD   
     Union U = record { od = record { def = λ x → ¬ (∀ (u : Ordinal ) → ¬ ((odef U u) ∧ (odef (ord→od u) x)))  }
        ; odmax = osuc (od→ord U) ; <odmax = umax< } where
@@ -360,7 +360,7 @@ HOD→ZF   = record {
     A ∈ B = B ∋ A
 
     OPwr :  (A :  HOD ) → HOD 
-    OPwr  A = Ord ( sup-o (Ord (osuc (od→ord A))) ( λ x A∋x → od→ord ( ZFSubset A (ord→od x)) ) )   
+    OPwr  A = Ord ( sup-o (Ord (osuc (od→ord A))) ( λ x A∋x → od→ord ( A ∩ (ord→od x)) ) )   
 
     Power : HOD  → HOD 
     Power A = Replace (OPwr (Ord (od→ord A))) ( λ x → A ∩ x )
@@ -392,6 +392,7 @@ HOD→ZF   = record {
         lemma : {y : Ordinal} → infinite-d y → y o< next o∅
         lemma {o∅} iφ = x<nx
         lemma (isuc {y} x) = lemma2 where
+            --   next< : {x y z : Ordinal} → x o< next z  → y o< next x → y o< next z
             lemma0 : y o< next o∅
             lemma0 = lemma x
             lemma8 : od→ord (ord→od y , ord→od y) o< next (odmax (ord→od y , ord→od y))
@@ -494,7 +495,7 @@ HOD→ZF   = record {
          ---
          ---    First consider ordinals in HOD
          ---
-         --- ZFSubset A x =  record { def = λ y → odef A y ∧  odef x y }                   subset of A
+         --- A ∩ x =  record { def = λ y → odef A y ∧  odef x y }                   subset of A
          --
          --
          ∩-≡ :  { a b : HOD  } → ({x : HOD  } → (a ∋ x → b ∋ x)) → a =h= ( b ∩ a )
@@ -504,24 +505,24 @@ HOD→ZF   = record {
             eq← = λ {x} x<a∩b → proj2 x<a∩b }
          -- 
          -- Transitive Set case
-         -- we have t ∋ x → Ord a ∋ x means t is a subset of Ord a, that is ZFSubset (Ord a) t =h= t
-         -- OPwr (Ord a) is a sup of ZFSubset (Ord a) t, so OPwr (Ord a) ∋ t
-         -- OPwr  A = Ord ( sup-o ( λ x → od→ord ( ZFSubset A (ord→od x )) ) )   
+         -- we have t ∋ x → Ord a ∋ x means t is a subset of Ord a, that is (Ord a) ∩ t =h= t
+         -- OPwr (Ord a) is a sup of (Ord a) ∩ t, so OPwr (Ord a) ∋ t
+         -- OPwr  A = Ord ( sup-o ( λ x → od→ord ( A ∩ (ord→od x )) ) )   
          -- 
          ord-power← : (a : Ordinal ) (t : HOD) → ({x : HOD} → (t ∋ x → (Ord a) ∋ x)) → OPwr (Ord a) ∋ t
          ord-power← a t t→A  = odef-subst  {_} {_} {OPwr (Ord a)} {od→ord t}
                  lemma refl (lemma1 lemma-eq )where
-              lemma-eq :  ZFSubset (Ord a) t =h= t
+              lemma-eq :  ((Ord a) ∩ t) =h= t
               eq→ lemma-eq {z} w = proj2 w 
               eq← lemma-eq {z} w = record { proj2 = w  ;
                  proj1 = odef-subst  {_} {_} {(Ord a)} {z}
                     ( t→A (odef-subst  {_} {_} {t} {od→ord (ord→od z)} w refl (sym diso) )) refl diso  }
               lemma1 :  {a : Ordinal } { t : HOD }
-                 → (eq : ZFSubset (Ord a) t =h= t)  → od→ord (ZFSubset (Ord a) (ord→od (od→ord t))) ≡ od→ord t
-              lemma1  {a} {t} eq = subst (λ k → od→ord (ZFSubset (Ord a) k) ≡ od→ord t ) (sym oiso) (cong (λ k → od→ord k ) (==→o≡ eq ))
+                 → (eq : ((Ord a) ∩ t) =h= t)  → od→ord ((Ord a) ∩ (ord→od (od→ord t))) ≡ od→ord t
+              lemma1  {a} {t} eq = subst (λ k → od→ord ((Ord a) ∩ k) ≡ od→ord t ) (sym oiso) (cong (λ k → od→ord k ) (==→o≡ eq ))
               lemma2 : (od→ord t) o< (osuc (od→ord (Ord a)))
               lemma2 = ⊆→o≤  {t} {Ord a} (λ {x} x<t → subst (λ k → def (od (Ord a)) k) diso (t→A (subst (λ k → def (od t) k) (sym diso) x<t))) 
-              lemma :  od→ord (ZFSubset (Ord a) (ord→od (od→ord t)) ) o< sup-o (Ord (osuc (od→ord (Ord a)))) (λ x lt → od→ord (ZFSubset (Ord a) (ord→od x)))
+              lemma :  od→ord ((Ord a) ∩ (ord→od (od→ord t)) ) o< sup-o (Ord (osuc (od→ord (Ord a)))) (λ x lt → od→ord ((Ord a) ∩ (ord→od x)))
               lemma = sup-o< _ lemma2
 
          -- 
@@ -560,20 +561,20 @@ HOD→ZF   = record {
                     t
                  ∎
               sup1 : Ordinal
-              sup1 =  sup-o (Ord (osuc (od→ord (Ord (od→ord A))))) (λ x A∋x → od→ord (ZFSubset (Ord (od→ord A)) (ord→od x)))
+              sup1 =  sup-o (Ord (osuc (od→ord (Ord (od→ord A))))) (λ x A∋x → od→ord ((Ord (od→ord A)) ∩ (ord→od x)))
               lemma9 : def (od (Ord (Ordinals.osuc O (od→ord (Ord (od→ord A)))))) (od→ord (Ord (od→ord A)))
               lemma9 = <-osuc 
-              lemmab : od→ord (ZFSubset (Ord (od→ord A)) (ord→od (od→ord (Ord (od→ord A) )))) o< sup1
+              lemmab : od→ord ((Ord (od→ord A)) ∩ (ord→od (od→ord (Ord (od→ord A) )))) o< sup1
               lemmab = sup-o< (Ord (osuc (od→ord (Ord (od→ord A))))) lemma9 
               lemmad : Ord (osuc (od→ord A)) ∋ t
               lemmad = ⊆→o≤ (λ {x} lt → subst (λ k → def (od A) k ) diso (t→A (subst (λ k → def (od t) k ) (sym diso) lt))) 
-              lemmac : ZFSubset (Ord (od→ord A)) (ord→od (od→ord (Ord (od→ord A) ))) =h= Ord (od→ord A)
+              lemmac : ((Ord (od→ord A)) ∩  (ord→od (od→ord (Ord (od→ord A) )))) =h= Ord (od→ord A)
               lemmac = record { eq→ = lemmaf ; eq← = lemmag } where
-                 lemmaf : {x : Ordinal} → def (od (ZFSubset (Ord (od→ord A)) (ord→od (od→ord (Ord (od→ord A)))))) x → def (od (Ord (od→ord A))) x
+                 lemmaf : {x : Ordinal} → def (od ((Ord (od→ord A)) ∩  (ord→od (od→ord (Ord (od→ord A)))))) x → def (od (Ord (od→ord A))) x
                  lemmaf {x} lt = proj1 lt
-                 lemmag :  {x : Ordinal} → def (od (Ord (od→ord A))) x → def (od (ZFSubset (Ord (od→ord A)) (ord→od (od→ord (Ord (od→ord A)))))) x
+                 lemmag :  {x : Ordinal} → def (od (Ord (od→ord A))) x → def (od ((Ord (od→ord A)) ∩ (ord→od (od→ord (Ord (od→ord A)))))) x
                  lemmag {x} lt = record { proj1 = lt ; proj2 = subst (λ k → def (od k) x) (sym oiso) lt } 
-              lemmae : od→ord (ZFSubset (Ord (od→ord A)) (ord→od (od→ord (Ord (od→ord A))))) ≡ od→ord (Ord (od→ord A))
+              lemmae : od→ord ((Ord (od→ord A)) ∩ (ord→od (od→ord (Ord (od→ord A))))) ≡ od→ord (Ord (od→ord A))
               lemmae = cong (λ k → od→ord k ) ( ==→o≡ lemmac)
               lemma7 : def (od (OPwr (Ord (od→ord A)))) (od→ord t)
               lemma7 with osuc-≡< lemmad

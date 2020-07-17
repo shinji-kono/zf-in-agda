@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xl="http://www.w3.org/1999/xlink" xmlns:dc="http://purl.org/dc/elements/1.1/" viewBox="68 87 578 643" width="578" height="643">
+<svg xmlns:xl="http://www.w3.org/1999/xlink" xmlns:dc="http://purl.org/dc/elements/1.1/" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="68 87 586 582" width="586" height="582">
   <defs>
     <marker orient="auto" overflow="visible" markerUnits="strokeWidth" id="FilledArrow_Marker" stroke-linejoin="miter" stroke-miterlimit="10" viewBox="-5 -3 6 6" markerWidth="6" markerHeight="6" color="black">
       <g>
@@ -17,13 +17,18 @@
         <path d="M 3.7333333 0 L 0 -1.4 L 0 1.4 Z" fill="currentColor" stroke="currentColor" stroke-width="1"/>
       </g>
     </marker>
+    <font-face font-family="Helvetica Neue" font-size="14" panose-1="2 0 5 3 0 0 0 2 0 4" units-per-em="1000" underline-position="-100" underline-thickness="50" slope="0" x-height="517" cap-height="714" ascent="951.9958" descent="-212.99744" font-weight="400">
+      <font-face-src>
+        <font-face-name name="HelveticaNeue"/>
+      </font-face-src>
+    </font-face>
   </defs>
   <metadata> Produced by OmniGraffle 7.12.1 
-    <dc:date>2019-11-28 04:44:00 +0000</dc:date>
+    <dc:date>2020-07-16 05:25:36 +0000</dc:date>
   </metadata>
-  <g id="Canvas_1" stroke-dasharray="none" stroke="none" fill="none" stroke-opacity="1" fill-opacity="1">
+  <g id="Canvas_1" fill-opacity="1" fill="none" stroke-opacity="1" stroke-dasharray="none" stroke="none">
     <title>Canvas 1</title>
-    <rect fill="white" x="68" y="87" width="578" height="643"/>
+    <rect fill="white" x="68" y="87" width="586" height="582"/>
     <g id="Canvas_1: Layer 1">
       <title>Layer 1</title>
       <g id="Graphic_6">
@@ -45,10 +50,6 @@
       <g id="Graphic_10">
         <ellipse cx="270.5" cy="478.5" rx="14.5000231695775" ry="82.5001318269064" fill="white"/>
         <ellipse cx="270.5" cy="478.5" rx="14.5000231695775" ry="82.5001318269064" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>
-      </g>
-      <g id="Graphic_12">
-        <ellipse cx="293.5" cy="280.5" rx="14.5000231695775" ry="82.5001318269065" fill="white"/>
-        <ellipse cx="293.5" cy="280.5" rx="14.5000231695775" ry="82.5001318269065" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>
       </g>
       <g id="Graphic_13">
         <circle cx="154.5" cy="181.5" r="6.50001038636232" fill="black"/>
@@ -77,30 +78,24 @@
         <line x1="176.16929" y1="434.5874" x2="254.55825" y2="471.07884" marker-start="url(#FilledArrow_Marker)" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>
       </g>
       <g id="Line_21">
-        <line x1="173.96816" y1="195.3658" x2="277.63543" y2="269.20077" marker-start="url(#FilledArrow_Marker)" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>
+        <line x1="175.39975" y1="181.39705" x2="256" y2="181" marker-start="url(#FilledArrow_Marker)" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>
       </g>
       <g id="Line_22">
-        <line x1="178.3606" y1="273.87327" x2="277.5009" y2="279.5792" marker-start="url(#FilledArrow_Marker)" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>
+        <line x1="172.14058" y1="261.28998" x2="256" y2="208" marker-start="url(#FilledArrow_Marker)" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>
       </g>
       <g id="Line_23">
-        <line x1="178.05217" y1="300.43344" x2="277.50804" y2="283.2612" marker-start="url(#FilledArrow_Marker)" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>
+        <line x1="170.95411" y1="291.6123" x2="256" y2="225" marker-start="url(#FilledArrow_Marker)" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>
       </g>
       <g id="Graphic_24">
         <circle cx="150.21835" cy="525.5" r="6.50001038636231" fill="black"/>
         <circle cx="150.21835" cy="525.5" r="6.50001038636231" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>
       </g>
       <g id="Line_25">
-        <line x1="162.28478" y1="504.8674" x2="278.23874" y2="306.5955" marker-start="url(#FilledArrow_Marker)" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>
+        <line x1="157.63988" y1="505.96074" x2="256" y2="247" marker-start="url(#FilledArrow_Marker)" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>
       </g>
       <g id="Graphic_26">
         <text transform="translate(119.245 633)" fill="black">
           <tspan font-family="Helvetica Neue" font-size="22" font-weight="400" fill="black" x="0" y="21">Ordinal</tspan>
-        </text>
-      </g>
-      <g id="Graphic_27">
-        <text transform="translate(224.256 584)" fill="black">
-          <tspan font-family="Helvetica Neue" font-size="22" font-weight="400" fill="black" x="10.989" y="21">Ordinal</tspan>
-          <tspan font-family="Helvetica Neue" font-size="22" font-weight="400" fill="black" x="5968559e-19" y="47.616">Definable</tspan>
         </text>
       </g>
       <g id="Graphic_47">
@@ -157,9 +152,8 @@
         </text>
       </g>
       <g id="Graphic_28">
-        <text transform="translate(527.256 584)" fill="black">
-          <tspan font-family="Helvetica Neue" font-size="22" font-weight="400" fill="black" x="10.989" y="21">Ordinal</tspan>
-          <tspan font-family="Helvetica Neue" font-size="22" font-weight="400" fill="black" x="5968559e-19" y="47.616">Definable</tspan>
+        <text transform="translate(549.454 584)" fill="black">
+          <tspan font-family="Helvetica Neue" font-size="22" font-weight="400" fill="black" x="27711167e-20" y="21">HOD</tspan>
         </text>
       </g>
       <g id="Line_48">
@@ -178,13 +172,34 @@
         </text>
       </g>
       <g id="Graphic_53">
-        <text transform="translate(377.204 92.608)" fill="black">
-          <tspan font-family="Helvetica Neue" font-size="22" font-weight="400" fill="black" x="7105427e-19" y="21">OD has a name in Ordinals</tspan>
+        <text transform="translate(369.262 92.608)" fill="black">
+          <tspan font-family="Helvetica Neue" font-size="22" font-weight="400" fill="black" x="0" y="21">HOD has a name in Ordinals</tspan>
         </text>
       </g>
-      <g id="Graphic_54">
-        <text transform="translate(220 698)" fill="black">
-          <tspan font-family="Helvetica Neue" font-size="22" font-weight="400" fill="black" x="0" y="21">all arrows have to be acyclic</tspan>
+      <g id="Line_56">
+        <path d="M 256 133 L 256 272.21094 L 277.79297 272.21094 L 278 133" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>
+      </g>
+      <g id="Graphic_57">
+        <text transform="translate(255.47435 287.884)" fill="black">
+          <tspan font-family="Helvetica Neue" font-size="22" font-weight="400" fill="black" x="10.989" y="21">Ordinal</tspan>
+          <tspan font-family="Helvetica Neue" font-size="22" font-weight="400" fill="black" x="5968559e-19" y="47.616">Definable</tspan>
+        </text>
+      </g>
+      <g id="Graphic_58">
+        <text transform="translate(221 584)" fill="black">
+          <tspan font-family="Helvetica Neue" font-size="22" font-weight="400" fill="black" x="0" y="21">Hereditarily</tspan>
+          <tspan font-family="Helvetica Neue" font-size="22" font-weight="400" fill="black" x="20.35" y="47.616">Ordinal</tspan>
+          <tspan font-family="Helvetica Neue" font-size="22" font-weight="400" fill="black" x="9.361" y="74.231995">Definable</tspan>
+        </text>
+      </g>
+      <g id="Graphic_59">
+        <text transform="translate(297.46 219)" fill="black">
+          <tspan font-family="Helvetica Neue" font-size="14" font-weight="400" fill="black" x="7247536e-19" y="13">not bounded</tspan>
+        </text>
+      </g>
+      <g id="Graphic_60">
+        <text transform="translate(297.46 409.608)" fill="black">
+          <tspan font-family="Helvetica Neue" font-size="14" font-weight="400" fill="black" x="0" y="13">bounded</tspan>
         </text>
       </g>
     </g>

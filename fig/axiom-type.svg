@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:xl="http://www.w3.org/1999/xlink" version="1.1" viewBox="30 61 586 330" width="586" height="330">
+<svg xmlns:xl="http://www.w3.org/1999/xlink" xmlns:dc="http://purl.org/dc/elements/1.1/" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="30 61 567 330" width="567" height="330">
   <defs>
     <font-face font-family="Hiragino Sans" font-size="22" panose-1="2 11 3 0 0 0 0 0 0 0" units-per-em="1000" underline-position="-75" underline-thickness="50" slope="0" x-height="545" cap-height="766" ascent="880.0018" descent="-120.00024" font-weight="300">
       <font-face-src>
@@ -19,11 +19,11 @@
     </font-face>
   </defs>
   <metadata> Produced by OmniGraffle 7.12.1 
-    <dc:date>2020-01-11 11:09:31 +0000</dc:date>
+    <dc:date>2020-07-16 05:11:34 +0000</dc:date>
   </metadata>
-  <g id="Canvas_1" stroke-opacity="1" stroke-dasharray="none" stroke="none" fill="none" fill-opacity="1">
+  <g id="Canvas_1" fill-opacity="1" fill="none" stroke-opacity="1" stroke-dasharray="none" stroke="none">
     <title>Canvas 1</title>
-    <rect fill="white" x="30" y="61" width="586" height="330"/>
+    <rect fill="white" x="30" y="61" width="567" height="330"/>
     <g id="Canvas_1: Layer 1">
       <title>Layer 1</title>
       <g id="Graphic_2">
@@ -68,7 +68,7 @@
         </text>
       </g>
       <g id="Graphic_10">
-        <text transform="translate(454.8557 286.10003)" fill="black">
+        <text transform="translate(454.8557 303.86803)" fill="black">
           <tspan font-family="Helvetica Neue" font-size="22" font-weight="400" fill="black" x="9094947e-19" y="21">extensionarity</tspan>
         </text>
       </g>
@@ -93,12 +93,12 @@
         </text>
       </g>
       <g id="Graphic_20">
-        <text transform="translate(503.237 184.71603)" fill="black">
+        <text transform="translate(484.11375 184.71603)" fill="black">
           <tspan font-family="Helvetica" font-size="22" font-weight="400" fill="black" x="0" y="21">ε-induction</tspan>
         </text>
       </g>
       <g id="Graphic_21">
-        <text transform="translate(478.057 322.71603)" fill="black">
+        <text transform="translate(470.1472 359.33202)" fill="black">
           <tspan font-family="Helvetica" font-size="22" font-weight="400" fill="black" x="0" y="21">regularity</tspan>
         </text>
       </g>
@@ -118,7 +118,7 @@
         <line x1="174.272" y1="175.32412" x2="455.5455" y2="224.03823" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
       </g>
       <g id="Line_29">
-        <line x1="174.272" y1="168.67903" x2="498.237" y2="193.25456" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+        <line x1="174.272" y1="168.90833" x2="479.11375" y2="193.05703" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
       </g>
       <g id="Line_30">
         <line x1="198.114" y1="237.807" x2="310.19725" y2="228.40505" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
@@ -139,10 +139,15 @@
         <line x1="221.748" y1="344.74433" x2="334.057" y2="365.1827" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
       </g>
       <g id="Line_36">
-        <line x1="221.748" y1="329.80394" x2="473.057" y2="334.73102" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+        <line x1="221.748" y1="338.57694" x2="465.1472" y2="366.55665" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
       </g>
       <g id="Line_37">
-        <line x1="221.748" y1="321.31552" x2="449.8557" y2="304.74357" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+        <line x1="221.748" y1="325.4695" x2="449.8557" y2="319.1959" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Graphic_38">
+        <text transform="translate(430.7713 359.33202)" fill="black">
+          <tspan font-family="Helvetica" font-size="22" font-weight="400" fill="black" x="0" y="21">=</tspan>
+        </text>
       </g>
     </g>
   </g>

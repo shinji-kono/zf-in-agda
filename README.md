@@ -85,27 +85,3 @@ In ψ : Ordinal → Set,  if A is a  record { def = λ x → ψ x } , then
 They say the existing of the mappings can be proved in Classical Set Theory, but we
 simply assumes these non constructively.
 
-## What have we done
-
-```
-    Axioms of Ordinals
-    An implementation of countable Ordinal
-    ZF Axioms
-    Model of ZF based on OD/HOD
-    LEM     axiom of choice from LEM
-    ODC     LEM from axiom of choice 
-    OPair   classical ordered pair example
-    filter  definition of filter and ideal
-    cardinal  unfinished Cardinal number
-    BAlgebra  boolean algebra of OD
-
-```
-
-
-
-
-
-
-
-
-

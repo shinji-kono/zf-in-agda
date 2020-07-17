@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:xl="http://www.w3.org/1999/xlink" version="1.1" viewBox="38.294 90.49994 434.607 310.5001" width="434.607" height="310.5001">
+<svg version="1.1" xmlns:xl="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" xmlns:dc="http://purl.org/dc/elements/1.1/" viewBox="38.294 90.49994 434.607 310.5001" width="434.607" height="310.5001">
   <defs>
     <font-face font-family="Hiragino Sans" font-size="22" panose-1="2 11 3 0 0 0 0 0 0 0" units-per-em="1000" underline-position="-75" underline-thickness="50" slope="0" x-height="545" cap-height="766" ascent="880.0018" descent="-120.00024" font-weight="300">
       <font-face-src>
@@ -14,9 +14,9 @@
     </font-face>
   </defs>
   <metadata> Produced by OmniGraffle 7.12.1 
-    <dc:date>2020-01-11 11:07:37 +0000</dc:date>
+    <dc:date>2020-07-16 04:53:15 +0000</dc:date>
   </metadata>
-  <g id="Canvas_1" stroke-opacity="1" stroke-dasharray="none" stroke="none" fill="none" fill-opacity="1">
+  <g id="Canvas_1" stroke-dasharray="none" stroke="none" stroke-opacity="1" fill="none" fill-opacity="1">
     <title>Canvas 1</title>
     <rect fill="white" x="38.294" y="90.49994" width="434.607" height="310.5001"/>
     <g id="Canvas_1: Layer 1">
@@ -79,8 +79,8 @@
         </text>
       </g>
       <g id="Graphic_16">
-        <text transform="translate(292.522 348.5)" fill="black">
-          <tspan font-family="Hiragino Sans" font-size="22" font-weight="300" fill="black" x="0" y="19">Model on OD</tspan>
+        <text transform="translate(283.964 348.5)" fill="black">
+          <tspan font-family="Hiragino Sans" font-size="22" font-weight="300" fill="black" x="5684342e-20" y="19">Model on HOD</tspan>
         </text>
       </g>
       <g id="Graphic_19">

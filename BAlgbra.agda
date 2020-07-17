@@ -25,9 +25,9 @@ open _∧_
 open _∨_
 open Bool
 
-_∩_ : ( A B : HOD  ) → HOD
-A ∩ B = record { od = record { def = λ x → odef A x ∧ odef B x } ;
-    odmax = omin (odmax A) (odmax B) ; <odmax = λ y → min1 (<odmax A (proj1 y)) (<odmax B (proj2 y)) }
+--_∩_ : ( A B : HOD  ) → HOD
+--A ∩ B = record { od = record { def = λ x → odef A x ∧ odef B x } ;
+--    odmax = omin (odmax A) (odmax B) ; <odmax = λ y → min1 (<odmax A (proj1 y)) (<odmax B (proj2 y)) }
 
 _∪_ : ( A B : HOD  ) → HOD
 A ∪ B = record { od = record { def = λ x → odef A x ∨ odef B x } ;

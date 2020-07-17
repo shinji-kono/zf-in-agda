@@ -251,6 +251,11 @@ module inOrdinal  {n : Level} (O : Ordinals {n} ) where
         nexto≡ {x} | tri> ¬a ¬b c = ⊥-elim (¬nx<nx (ordtrans <-osuc x<nx) c
            (λ z eq → o<¬≡ (sym eq) (osuc<nx  (osuc< (sym eq)))))
 
+        next-is-limit : {x y : Ordinal} → ¬ (next x ≡ osuc y)
+        next-is-limit {x} {y} eq = o<¬≡ (sym eq) (osuc<nx y<nx) where
+            y<nx : y o< next x
+            y<nx = osuc< (sym eq)
+
         record OrdinalSubset (maxordinal : Ordinal) : Set (suc n) where
           field
             os→ : (x : Ordinal) → x o< maxordinal → Ordinal
@@ -258,4 +263,31 @@ module inOrdinal  {n : Level} (O : Ordinals {n} ) where
             os←limit : (x : Ordinal) → os← x o< maxordinal
             os-iso← : {x : Ordinal} →  os→  (os← x) (os←limit x) ≡ x
             os-iso→ : {x : Ordinal} → (lt : x o< maxordinal ) →  os← (os→ x lt) ≡ x
+
+module o≤-Reasoning {n : Level} (O : Ordinals {n} )  where
+
+  open inOrdinal O
+
+  resp-o< : Ordinals._o<_ O Respects₂ _≡_
+  resp-o< =  resp₂ _o<_
+
+  trans1 : {i j k : Ordinal} → i o< j → j o< osuc  k → i o< k
+  trans1 {i} {j} {k} i<j j<ok with osuc-≡< j<ok
+  trans1 {i} {j} {k} i<j j<ok | case1 refl = i<j
+  trans1 {i} {j} {k} i<j j<ok | case2 j<k = ordtrans i<j j<k
+
+  trans2 : {i j k : Ordinal} → i o< osuc j → j o<  k → i o< k
+  trans2 {i} {j} {k} i<oj j<k with osuc-≡< i<oj
+  trans2 {i} {j} {k} i<oj j<k | case1 refl = j<k
+  trans2 {i} {j} {k} i<oj j<k | case2 i<j = ordtrans i<j j<k
+
+  open import Relation.Binary.Reasoning.Base.Triple {n} {_} {_} {_} {Ordinal } {_≡_} {_o≤_} {_o<_}
+    (Preorder.isPreorder OrdPreorder) 
+    ordtrans --<-trans
+     (resp₂ _o<_) --(resp₂ _<_)
+    (λ x → ordtrans x <-osuc ) --<⇒≤
+    trans1 --<-transˡ
+    trans2 --<-transʳ
+    public
+    hiding (_≈⟨_⟩_)
 
