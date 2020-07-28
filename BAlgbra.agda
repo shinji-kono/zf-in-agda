@@ -51,9 +51,9 @@ A ＼ B = record { od = record { def = λ x → odef A x ∧ ( ¬ ( odef B x ) )
         lemma3 not = ODC.double-neg-eilm O (FExists _ lemma4 not)   -- choice
     lemma2 :  {x : Ordinal} → odef (A ∪ B) x → odef (Union (A , B)) x
     lemma2 {x} (case1 A∋x) = subst (λ k → odef (Union (A , B)) k) diso ( IsZF.union→ isZF (A , B) (ord→od x) A
-       (record { proj1 = case1 refl ; proj2 = subst (λ k → odef A k) (sym diso) A∋x}))
+       (record { proj1 = case1 refl ; proj2 = d→∋ A A∋x } ))
     lemma2 {x} (case2 B∋x) = subst (λ k → odef (Union (A , B)) k) diso ( IsZF.union→ isZF (A , B) (ord→od x) B
-       (record { proj1 = case2 refl ; proj2 = subst (λ k → odef B k) (sym diso) B∋x}))
+       (record { proj1 = case2 refl ; proj2 = d→∋ B B∋x } ))
 
 ∩-Select : { A B : HOD } →  Select A (  λ x → ( A ∋ x ) ∧ ( B ∋ x )  ) ≡ ( A ∩ B )
 ∩-Select {A} {B} = ==→o≡ ( record { eq→ =  lemma1 ; eq← = lemma2 } ) where
@@ -61,7 +61,7 @@ A ＼ B = record { od = record { def = λ x → odef A x ∧ ( ¬ ( odef B x ) )
     lemma1 {x} lt = record { proj1 = proj1 lt ; proj2 = subst (λ k → odef B k ) diso (proj2 (proj2 lt)) }
     lemma2 : {x : Ordinal} → odef (A ∩ B) x → odef (Select A (λ x₁ → (A ∋ x₁) ∧ (B ∋ x₁))) x
     lemma2 {x} lt = record { proj1 = proj1 lt ; proj2 =
-        record { proj1 = subst (λ k → odef A k) (sym diso) (proj1 lt) ; proj2 = subst (λ k → odef B k ) (sym diso) (proj2 lt) } }
+        record { proj1 = d→∋ A (proj1 lt) ; proj2 = d→∋ B (proj2 lt) } }
 
 dist-ord : {p q r : HOD } → p ∩ ( q ∪ r ) ≡   ( p ∩ q ) ∪ ( p ∩ r )
 dist-ord {p} {q} {r} = ==→o≡ ( record { eq→ = lemma1 ; eq← = lemma2 } ) where

@@ -1,3 +1,5 @@
+{-# OPTIONS --allow-unsolved-metas #-}
+
 open import Level
 open import Ordinals
 module OPair {n : Level } (O : Ordinals {n})   where
@@ -25,9 +27,6 @@ open _∨_
 open Bool
 
 open _==_
-
-_=h=_ : (x y : HOD) → Set n
-x =h= y  = od x == od y
 
 <_,_> : (x y : HOD) → HOD
 < x , y > = (x , x ) , (x , y )
@@ -136,6 +135,26 @@ p-pi1 {x} {y} p = proj1 ( prod-eq ( ord→== (op-iso p) ))
 p-pi2 :  { x y : HOD } → (p : def ZFProduct (od→ord  < x , y >) ) →  π2 p ≡ y
 p-pi2 {x} {y} p = proj2 ( prod-eq ( ord→== (op-iso p)))
 
+ω-pair : {x y : HOD} → infinite ∋ x → infinite ∋ y → od→ord < x , y > o< next o∅
+ω-pair {x} {y} lx ly = lemma where
+    lemma1 : od→ord x o< od→ord y → od→ord ( x , x ) o< od→ord ( x , y ) 
+    lemma1 = {!!}
+    lemma0 : od→ord x o< od→ord y → od→ord < x , y > o< osuc (next (od→ord (x , y)))
+    lemma0 x<y = begin
+         od→ord < x , y >
+       <⟨ ho< ⟩
+         next (omax (od→ord (x , x)) (od→ord (x , y)))
+       ≡⟨ cong (λ k → next k ) (sym (omax< _ _ (lemma1 x<y))) ⟩
+         next (osuc (od→ord (x , y)))
+       ≡⟨ sym (nexto≡) ⟩
+         next (od→ord (x , y))
+       ∎ where open o≤-Reasoning O
+    lemma : od→ord < x , y > o< next o∅
+    lemma  with trio< (od→ord x) (od→ord y)
+    lemma | tri< a ¬b ¬c = {!!}
+    lemma | tri≈ ¬a b ¬c = next< {!!} {!!}
+    lemma | tri> ¬a ¬b c = {!!}
+
 _⊗_ : (A B : HOD) → HOD
 A ⊗ B  = Union ( Replace B (λ b → Replace A (λ a → < a , b > ) ))
 
@@ -152,8 +171,8 @@ product← : {A B a b p : HOD} → (lt : (A ⊗ B ) ∋ p )  → IsProduct A B p
 product← lt = record { is-pair = {!!} ; π1A = {!!} ; π2B = {!!} }
 
  
-ZFP  : (A B : HOD) → ( {x : HOD } → hod-ord< {x} ) → HOD
-ZFP  A B hod-ord< = record { od = record { def = λ x → def ZFProduct x ∧ ( { x : Ordinal } → (p : def ZFProduct x ) → checkAB p ) } ;
+ZFP  : (A B : HOD) → HOD
+ZFP  A B = record { od = record { def = λ x → def ZFProduct x ∧ ( { x : Ordinal } → (p : def ZFProduct x ) → checkAB p ) } ;
         odmax = {!!} ; <odmax = {!!} } where
     checkAB : { p : Ordinal } → def ZFProduct p → Set n
     checkAB (pair x y) = odef A x ∧ odef B y

@@ -811,6 +811,17 @@ where
    odef-iso : {A B : HOD } {x y : Ordinal } → x ≡ y  → (def A (od y) → def (od B) y)  → def (od A) x → def (od B) x
    odef-iso refl t = t
 
+--The uniqueness of HOD
+
+To prove extensionality or other we need ==→o≡.
+
+Since we have ==→o≡ , so odmax have to be unique. We should have odmaxmin in HOD.
+We can calculate the minimum using sup if we have bound but it is tedius.
+Only Select has non minimum odmax. 
+We have the same problem on 'def' itself, but we leave it, that is we assume the
+assumption of predicates of Agda have a unique form, it is something like the
+functional extensionality assumption.
+
 --Validity of Axiom of Extensionality
 
 If we can derive (w ∋ A) ⇔ (w ∋ B) from od A == od B, the axiom becomes valid, but it seems impossible, 
@@ -914,7 +925,6 @@ We also notice that if we have od→ord (x , x) ≡ osuc (od→ord x),  c<→o< 
   ==→o≡  :  {x y : HOD  }   → (od x == od y) → x ≡ y
   sup-o  :  (A : HOD) → (     ( x : Ordinal ) → def (od A) x →  Ordinal ) →  Ordinal 
   sup-o< :  (A : HOD) → { ψ : ( x : Ordinal ) → def (od A) x →  Ordinal } → ∀ {x : Ordinal } → (lt : def (od A) x ) → ψ x lt o<  sup-o A ψ 
-
 
 --Axiom which have negation form
 

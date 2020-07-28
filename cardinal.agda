@@ -34,10 +34,10 @@ open _==_
 ∋-p A x | case1 t = yes t
 ∋-p A x | case2 t = no t
 
-_⊗_  : (A B : HOD) → HOD
-A ⊗ B  = record { od = record { def = λ x → def ZFProduct x ∧ ( { x : Ordinal } → (p : def ZFProduct x ) → checkAB p ) } } where
-    checkAB : { p : Ordinal } → def ZFProduct p → Set n
-    checkAB (pair x y) = odef A x ∧ odef B y
+--_⊗_  : (A B : HOD) → HOD
+--A ⊗ B  = record { od = record { def = λ x → def ZFProduct x ∧ ( { x : Ordinal } → (p : def ZFProduct x ) → checkAB p ) } } where
+--    checkAB : { p : Ordinal } → def ZFProduct p → Set n
+--    checkAB (pair x y) = odef A x ∧ odef B y
 
 func→od0  : (f : Ordinal → Ordinal ) → HOD
 func→od0  f = record { od = record { def = λ x → def ZFProduct x ∧ ( { x : Ordinal } → (p : def ZFProduct x ) → checkfunc p ) }}  where
@@ -64,7 +64,7 @@ od→func {dom} {cod} {f} lt = record { func-1 = λ x → sup-o {!!} ( λ y lt �
    lemma : Ordinal → Ordinal → Ordinal
    lemma x y with IsZF.power→ isZF (dom ⊗ cod) (ord→od f) (subst (λ k → odef (Power (dom ⊗ cod)) k ) (sym diso) lt ) | ∋-p (ord→od f) (ord→od y)
    lemma x y | p | no n  = o∅
-   lemma x y | p | yes f∋y = lemma2 (proj1 (ODC.double-neg-eilm O ( p {ord→od y} f∋y ))) where -- p : {y : OD} → f ∋ y → ¬ ¬ (dom ⊗ cod ∋ y) 
+   lemma x y | p | yes f∋y = lemma2 {!!} where -- (ODC.double-neg-eilm O ( p {ord→od y} f∋y ))) where -- p : {y : OD} → f ∋ y → ¬ ¬ (dom ⊗ cod ∋ y) 
            lemma2 : {p : Ordinal} → ord-pair p  → Ordinal
            lemma2 (pair x1 y1) with ODC.decp O ( x1 ≡ x)
            lemma2 (pair x1 y1) | yes p = y1

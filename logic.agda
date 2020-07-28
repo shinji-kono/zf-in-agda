@@ -5,6 +5,12 @@ open import Relation.Nullary
 open import Relation.Binary
 open import Data.Empty
 
+data One {n : Level } : Set n where
+  OneObj : One
+
+data Two : Set where
+   i0 : Two
+   i1 : Two
 
 data Bool : Set where
    true : Bool

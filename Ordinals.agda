@@ -227,6 +227,12 @@ module inOrdinal  {n : Level} (O : Ordinals {n} ) where
           → ¬ p
         FExists  {m} {l} ψ {p} P = contra-position ( λ p y ψy → P {y} ψy p ) 
 
+        nexto∅ : {x : Ordinal} → o∅ o< next x
+        nexto∅ {x} with trio< o∅ x
+        nexto∅ {x} | tri< a ¬b ¬c = ordtrans a x<nx
+        nexto∅ {x} | tri≈ ¬a b ¬c = subst (λ k → k o< next x) (sym b) x<nx
+        nexto∅ {x} | tri> ¬a ¬b c = ⊥-elim ( ¬x<0 c )
+
         next< : {x y z : Ordinal} → x o< next z  → y o< next x → y o< next z
         next< {x} {y} {z} x<nz y<nx with trio< y (next z)
         next< {x} {y} {z} x<nz y<nx | tri< a ¬b ¬c = a
@@ -255,6 +261,9 @@ module inOrdinal  {n : Level} (O : Ordinals {n} ) where
         next-is-limit {x} {y} eq = o<¬≡ (sym eq) (osuc<nx y<nx) where
             y<nx : y o< next x
             y<nx = osuc< (sym eq)
+
+        omax<next : {x y : Ordinal} → x o< y → omax x y o< next y
+        omax<next {x} {y} x<y = subst (λ k → k o< next y ) (omax< _ _ x<y ) (osuc<nx x<nx)
 
         record OrdinalSubset (maxordinal : Ordinal) : Set (suc n) where
           field

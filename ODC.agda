@@ -1,3 +1,4 @@
+{-# OPTIONS --allow-unsolved-metas #-}
 open import Level
 open import Ordinals
 module ODC {n : Level } (O : Ordinals {n} ) where
@@ -24,9 +25,6 @@ open ODAxiom odAxiom
 open HOD
 
 open _∧_
-
-_=h=_ : (x y : HOD) → Set n
-x =h= y  = od x == od y
 
 postulate      
   -- mimimul and x∋minimal is an Axiom of choice
@@ -71,10 +69,22 @@ decp  p with p∨¬p p
 decp  p | case1 x = yes x
 decp  p | case2 x = no x
 
+∋-p : (A x : HOD ) → Dec ( A ∋ x ) 
+∋-p A x with p∨¬p ( A ∋ x ) -- LEM
+∋-p A x | case1 t  = yes t
+∋-p A x | case2 t  = no (λ x → t x)
+
 double-neg-eilm : {A : Set n} → ¬ ¬ A → A      -- we don't have this in intutionistic logic
 double-neg-eilm  {A} notnot with decp  A                         -- assuming axiom of choice
 ... | yes p = p
 ... | no ¬p = ⊥-elim ( notnot ¬p )
+
+open _⊆_
+
+power→⊆ :  ( A t : HOD) → Power A ∋ t → t ⊆ A
+power→⊆ A t  PA∋t = record { incl = λ {x} t∋x → double-neg-eilm (t1 t∋x) } where
+   t1 : {x : HOD }  → t ∋ x → ¬ ¬ (A ∋ x)
+   t1 = power→ A t PA∋t
 
 OrdP : ( x : Ordinal  ) ( y : HOD  ) → Dec ( Ord x ∋ y )
 OrdP  x y with trio< x (od→ord y)
@@ -95,7 +105,7 @@ HOD→ZFC   = record {
  } where
     -- infixr  200 _∈_
     -- infixr  230 _∩_ _∪_
-    isZFC : IsZFC (HOD )  _∋_  _=h=_ od∅ Select 
+    isZFC : IsZFC (HOD )  _∋_  _=h=_ od∅ Select
     isZFC = record {
        choice-func = choice-func ;
        choice = choice
