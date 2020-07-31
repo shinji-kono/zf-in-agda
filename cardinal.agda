@@ -26,144 +26,47 @@ open _∨_
 open Bool
 open _==_
 
--- we have to work on Ordinal to keep OD Level n
--- since we use p∨¬p which works only on Level n
+open HOD
 
-∋-p : (A x : HOD ) → Dec ( A ∋ x ) 
-∋-p A x with ODC.p∨¬p O ( A ∋ x )
-∋-p A x | case1 t = yes t
-∋-p A x | case2 t = no t
+-- _⊗_ : (A B : HOD) → HOD
+-- A ⊗ B  = Union ( Replace B (λ b → Replace A (λ a → < a , b > ) ))
 
---_⊗_  : (A B : HOD) → HOD
---A ⊗ B  = record { od = record { def = λ x → def ZFProduct x ∧ ( { x : Ordinal } → (p : def ZFProduct x ) → checkAB p ) } } where
---    checkAB : { p : Ordinal } → def ZFProduct p → Set n
---    checkAB (pair x y) = odef A x ∧ odef B y
+Func :  OD
+Func = record { def = λ x → def ZFProduct x
+    ∧ ( (a b c : Ordinal) → odef (ord→od x) (od→ord < ord→od a , ord→od b >) ∧ odef (ord→od x) (od→ord < ord→od a , ord→od c >) →  b ≡  c ) }  
 
-func→od0  : (f : Ordinal → Ordinal ) → HOD
-func→od0  f = record { od = record { def = λ x → def ZFProduct x ∧ ( { x : Ordinal } → (p : def ZFProduct x ) → checkfunc p ) }}  where
-    checkfunc : { p : Ordinal } → def ZFProduct p → Set n
-    checkfunc (pair x y) = f x ≡ y
+FuncP :  ( A B : HOD ) → HOD
+FuncP A B = record { od = record { def = λ x → odef (ZFP A B) x
+    ∧ ( (x : Ordinal ) (p q : odef (ZFP A B ) x ) → pi1 (proj1 p) ≡ pi1 (proj1 q) → pi2 (proj1 p) ≡ pi2 (proj1 q) ) } 
+       ; odmax = odmax (ZFP A B) ; <odmax = λ lt → <odmax (ZFP A B) (proj1 lt) }
 
---  Power (Power ( A ∪ B )) ∋ ( A ⊗ B )
+Func∋f : {A B x : HOD} → ( f : HOD → HOD ) → ( (x : HOD ) → A ∋ x → B ∋ f x )
+    → def Func (od→ord  (Replace A (λ x → < x , f x > )))
+Func∋f = {!!}
 
-Func :  ( A B : HOD ) → HOD
-Func A B = record { od = record { def = λ x → odef (Power (A ⊗ B)) x }  }
+FuncP∋f : {A B x : HOD} → ( f : HOD → HOD ) → ( (x : HOD ) → A ∋ x → B ∋ f x )
+    → odef (FuncP A B) (od→ord  (Replace A (λ x → < x , f x > )))
+FuncP∋f = {!!}
 
--- power→ :  ( A t : OD) → Power A ∋ t → {x : OD} → t ∋ x → ¬ ¬ (A ∋ x)
+-- Func→f : {A B f x : HOD} → def Func (od→ord f)  → (x : HOD ) → A ∋ x  → ( HOD ∧ ((y : HOD ) → B ∋ y ))
+-- Func→f = {!!}
+-- Func₁ : {A B f : HOD} → def Func (od→ord f) → {!!}  
+-- Func₁ = {!!}
+-- Cod : {A B f : HOD} → def Func (od→ord f) → {!!}
+-- Cod = {!!}
+-- 1-1 : {A B f : HOD} → def Func (od→ord f) → {!!}
+-- 1-1 = {!!}
+-- onto : {A B f : HOD} → def Func (od→ord f) → {!!}
+-- onto  = {!!}
 
-func→od : (f : Ordinal → Ordinal ) → ( dom : HOD ) → HOD 
-func→od f dom = Replace dom ( λ x →  < x , ord→od (f (od→ord x)) > )
-
-record Func←cd { dom cod : HOD } {f : Ordinal }  : Set n where
+record Bijection (A B : Ordinal ) : Set n where
    field
-      func-1 : Ordinal → Ordinal
-      func→od∈Func-1 :  Func dom cod ∋  func→od func-1 dom
- 
-od→func : { dom cod : HOD } → {f : Ordinal }  → odef (Func dom cod ) f  → Func←cd {dom} {cod} {f} 
-od→func {dom} {cod} {f} lt = record { func-1 = λ x → sup-o {!!} ( λ y lt → lemma x {!!} ) ; func→od∈Func-1 = record { proj1 = {!!} ; proj2 = {!!} } } where
-   lemma : Ordinal → Ordinal → Ordinal
-   lemma x y with IsZF.power→ isZF (dom ⊗ cod) (ord→od f) (subst (λ k → odef (Power (dom ⊗ cod)) k ) (sym diso) lt ) | ∋-p (ord→od f) (ord→od y)
-   lemma x y | p | no n  = o∅
-   lemma x y | p | yes f∋y = lemma2 {!!} where -- (ODC.double-neg-eilm O ( p {ord→od y} f∋y ))) where -- p : {y : OD} → f ∋ y → ¬ ¬ (dom ⊗ cod ∋ y) 
-           lemma2 : {p : Ordinal} → ord-pair p  → Ordinal
-           lemma2 (pair x1 y1) with ODC.decp O ( x1 ≡ x)
-           lemma2 (pair x1 y1) | yes p = y1
-           lemma2 (pair x1 y1) | no ¬p = o∅
-   fod : HOD
-   fod = Replace dom ( λ x →  < x , ord→od (sup-o {!!} ( λ y lt → lemma (od→ord x) {!!} )) > )
-
-
-open Func←cd
-
--- contra position of sup-o<
---
-
--- postulate
---   -- contra-position of mimimulity of supermum required in Cardinal
---   sup-x  : ( Ordinal  → Ordinal ) →  Ordinal 
---   sup-lb : { ψ : Ordinal  →  Ordinal } → {z : Ordinal }  →  z o< sup-o ψ → z o< osuc (ψ (sup-x ψ))
-
-------------
---
--- Onto map
---          def X x ->  xmap
---     X ---------------------------> Y
---          ymap   <-  def Y y
---
-record Onto  (X Y : HOD )  : Set n where
-   field
-       xmap : Ordinal 
-       ymap : Ordinal 
-       xfunc : odef (Func X Y) xmap 
-       yfunc : odef (Func Y X) ymap 
-       onto-iso   : {y :  Ordinal  } → (lty : odef Y y ) →
-          func-1 ( od→func {X} {Y} {xmap} xfunc ) ( func-1 (od→func  yfunc) y )  ≡ y 
-
-open Onto
-
-onto-restrict : {X Y Z : HOD} → Onto X Y → Z ⊆ Y  → Onto X Z
-onto-restrict {X} {Y} {Z} onto  Z⊆Y = record {
-     xmap = xmap1
-   ; ymap = zmap
-   ; xfunc = xfunc1
-   ; yfunc = zfunc
-   ; onto-iso = onto-iso1
-  } where
-       xmap1 : Ordinal 
-       xmap1 = od→ord (Select (ord→od (xmap onto)) {!!} ) 
-       zmap : Ordinal 
-       zmap = {!!}
-       xfunc1 : odef (Func X Z) xmap1
-       xfunc1 = {!!}
-       zfunc : odef (Func Z X) zmap 
-       zfunc = {!!}
-       onto-iso1   : {z :  Ordinal  } → (ltz : odef Z z ) → func-1 (od→func  xfunc1 )  (func-1 (od→func  zfunc ) z )  ≡ z
-       onto-iso1   = {!!}
-
-
-record Cardinal  (X  : HOD ) : Set n where
-   field
-       cardinal : Ordinal 
-       conto : Onto X (Ord cardinal)  
-       cmax : ( y : Ordinal  ) → cardinal o< y → ¬ Onto X (Ord y)  
-
-cardinal :  (X  : HOD ) → Cardinal X
-cardinal  X = record {
-       cardinal = sup-o {!!} ( λ x lt → proj1 ( cardinal-p {!!}) )
-     ; conto = onto
-     ; cmax = cmax
-   } where
-    cardinal-p : (x  : Ordinal ) →  ( Ordinal  ∧ Dec (Onto X (Ord x) ) )
-    cardinal-p x with ODC.p∨¬p O ( Onto X (Ord x)  ) 
-    cardinal-p x | case1 True  = record { proj1 = x  ; proj2 = yes True }
-    cardinal-p x | case2 False = record { proj1 = o∅ ; proj2 = no False }
-    S = sup-o {!!} (λ x lt → proj1 (cardinal-p {!!}))
-    lemma1 :  (x : Ordinal) → ((y : Ordinal) → y o< x →  (y o< (osuc S) → Onto X (Ord y))) →
-                     (x o< (osuc S) → Onto X (Ord x) )
-    lemma1 x prev with trio< x (osuc S)
-    lemma1 x prev | tri< a ¬b ¬c with osuc-≡< a
-    lemma1 x prev | tri< a ¬b ¬c | case1 x=S = ( λ lt → {!!} )
-    lemma1 x prev | tri< a ¬b ¬c | case2 x<S = ( λ lt → lemma2 ) where
-         lemma2 : Onto X (Ord x) 
-         lemma2 with prev {!!} {!!}
-         ... | t = {!!}
-    lemma1 x prev | tri≈ ¬a b ¬c = ( λ lt → ⊥-elim ( o<¬≡ b lt ))
-    lemma1 x prev | tri> ¬a ¬b c = ( λ lt → ⊥-elim ( o<> c lt ))
-    onto : Onto X (Ord S) 
-    onto with TransFinite {λ x →  ( x o< osuc S → Onto X (Ord x) ) } lemma1 S 
-    ... | t = t <-osuc  
-    cmax : (y : Ordinal) → S o< y → ¬ Onto X (Ord y) 
-    cmax y lt ontoy = o<> lt (o<-subst  {_} {_} {y} {S} {!!} lemma refl ) where
-       -- (sup-o<  ? {λ x lt → proj1 ( cardinal-p {!!})}{{!!}}  ) lemma refl ) where
-          lemma : proj1 (cardinal-p y) ≡ y
-          lemma with  ODC.p∨¬p O ( Onto X (Ord y) )
-          lemma | case1 x = refl
-          lemma | case2 not = ⊥-elim ( not ontoy )
-
-
------
---  All cardinal is ℵ0,  since we are working on Countable Ordinal, 
---  Power ω is larger than ℵ0, so it has no cardinal.
-
-
-
+       fun→ : Ordinal → Ordinal
+       fun← : Ordinal → Ordinal
+       fun→inA : (x : Ordinal) → odef (ord→od A) ( fun→ x )
+       fun←inB : (x : Ordinal) → odef (ord→od B) ( fun← x )
+       fiso→ : (x : Ordinal ) → odef (ord→od B)  x → fun→ ( fun← x ) ≡ x
+       fiso← : (x : Ordinal ) → odef (ord→od A)  x → fun← ( fun→ x ) ≡ x
+       
+Card : OD
+Card = record { def = λ x → (a : Ordinal) → a o< x → ¬ Bijection a x }

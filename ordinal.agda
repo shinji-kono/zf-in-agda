@@ -220,7 +220,7 @@ C-Ordinal {n} = record {
      ; osuc-≡< = osuc-≡<
      ; TransFinite = TransFinite1
      ; TransFinite1 = TransFinite2
-     ; not-limit-p = not-limit
+     ; Oprev-p  = Oprev-p 
    } ;
    isNext = record {
         x<nx = x<nx 
@@ -244,10 +244,12 @@ C-Ordinal {n} = record {
          lemma2 (ordinal (Suc lx) (Φ (Suc lx))) (case1 x) (case1 (s≤s (s≤s lt))) not = lemma3 x lt where
              lemma3 : {n l : Nat} → (Suc (Suc n) ≤ Suc l) → l ≤ n → ⊥
              lemma3   (s≤s sn≤l) (s≤s l≤n) = lemma3 sn≤l l≤n
-
-     not-limit : (x : Ordinal) → Dec (¬ ((y : Ordinal) → ¬ (x ≡ osuc y)))
-     not-limit (ordinal lv (Φ lv)) = no (λ not → not (λ y () ))
-     not-limit (ordinal lv (OSuc lv ox)) = yes (λ not → not (ordinal lv ox) refl )
+     open Oprev
+     Oprev-p  : (x : Ordinal) → Dec ( Oprev (Ordinal {suc n})  osuc x )
+     Oprev-p  (ordinal lv (Φ lv)) = no (λ not → lemma (oprev not) (oprev=x not) ) where
+          lemma : (x : Ordinal) → osuc x ≡ (ordinal lv (Φ lv)) → ⊥
+          lemma x ()
+     Oprev-p  (ordinal lv (OSuc lv ox)) = yes record { oprev = ordinal lv ox ; oprev=x = refl }
      ord1 : Set (suc n)
      ord1 = Ordinal {suc n}
      TransFinite1 : { ψ : ord1  → Set (suc n) }
