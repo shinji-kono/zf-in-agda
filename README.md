@@ -78,9 +78,9 @@ A ∋ x can be define as follows.
     _∋_  A x  = def (od A) ( od→ord x )
 
 ```
-In ψ : Ordinal → Set,  if A is a  record { def = λ x → ψ x } , then
+In ψ : Ordinal → Set,  if A is a  record { od = { def = λ x → ψ x } ...}  , then
 
-    A x = def A ( od→ord x ) = ψ (od→ord x)
+    A ∋ x = def (od A) ( od→ord x ) = ψ (od→ord x)
 
 They say the existing of the mappings can be proved in Classical Set Theory, but we
 simply assumes these non constructively.
