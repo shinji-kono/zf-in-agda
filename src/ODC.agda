@@ -95,6 +95,11 @@ power→⊆ A t  PA∋t = record { incl = λ {x} t∋x → double-neg-eilm (t1 t
    t1 : {x : HOD }  → t ∋ x → ¬ ¬ (A ∋ x)
    t1 = power→ A t PA∋t
 
+power-∩ : { A x y : HOD } → Power A ∋ x → Power A ∋ y → Power A ∋ ( x ∩ y )
+power-∩ {A} {x} {y} ax ay = power← A (x ∩ y) p01  where
+   p01 :  {z : HOD} → (x ∩ y) ∋ z → A ∋ z
+   p01 {z} xyz = double-neg-eilm (  power→ A x ax (proj1 xyz ))
+
 OrdP : ( x : Ordinal  ) ( y : HOD  ) → Dec ( Ord x ∋ y )
 OrdP  x y with trio< x (& y)
 OrdP  x y | tri< a ¬b ¬c = no ¬c

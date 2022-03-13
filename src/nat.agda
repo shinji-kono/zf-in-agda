@@ -10,6 +10,9 @@ open import  logic
 nat-<> : { x y : Nat } → x < y → y < x → ⊥
 nat-<>  (s≤s x<y) (s≤s y<x) = nat-<> x<y y<x
 
+nat-≤> : { x y : Nat } → x ≤ y → y < x → ⊥
+nat-≤>  (s≤s x<y) (s≤s y<x) = nat-≤> x<y y<x
+
 nat-<≡ : { x : Nat } → x < x → ⊥
 nat-<≡  (s≤s lt) = nat-<≡ lt
 
@@ -22,6 +25,10 @@ nat-≡< refl lt = nat-<≡ lt
 a<sa : {la : Nat} → la < Suc la 
 a<sa {Zero} = s≤s z≤n
 a<sa {Suc la} = s≤s a<sa 
+
+<to≤ : {x y  : Nat } → x < y → x ≤ y 
+<to≤ {Zero} {Suc y} (s≤s z≤n) = z≤n
+<to≤ {Suc x} {Suc y} (s≤s lt) = s≤s (<to≤ {x} {y}  lt)
 
 =→¬< : {x : Nat  } → ¬ ( x < x )
 =→¬< {Zero} ()

@@ -206,6 +206,9 @@ ord-od∅  = sym ( subst (λ k → k ≡  & (od∅ ) ) &iso (cong ( λ k → & k
 =od∅→≡o∅  : {x : HOD} → od x == od od∅ → & x ≡ o∅ 
 =od∅→≡o∅ {x} eq = trans (cong (λ k → & k ) (==→o≡ {x} {od∅} eq)) ord-od∅
 
+≡od∅→=od∅  : {x : HOD} → x ≡ od∅ → od x == od od∅
+≡od∅→=od∅ {x} eq = ≡o∅→=od∅ (subst (λ k → & x  ≡ k ) ord-od∅ ( cong & eq ) )
+
 ∅0 : record { def = λ x →  Lift n ⊥ } == od od∅  
 eq→ ∅0 {w} (lift ())
 eq← ∅0 {w} lt = lift (¬x<0 lt)

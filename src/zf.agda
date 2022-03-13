@@ -49,7 +49,7 @@ record IsZF {n m : Level }
      -- extensionality : ∀ z ( z ∈ x ⇔ z ∈ y ) ⇒ ∀ w ( x ∈ w ⇔ y ∈ w )
      extensionality :  { A B w : ZFSet  } → ( (z : ZFSet) → ( A ∋ z ) ⇔ (B ∋ z)  ) → ( A ∈ w ⇔ B ∈ w )
      -- regularity without minimum
-     ε-induction : { ψ : ZFSet → Set (suc m)}
+     ε-induction : { ψ : ZFSet → Set (suc m Level.⊔ n)}
               → ( {x : ZFSet } → ({ y : ZFSet } →  x ∋ y → ψ y ) → ψ x )
               → (x : ZFSet ) → ψ x
      -- infinity : ∃ A ( ∅ ∈ A ∧ ∀ x ∈ A ( x ∪ { x } ∈ A ) )

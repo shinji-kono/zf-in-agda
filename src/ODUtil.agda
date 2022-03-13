@@ -72,7 +72,6 @@ subset-lemma  {A} {x} = record {
     ; proj2 = λ x⊆A lt → ⟪ incl x⊆A lt , lt ⟫
    } 
 
-
 ω<next-o∅ : {y : Ordinal} → infinite-d y → y o< next o∅
 ω<next-o∅ {y} lt = <odmax infinite lt
 

@@ -131,7 +131,6 @@ OD→ZFC   = record {
          --
          --  from https://math.stackexchange.com/questions/2973777/is-it-possible-to-prove-regularity-with-transfinite-induction-only
          --
-         -- FIXME : don't use HOD make this level n, so we can remove ε-induction1 
          record Minimal (x : HOD)  : Set (suc n) where
            field
                min : HOD

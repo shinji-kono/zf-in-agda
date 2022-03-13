@@ -2,8 +2,8 @@
 open import Level
 open import Relation.Nullary 
 open import Relation.Binary.PropositionalEquality
-open import Ordinals
-module partfunc {n : Level } (O : Ordinals {n})  where
+-- open import Ordinals
+module partfunc {n : Level } where -- (O : Ordinals {n})  where
 
 open import logic
 open import Relation.Binary 
@@ -13,7 +13,7 @@ open import Data.Maybe
 open import Relation.Binary
 open import Relation.Binary.Core
 open import Data.Nat renaming ( zero to Zero ; suc to Suc ;  ℕ to Nat ; _⊔_ to _n⊔_ ) 
-open import filter O
+-- open import filter O
 
 open _∧_
 open _∨_
