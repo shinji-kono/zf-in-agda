@@ -200,26 +200,6 @@ TransFinite {n} {m} {ψ} caseΦ caseOSuc x = proj1 (TransFinite1 (lv x) (ord x) 
       lemma y lt | case1 refl = proj1 ( TransFinite1 lx ox ) 
       lemma y lt | case2 lt1 = proj2 ( TransFinite1 lx ox ) y lt1
 
---  record CountableOrdinal {n : Level} : Set (suc (suc n)) where
---     field
---         ctl→ : Nat → Ordinal {suc n}
---         ctl← : Ordinal → Nat
---         ctl-iso→ : { x : Ordinal } → ctl→ (ctl← x ) ≡ x
---         ctl-iso← : { x : Nat }  → ctl← (ctl→ x ) ≡ x
---  
---  is-C-Ordinal : {n : Level} → CountableOrdinal {n}
---  is-C-Ordinal {n} = record {
---         ctl→ = {!!} 
---      ;  ctl← = λ x → TransFinite {n} (λ lx lt → Zero ) ctl01 x
---      ;  ctl-iso→ = {!!}
---      ;  ctl-iso← = {!!}
---    } where
---        ctl01 : (lx : Nat) (x : OrdinalD lx) → ((y : Ordinal) → y o< ordinal lx (OSuc lx x) → Nat) → Nat
---        ctl01 Zero (Φ Zero) prev = Zero 
---        ctl01 Zero (OSuc Zero x) prev = Suc ( prev (ordinal Zero x) (ordtrans <-osuc <-osuc )) 
---        ctl01 (Suc lx) (Φ (Suc lx)) prev = Suc ( prev (ordinal lx {!!}) {!!})
---        ctl01 (Suc lx) (OSuc (Suc lx) x) prev = Suc ( prev (ordinal (Suc lx) x) (ordtrans <-osuc <-osuc ))
-
 open import Ordinals 
 
 C-Ordinal : {n : Level} →  Ordinals {suc n} 
@@ -280,3 +260,9 @@ C-Ordinal {n} = record {
         caseOSuc lx ox prev = lt (ordinal lx (OSuc lx ox)) prev 
 
 
+-- H-Ordinal : {n : Level} → Ordinals {suc n} →  Ordinals {suc n}  →  Ordinals {suc n} 
+-- H-Ordinal {n} O1 O2 = record {
+--      Ordinal = Ordinals.Ordinal O1 ∧ Ordinals.Ordinal O2 
+--   }
+-- We may have an oridinal as proper subset  of an ordinal
+--   then the internal ordinal become a set in the outer ordinal

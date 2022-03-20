@@ -216,7 +216,7 @@ eq← ∅0 {w} lt = lift (¬x<0 lt)
 ∅< : { x y : HOD  } → odef x (& y ) → ¬ (  od x  == od od∅  )
 ∅<  {x} {y} d eq with eq→ (==-trans eq (==-sym ∅0) ) d
 ∅<  {x} {y} d eq | lift ()
-       
+
 ∅6 : { x : HOD  }  → ¬ ( x ∋ x )    --  no Russel paradox
 ∅6  {x} x∋x = o<¬≡ refl ( c<→o<  {x} {x} x∋x )
 

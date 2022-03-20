@@ -37,6 +37,9 @@ open Bool
 --A ∩ B = record { od = record { def = λ x → odef A x ∧ odef B x } ;
 --    odmax = omin (odmax A) (odmax B) ; <odmax = λ y → min1 (<odmax A (proj1 y)) (<odmax B (proj2 y)) }
 
+∩-comm : { A B : HOD } → (A ∩ B) ≡ (B ∩ A)
+∩-comm {A} {B} = ==→o≡ record { eq← = λ {x} lt → ⟪ proj2 lt , proj1 lt ⟫ ; eq→ =  λ {x} lt → ⟪ proj2 lt , proj1 lt ⟫ }
+
 _∪_ : ( A B : HOD  ) → HOD
 A ∪ B = record { od = record { def = λ x → odef A x ∨ odef B x } ;
     odmax = omax (odmax A) (odmax B) ; <odmax = lemma } where
@@ -46,6 +49,13 @@ A ∪ B = record { od = record { def = λ x → odef A x ∨ odef B x } ;
 
 _＼_ : ( A B : HOD  ) → HOD
 A ＼ B = record { od = record { def = λ x → odef A x ∧ ( ¬ ( odef B x ) ) }; odmax = odmax A ; <odmax = λ y → <odmax A (proj1 y) }
+
+¬∅∋ : {x : HOD} → ¬ ( od∅ ∋ x )
+¬∅∋ {x} = ¬x<0
+
+[a-b]∩b=0 : { A B : HOD } → (A ＼ B) ∩ B ≡ od∅
+[a-b]∩b=0 {A} {B} = ==→o≡ record { eq← = λ lt → ⊥-elim ( ¬∅∋ (subst (λ k → odef od∅ k) (sym &iso) lt ))
+     ; eq→ =  λ {x} lt → ⊥-elim (proj2 (proj1 lt ) (proj2 lt)) }
 
 ∪-Union : { A B : HOD } → Union (A , B) ≡ ( A ∪ B )
 ∪-Union {A} {B} = ==→o≡ ( record { eq→ =  lemma1 ; eq← = lemma2 } )  where
