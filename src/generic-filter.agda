@@ -81,7 +81,7 @@ PGHOD i L C p = record { od = record { def = λ x  →
    ; odmax = odmax L  ; <odmax = λ {y} lt → <odmax L (proj1 lt) }  
 
 ---
---   p(n+1) = if (f n) != ∅ then (f n) otherwise p(n)
+--   p(n+1) = if ({q | q ∈ a(n) ∧ q ⊆ p(n))} != ∅ then q otherwise p(n)
 --  
 find-p :  (L : HOD ) (C : CountableModel )  (i : Nat) → (x : Ordinal) → Ordinal
 find-p L C Zero x = x
@@ -151,12 +151,6 @@ P-GenericFilter P L p0 L⊆PP Lp0 C = record {
    } where
         f⊆PL :  PDHOD L p0 C ⊆ L 
         f⊆PL = record { incl = λ {x} lt → x∈PP lt  }
-        Lq : {q : HOD} → L ∋ q → q ⊆ P
-        Lq {q} lt = ODC.power→⊆ O P q ( incl L⊆PP lt )
-        Pp0 : p0 ∈ Power P
-        Pp0 = incl L⊆PP Lp0 
-        PGHOD∈PL :  (i : Nat) → (x : Ordinal) →  PGHOD i L C x ⊆ Power P
-        PGHOD∈PL i x = record { incl = λ {x} p → incl  L⊆PP (proj1 p) }
         f1 : {p q : HOD} → L ∋  q → PDHOD L p0 C ∋ p → p ⊆ q → PDHOD L p0 C ∋ q
         f1 {p} {q} L∋q PD∋p p⊆q =  record { gr = gr PD∋p ;  pn<gr = f04 ; x∈PP = L∋q } where
            f04 : (y : Ordinal) → odef (* (find-p L C (gr PD∋p) (& p0))) y → odef (* (& q)) y
@@ -182,14 +176,6 @@ P-GenericFilter P L p0 L⊆PP Lp0 C = record {
         fdense : (D : Dense L⊆PP ) → (ctl-M C ) ∋ Dense.dense D  → ¬ (filter.Dense.dense D ∩ PDHOD L p0 C) ≡ od∅
         fdense D MD eq0  = ⊥-elim (  ∅< {Dense.dense D ∩ PDHOD L p0 C} fd01 (≡od∅→=od∅ eq0 )) where
            open Dense
-           PP∋D : dense D ⊆ Power P
-           PP∋D = trans-⊆ (d⊆P D) L⊆PP 
-           fd00 : PDHOD L p0 C ∋ p0
-           fd00 = record { gr = 0 ; pn<gr = λ y lt → lt ; x∈PP = Lp0 }
-           fd02 : dense D ∋ dense-f D Lp0 
-           fd02 = dense-d D Lp0
-           fd04 : dense-f D Lp0 ⊆ P
-           fd04 = ODC.power→⊆ O _ _ ( incl PP∋D fd02 )
            fd09 : (i : Nat ) → odef L (find-p L C i (& p0))
            fd09 Zero = Lp0
            fd09 (Suc i) with is-o∅ ( & ( PGHOD i L C (find-p L C i (& p0))) )
@@ -206,8 +192,8 @@ P-GenericFilter P L p0 L⊆PP Lp0 C = record {
            pn = find-p L C an (& p0)
            pn+1 : Ordinal
            pn+1 = find-p L C (Suc an) (& p0)
-           fd26 : dense D ≡ * (ctl→ C an) 
-           fd26 = begin dense D ≡⟨ sym *iso ⟩
+           d=an : dense D ≡ * (ctl→ C an) 
+           d=an = begin dense D ≡⟨ sym *iso ⟩
                     * ( & (dense D)) ≡⟨ cong (*) (sym (ctl-iso→  C MD )) ⟩
                     * (ctl→ C an) ∎  where open ≡-Reasoning
            fd07 : odef (dense D) pn+1
@@ -220,7 +206,7 @@ P-GenericFilter P L p0 L⊆PP Lp0 C = record {
               fd13 : L ∋ ( dense-f D fd12 )
               fd13 = incl (d⊆P D) (  dense-d D fd12 )
               fd14 : (* (ctl→ C an)) ∋ ( dense-f D fd12 )
-              fd14 = subst (λ k → odef k (& ( dense-f D fd12 ) )) fd26 (  dense-d D fd12 ) 
+              fd14 = subst (λ k → odef k (& ( dense-f D fd12 ) )) d=an (  dense-d D fd12 ) 
               fd15 :  (y : Ordinal) → odef (* (& (dense-f D fd12))) y → odef (* (find-p L C an (& p0))) y
               fd15 y lt = subst (λ k → odef  (* (find-p L C an (& p0)))  k ) &iso ( incl (dense-p D  fd12 ) fd16  ) where
                   fd16 : odef (dense-f D fd12) (& ( * y))
@@ -232,7 +218,7 @@ P-GenericFilter P L p0 L⊆PP Lp0 C = record {
               fd28 : PGHOD an L C (find-p L C an (& p0)) ∋ fd29
               fd28 = ODC.x∋minimal O (PGHOD an L C (find-p L C an (& p0))) (λ eq → not (=od∅→≡o∅ eq))
               fd27 :  odef (dense D) (& fd29)
-              fd27 = subst (λ k → odef k (& fd29)) (sym fd26) (proj1 (proj2 fd28)) 
+              fd27 = subst (λ k → odef k (& fd29)) (sym d=an) (proj1 (proj2 fd28)) 
            fd03 : odef (PDHOD L p0 C) pn+1
            fd03 = record { gr = Suc an ; pn<gr = λ y lt → lt ; x∈PP = fd09 (Suc an)} 
            fd01 : (dense D ∩ PDHOD L p0 C) ∋ (* pn+1)

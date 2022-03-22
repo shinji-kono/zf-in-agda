@@ -106,6 +106,49 @@ OrdP  x y | tri< a ¬b ¬c = no ¬c
 OrdP  x y | tri≈ ¬a refl ¬c = no ( o<¬≡ refl )
 OrdP  x y | tri> ¬a ¬b c = yes c
 
+record SUP ( A B : HOD ) (_<_ : (x y : HOD) → Set n ) : Set (suc n) where
+   field
+      sup : HOD
+      A∋maximal : A ∋ sup
+      tri : {a b : HOD} → B ∋ a → B ∋ b → (a < b) ∨ (a ≡ b) ∨ (b < a )
+      x≤sup : (x : HOD) → (b : B ∋ x ) → (x ≡ sup ) ∨ (x < sup )
+
+record Maximal ( A : HOD ) (_<_ : (x y : HOD) → Set n ) : Set (suc n) where
+   field
+      maximal : HOD
+      A∋maximal : HOD
+      ¬maximal<x : (x : HOD) → (b : A ∋ x ) → ¬ maximal < x
+
+record ZChain ( A : HOD ) (x : Ordinal)  (_<_ : (x y : HOD) → Set n ) : Set (suc n) where
+   field
+      NOMAX : HOD
+      Chain : HOD
+      nomax : (y m : Ordinal) → odef NOMAX y → y o< x → ¬ ( * y < * m )
+      chain : (y : Ordinal) → odef Chain y → & NOMAX ≡ o∅  → SUP A (* y) _<_
+
+Zorn-lemma : { A : HOD } → { _<_ : (x y : HOD) → Set n }
+    → o∅ o< & A 
+    → ( ( B : HOD) → (B⊆A : B ⊆ A) → SUP A B  _<_  )
+    → Maximal A _<_ 
+Zorn-lemma {A} {_<_} 0<A SUP = zorn01 (TransFinite ind (& A)) where
+     HasGreater : Ordinal → HOD
+     HasGreater m = record { od = record { def = λ x → odef A x ∧ (* m < * x) } ; odmax = & A ; <odmax = {!!} }
+     zorn01 : ZChain A (& A) _<_ → Maximal A _<_
+     zorn01 zc with is-o∅ ( & (ZChain.NOMAX zc) )
+     ... | yes _ = {!!}
+     ... | no not = record { maximal = minimal (ZChain.NOMAX zc) (λ eq → not (=od∅→≡o∅ eq)) ; A∋maximal = {!!}
+         ; ¬maximal<x = λ x lt m<x → ZChain.nomax zc {!!} {!!} (x∋minimal (ZChain.NOMAX zc) (λ eq → not (=od∅→≡o∅ eq)) ) {!!} {!!}  }
+     ind :  (x : Ordinal) → ((y : Ordinal) → y o< x →  ZChain A y _<_ )
+         →  ZChain A x _<_
+     ind x prev with Oprev-p x
+     ... | yes ox with is-o∅ (& (HasGreater x))
+     ... | yes _ = record { NOMAX = {!!} ; nomax = {!!} ; Chain = {!!} ; chain = {!!} } where
+     ... | no _ = record { NOMAX = {!!} ; nomax = {!!} ; Chain = {!!} ; chain = {!!} } where
+     ind x prev | no ¬ox with trio< (& A) x
+     ... | tri< a ¬b ¬c = {!!}
+     ... | tri≈ ¬a b ¬c = {!!}
+     ... | tri> ¬a ¬b c = {!!}
+
 open import zfc
 
 HOD→ZFC : ZFC
