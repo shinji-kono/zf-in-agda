@@ -173,3 +173,79 @@ record GenericFilter {L P : HOD} (LP : L ⊆ Power P) (M : HOD) : Set (suc n) wh
        genf : Filter LP
        generic : (D : Dense LP ) → M ∋ Dense.dense D → ¬ ( (Dense.dense D ∩ Filter.filter genf ) ≡ od∅ )
 
+record MaximumFilter {L P : HOD} (LP : L ⊆ Power P) : Set (suc n) where
+    field
+       mf : Filter LP
+       proper  : ¬ (filter mf ∋ od∅)
+       is-maximum : ( f : Filter LP ) →  ¬ (filter f ∋ od∅)  →  ¬ filter  mf ≡ filter f → ¬ ( filter mf  ⊆ filter f  )
+
+max→ultra : {L P : HOD} (LP : L ⊆ Power P) → (mx : MaximumFilter LP ) → ultra-filter ( MaximumFilter.mf mx )
+max→ultra {L} {P} LP mx = record { proper = MaximumFilter.proper mx ; ultra = ultra } where
+    mf = MaximumFilter.mf mx
+    ultra : {p : HOD} → L ∋ p → L ∋ (P ＼ p) → (filter mf ∋ p) ∨ (filter mf ∋ (P ＼ p))
+    ultra {p} lp lnp with ∋-p (filter mf) p
+    ... | yes y = case1 y
+    ... | no np with ∋-p (filter mf) (P ＼ p) 
+    ... | yes y = case2 y
+    ... | no n-p = ⊥-elim (MaximumFilter.is-maximum mx FisFilter FisProper  {!!}  record { incl = FisGreater } ) where
+         Y : (y : Ordinal) → (my : odef (filter mf) y ) → HOD
+         Y y my = record { od = record { def = λ x → (x ≡ y) ∨ (x ≡ & p) } ; odmax = & L ; <odmax = {!!} }
+         F : HOD
+         F = record { od = record { def = λ x → (x ≡ & p) ∨ ((y : Ordinal) → (my : odef (filter mf) y ) → x ≡ & (Y y my) )  } ; odmax = & L ; <odmax = {!!} }
+         FisFilter : Filter LP
+         FisFilter = record { filter = F ; f⊆L = {!!} ; filter1 = {!!} ; filter2 = {!!} }
+         FisGreater : {x : HOD} → filter (MaximumFilter.mf mx) ∋ x → filter FisFilter ∋ x
+         FisGreater = {!!}
+         FisProper : ¬ (filter FisFilter ∋ od∅)
+         FisProper = {!!}
+
+open _==_
+
+open import Relation.Binary.Definitions
+
+ultra→max : {L P : HOD} (LP : L ⊆ Power P) → ({p : HOD} → L ∋ p → L ∋ ( P ＼ p)) → ({p q : HOD} → L ∋ p → L ∋ q → L ∋ (p ∩ q))
+       → (U : Filter LP) → ultra-filter U → MaximumFilter LP 
+ultra→max {L} {P} LP NG CAP U u  = record { mf = U ; proper = ultra-filter.proper u ; is-maximum = is-maximum } where
+  is-maximum : (F : Filter LP) → (¬ (filter F ∋ od∅)) → ( U≠F :  ¬ filter  U ≡ filter F ) →  (U⊆F : filter U  ⊆ filter F ) → ⊥
+  is-maximum F Prop U≠F U⊆F  = Prop f0 where
+     GT : HOD
+     GT = record { od = record { def = λ x → odef (filter F) x ∧ (¬ odef (filter U) x) } ; odmax = {!!} ; <odmax = {!!} }
+     GT≠∅ :  ¬ (GT =h= od∅)
+     GT≠∅ eq = ⊥-elim (U≠F ( ==→o≡ (⊆→=  U⊆F (U-F=∅→F⊆U gt01)))) where
+         gt01 : (x : Ordinal) → ¬ odef (filter F) x ∧ (¬ odef (filter U) x)
+         gt01 x not = ¬x<0 ( eq→ eq not )
+     p : HOD
+     p = ODC.minimal O GT GT≠∅
+     ¬U∋p : ¬ ( filter U ∋ p )
+     ¬U∋p = proj2 (ODC.x∋minimal O GT GT≠∅)
+     U∋-p : filter U ∋  ( P ＼ p )
+     U∋-p with ultra-filter.ultra u {p} {!!} {!!}
+     ... | case1 ux = ⊥-elim ( ¬U∋p ux )
+     ... | case2 u-x = u-x
+     F∋p : filter F ∋ p
+     F∋p = proj1 (ODC.x∋minimal O GT GT≠∅)
+     F∋-p : filter F ∋ ( P ＼ p )
+     F∋-p = incl U⊆F U∋-p 
+     f0 : filter F ∋ od∅
+     f0 = subst (λ k → odef (filter F) k ) (trans (cong (&) ∩-comm) (cong (&) [a-b]∩b=0 ) ) ( filter2 F F∋p F∋-p ( CAP {!!} {!!}) )
+
+_⊆'_ : ( A B : HOD ) → Set n
+_⊆'_ A B = (x : Ordinal ) → odef A x → odef B x
+
+import zorn 
+open zorn O _⊆'_
+
+MaximumSubset : {L P : HOD} 
+      → o∅ o< & L →  o∅ o< & P → P ⊆ L
+      → IsPartialOrderSet P 
+      → ( (B : HOD) → B ⊆ P → IsTotalOrderSet B  → SUP P B  )
+      → Maximal P 
+MaximumSubset {L} {P} 0<L 0<P P⊆L PO SP  = Zorn-lemma 0<P PO SP
+
+MaximumFilterExist : {L P : HOD} (LP : L ⊆ Power P) → ({p : HOD} → L ∋ p → L ∋ ( P ＼ p)) → ({p q : HOD} → L ∋ p → L ∋ q → L ∋ (p ∩ q))
+      → (F : Filter LP) → o∅ o< & L →  o∅ o< & (filter F)  →  (¬ (filter F ∋ od∅)) → MaximumFilter LP 
+MaximumFilterExist {L} {P} LP NEG CAP F 0<L 0<F Fprop = record { mf = {!!} ; proper = {!!} ; is-maximum = {!!} }  where
+     mf01 : Maximal  P 
+     mf01 = MaximumSubset  0<L {!!}  {!!} {!!} {!!} 
+
+

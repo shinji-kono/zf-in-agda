@@ -66,6 +66,13 @@ refl-⊆ {A} = record { incl = λ x → x }
 od⊆→o≤  : {x y : HOD } → x ⊆ y → & x o< osuc (& y)
 od⊆→o≤ {x} {y} lt  =  ⊆→o≤ {x} {y} (λ {z} x>z  → subst (λ k → def (od y) k ) &iso (incl lt (d→∋ x x>z)))
 
+⊆→= : {F U : HOD} → F ⊆ U  → U ⊆ F → F =h= U
+⊆→= {F} {U} FU UF = record { eq→ = λ {x} lt → subst (λ k → odef U k) &iso (incl FU (subst (λ k → odef F k) (sym &iso) lt) )
+                                     ; eq← = λ {x} lt → subst (λ k → odef F k) &iso (incl UF (subst (λ k → odef U k) (sym &iso) lt) ) }
+
+¬A∋x→A≡od∅ : (A : HOD) → {x : HOD} → A ∋ x  → ¬ ( & A ≡ o∅ )
+¬A∋x→A≡od∅ A {x} ax a=0 = ¬x<0 ( subst (λ k → & x o< k) a=0 (c<→o< ax ))
+
 subset-lemma : {A x : HOD  } → ( {y : HOD } →  x ∋ y → (A ∩ x ) ∋  y ) ⇔  ( x ⊆ A  )
 subset-lemma  {A} {x} = record {
       proj1 = λ lt  → record { incl = λ x∋z → proj1 (lt x∋z)  }

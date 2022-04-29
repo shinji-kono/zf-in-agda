@@ -186,6 +186,12 @@ ord→==  {x} {y} eq = ==-iso (lemma (& x) (& y) (orefl eq)) where
 o≡→== : { x y : Ordinal  } → x ≡  y →  od (* x) == od (* y)
 o≡→==  {x} {.x} refl = ==-refl
 
+*≡*→≡ : { x y : Ordinal  } → * x ≡ * y →  x ≡ y
+*≡*→≡ eq = subst₂ (λ j k → j ≡ k ) &iso &iso ( cong (&) eq )
+
+&≡&→≡ : { x y : HOD  } → & x ≡  & y →  x ≡ y
+&≡&→≡ eq = subst₂ (λ j k → j ≡ k ) *iso *iso ( cong (*) eq )
+
 o∅≡od∅ : * (o∅ ) ≡ od∅ 
 o∅≡od∅  = ==→o≡ lemma where
      lemma0 :  {x : Ordinal} → odef (* o∅) x → odef od∅ x

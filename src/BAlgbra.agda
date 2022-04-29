@@ -57,6 +57,13 @@ A ＼ B = record { od = record { def = λ x → odef A x ∧ ( ¬ ( odef B x ) )
 [a-b]∩b=0 {A} {B} = ==→o≡ record { eq← = λ lt → ⊥-elim ( ¬∅∋ (subst (λ k → odef od∅ k) (sym &iso) lt ))
      ; eq→ =  λ {x} lt → ⊥-elim (proj2 (proj1 lt ) (proj2 lt)) }
 
+U-F=∅→F⊆U : {F U : HOD} →  ((x : Ordinal) →  ¬ ( odef F x ∧ ( ¬ odef U x ))) → F ⊆ U
+U-F=∅→F⊆U {F} {U} not = record { incl = gt02 } where
+    gt02 : { x : Ordinal } → odef F x → odef U x
+    gt02 {x} fx with ODC.∋-p O U (* x)
+    ... | yes y = subst (λ k → odef U k ) &iso y
+    ... | no  n = ⊥-elim ( not x ⟪ fx , subst (λ k → ¬ odef U k ) &iso n ⟫ )
+
 ∪-Union : { A B : HOD } → Union (A , B) ≡ ( A ∪ B )
 ∪-Union {A} {B} = ==→o≡ ( record { eq→ =  lemma1 ; eq← = lemma2 } )  where
     lemma1 :  {x : Ordinal} → odef (Union (A , B)) x → odef (A ∪ B) x

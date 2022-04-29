@@ -32,14 +32,14 @@ open ODC O
 
 open import filter
 
-record Toplogy  ( L : HOD ) : Set (suc n) where
+record Topology  ( L : HOD ) : Set (suc n) where
    field
        OS    : HOD
        OS⊆PL :  OS ⊆ Power L 
        o∪ : { P : HOD }  →  P  ⊆ OS           → OS ∋ Union P
        o∩ : { p q : HOD } → OS ∋ p →  OS ∋ q  → OS ∋ (p ∩ q)
 
-open Toplogy
+open Topology
 
 record _covers_ ( P q : HOD  ) : Set (suc n) where
    field
@@ -58,7 +58,7 @@ data genTop (P : HOD) : HOD → Set (suc n) where
 
 -- Limit point
 
-record LP ( L S x : HOD ) (top : Toplogy L) (S⊆PL :  S ⊆ Power L ) ( S∋x : S ∋ x ) : Set (suc n) where
+record LP ( L S x : HOD ) (top : Topology L) (S⊆PL :  S ⊆ Power L ) ( S∋x : S ∋ x ) : Set (suc n) where
    field
       neip   : {y : HOD} → OS top ∋ y → y ∋ x → HOD
       isNeip : {y : HOD} → (o∋y : OS top ∋ y ) → (y∋x : y ∋ x ) → ¬ ( x ≡ neip o∋y y∋x) ∧ ( y ∋ neip o∋y y∋x )
@@ -88,16 +88,16 @@ record Compact  ( L P : HOD ) : Set (suc n) where
 
 -- FIP is Compact
 
-FIP→Compact : {L P : HOD} → Tolopogy L → FIP L P → Compact L P
-FIP→Compact = ?
+FIP→Compact : {L P : HOD} → Topology L → FIP L P → Compact L P
+FIP→Compact = {!!}
 
-Compact→FIP : {L P : HOD} → Tolopogy L → Compact L P → FIP L P
-Compact→FIP = ?
+Compact→FIP : {L P : HOD} → Topology L → Compact L P → FIP L P
+Compact→FIP = {!!}
 
 -- Product Topology
 
-_Top⊗_ : {P Q : HOD} → Topology P → Tolopogy Q → Topology ( P ⊗ Q )
-_Top⊗_ = ?
+_Top⊗_ : {P Q : HOD} → Topology P → Topology Q → Topology {!!}
+_Top⊗_ = {!!}
 
 -- existence of Ultra Filter 
 
