@@ -26,6 +26,7 @@ record IsOrdinals {n : Level} (ord : Set n)  (o∅ : ord ) (osuc : ord → ord )
      <-osuc   : { x : ord  } → x o< osuc x
      osuc-≡<  : { a x : ord  } → x o< osuc a  →  (x ≡ a ) ∨ (x o< a)  
      Oprev-p  : ( x : ord  ) → Dec ( Oprev ord osuc x )
+     o<-irr   : { x y : ord } → { lt lt1 : x o< y } → lt ≡ lt1
      TransFinite : { ψ : ord  → Set (suc n) }
           → ( (x : ord)  → ( (y : ord  ) → y o< x → ψ y ) → ψ x )
           →  ∀ (x : ord)  → ψ x

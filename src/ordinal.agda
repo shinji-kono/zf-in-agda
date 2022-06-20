@@ -200,6 +200,17 @@ TransFinite {n} {m} {ψ} caseΦ caseOSuc x = proj1 (TransFinite1 (lv x) (ord x) 
       lemma y lt | case1 refl = proj1 ( TransFinite1 lx ox ) 
       lemma y lt | case2 lt1 = proj2 ( TransFinite1 lx ox ) y lt1
 
+open import Data.Nat.Properties as DP
+OrdIrr : {n : Level } {x y : Ordinal {suc n} } {lt lt1 : x o< y} → lt ≡ lt1
+OrdIrr {n} {ordinal lv₁ ord₁} {ordinal lv₂ ord₂} {case1 x} {case1 x₁} = cong case1 (DP.<-irrelevant _ _ )
+OrdIrr {n} {ordinal lv₁ ord₁} {ordinal lv₂ ord₂} {case1 x} {case2 x₁} = ⊥-elim ( nat-≡< ( d<→lv x₁ ) x )
+OrdIrr {n} {ordinal lv₁ ord₁} {ordinal lv₂ ord₂} {case2 x} {case1 x₁} = ⊥-elim ( nat-≡< ( d<→lv x ) x₁ )
+OrdIrr {n} {ordinal lv₁ .(Φ lv₁)} {ordinal .lv₁ .(OSuc lv₁ _)} {case2 Φ<} {case2 Φ<} = refl
+OrdIrr {n} {ordinal lv₁ (OSuc lv₁ a)} {ordinal .lv₁ (OSuc lv₁ b)} {case2 (s< x)} {case2 (s< x₁)} = cong (λ k → case2 (s< k)) (lemma1 _ _ x x₁) where
+      lemma1 : {lx : Nat} (a b : OrdinalD {suc n} lx) → (x y : a d< b ) → x ≡ y
+      lemma1 {lx} .(Φ lx) .(OSuc lx _) Φ< Φ< = refl
+      lemma1 {lx} (OSuc lx a) (OSuc lx b) (s< x) (s< y) = cong s< (lemma1 {lx} a b x y )
+ 
 open import Ordinals 
 
 C-Ordinal : {n : Level} →  Ordinals {suc n} 
@@ -216,6 +227,7 @@ C-Ordinal {n} = record {
      ; <-osuc = <-osuc
      ; osuc-≡< = osuc-≡<
      ; TransFinite = TransFinite2
+     ; o<-irr = OrdIrr
      ; Oprev-p  = Oprev-p 
    } ;
    isNext = record {

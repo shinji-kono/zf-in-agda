@@ -230,22 +230,24 @@ ultra→max {L} {P} LP NG CAP U u  = record { mf = U ; proper = ultra-filter.pro
      f0 = subst (λ k → odef (filter F) k ) (trans (cong (&) ∩-comm) (cong (&) [a-b]∩b=0 ) ) ( filter2 F F∋p F∋-p ( CAP {!!} {!!}) )
 
 _⊆'_ : ( A B : HOD ) → Set n
-_⊆'_ A B = (x : Ordinal ) → odef A x → odef B x
+_⊆'_ A B = {x : Ordinal } → odef A x → odef B x
 
 import zorn 
-open zorn O _⊆'_
+open zorn O _⊆'_ hiding (  _⊆'_ )
+
+open import  Relation.Binary.Structures
 
 MaximumSubset : {L P : HOD} 
-      → o∅ o< & L →  o∅ o< & P → P ⊆ L
-      → IsPartialOrderSet P 
-      → ( (B : HOD) → B ⊆ P → IsTotalOrderSet B  → SUP P B  )
-      → Maximal P 
-MaximumSubset {L} {P} 0<L 0<P P⊆L PO SP  = Zorn-lemma 0<P PO SP
+      → o∅ o< & L →  o∅ o< & P → P ⊆' L
+      → (PO : IsStrictPartialOrder _≡_ _⊆'_ )
+      → ( (B : HOD) → B ⊆ P → IsTotalOrderSet PO B  → SUP PO P B  )
+      → Maximal PO P
+MaximumSubset {L} {P} 0<L 0<P P⊆L PO C = Zorn-lemma PO 0<P {!!}
 
 MaximumFilterExist : {L P : HOD} (LP : L ⊆ Power P) → ({p : HOD} → L ∋ p → L ∋ ( P ＼ p)) → ({p q : HOD} → L ∋ p → L ∋ q → L ∋ (p ∩ q))
       → (F : Filter LP) → o∅ o< & L →  o∅ o< & (filter F)  →  (¬ (filter F ∋ od∅)) → MaximumFilter LP 
 MaximumFilterExist {L} {P} LP NEG CAP F 0<L 0<F Fprop = record { mf = {!!} ; proper = {!!} ; is-maximum = {!!} }  where
-     mf01 : Maximal  P 
-     mf01 = MaximumSubset  0<L {!!}  {!!} {!!} {!!} 
+     mf01 : Maximal  {!!}  {!!}
+     mf01 = MaximumSubset  0<L {!!}  {!!} {!!}  {!!}
 
 

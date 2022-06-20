@@ -74,6 +74,7 @@ o≡? x y with trio< x y
 _o≤_ :  Ordinal → Ordinal → Set  n
 a o≤ b  = a o< osuc b -- (a ≡ b)  ∨ ( a o< b )
 
+-- o<-irr : { x y : Ordinal } → { lt lt1 : x o< y } → lt ≡ lt1
 
 xo<ab :  {oa ob : Ordinal } → ( {ox : Ordinal } → ox o< oa  → ox o< ob ) → oa o< osuc ob
 xo<ab   {oa} {ob} a→b with trio< oa ob
@@ -152,8 +153,12 @@ omxxx  x = trans ( cong ( λ k → omax x k ) (omxx x )) (sym ( omax< x (osuc x)
 
 open _∧_
 
-o≤-refl :  { i  j : Ordinal } → i ≡ j → i o≤ j
-o≤-refl {i} {j} eq = subst (λ k → i o< osuc k ) eq <-osuc
+o≤-refl0 :  { i  j : Ordinal } → i ≡ j → i o≤ j
+o≤-refl0 {i} {j} eq = subst (λ k → i o< osuc k ) eq <-osuc
+
+o≤-refl :  { i : Ordinal } → i o≤ i
+o≤-refl {i} = subst (λ k → i o< osuc k ) refl <-osuc
+
 OrdTrans :  Transitive  _o≤_
 OrdTrans a≤b b≤c with osuc-≡< a≤b | osuc-≡< b≤c
 OrdTrans a≤b b≤c | case1 refl | case1 refl = <-osuc
@@ -167,7 +172,7 @@ OrdPreorder  = record { Carrier = Ordinal
    ; _∼_   = _o≤_
    ; isPreorder   = record {
         isEquivalence = record { refl = refl  ; sym = sym ; trans = trans }
-        ; reflexive     = o≤-refl
+        ; reflexive     = o≤-refl0
         ; trans         = OrdTrans 
      }
  }
@@ -229,14 +234,14 @@ x<ny→≡next {x} {y} x<y y<nx | tri> ¬a ¬b c =          -- x < y < next y < 
 ≤next {x} {y} x≤y | tri< a ¬b ¬c = ordtrans a (ordtrans x<nx <-osuc )
 ≤next {x} {y} x≤y | tri≈ ¬a refl ¬c = (ordtrans x<nx <-osuc )
 ≤next {x} {y} x≤y | tri> ¬a ¬b c with osuc-≡< x≤y
-≤next {x} {y} x≤y | tri> ¬a ¬b c | case1 refl = o≤-refl refl   -- x = y < next x
-≤next {x} {y} x≤y | tri> ¬a ¬b c | case2 x<y = o≤-refl (x<ny→≡next x<y c) -- x ≤ y < next x 
+≤next {x} {y} x≤y | tri> ¬a ¬b c | case1 refl = o≤-refl -- x = y < next x
+≤next {x} {y} x≤y | tri> ¬a ¬b c | case2 x<y = o≤-refl0 (x<ny→≡next x<y c) -- x ≤ y < next x 
 
 x<ny→≤next : {x y : Ordinal} → x o< next y → next x o≤ next y
 x<ny→≤next {x} {y} x<ny with trio< x y
 x<ny→≤next {x} {y} x<ny | tri< a ¬b ¬c =  ≤next (ordtrans a <-osuc )
-x<ny→≤next {x} {y} x<ny | tri≈ ¬a refl ¬c =  o≤-refl refl
-x<ny→≤next {x} {y} x<ny | tri> ¬a ¬b c = o≤-refl (sym ( x<ny→≡next c x<ny ))
+x<ny→≤next {x} {y} x<ny | tri≈ ¬a refl ¬c =  o≤-refl 
+x<ny→≤next {x} {y} x<ny | tri> ¬a ¬b c = o≤-refl0 (sym ( x<ny→≡next c x<ny ))
 
 omax<nomax : {x y : Ordinal} → omax x y o< next (omax x y )
 omax<nomax {x} {y} with trio< x y
