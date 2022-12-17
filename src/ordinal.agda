@@ -1,13 +1,13 @@
-open import Level
+open import Level 
 module ordinal where
 
 open import logic
 open import nat
-open import Data.Nat renaming ( zero to Zero ; suc to Suc ;  ℕ to Nat ; _⊔_ to _n⊔_ ) 
+open import Data.Nat renaming ( zero to Zero ; suc to Suc ; _⊔_ to _n⊔_ ) 
 open import Data.Empty
 open import Relation.Binary.PropositionalEquality
 open import Relation.Binary.Definitions
-open import Data.Nat.Properties 
+open import Data.Nat.Properties as NP
 open import Relation.Nullary
 open import Relation.Binary.Core
 
@@ -16,30 +16,30 @@ open import Relation.Binary.Core
 -- Countable Ordinals
 --
 
-data OrdinalD {n : Level} :  (lv : Nat) → Set n where
-   Φ : (lv : Nat) → OrdinalD  lv
-   OSuc : (lv : Nat) → OrdinalD {n} lv → OrdinalD lv
+data OrdinalD {n : Level} :  (lv : ℕ) → Set n where
+   Φ : (lv : ℕ) → OrdinalD  lv
+   OSuc : (lv : ℕ) → OrdinalD {n} lv → OrdinalD lv
 
 record Ordinal {n : Level} : Set n where
    constructor ordinal  
    field
-     lv : Nat
+     lv : ℕ
      ord : OrdinalD {n} lv
 
-data _d<_ {n : Level} :   {lx ly : Nat} → OrdinalD {n} lx  →  OrdinalD {n} ly  → Set n where
-   Φ<  : {lx : Nat} → {x : OrdinalD {n} lx}  →  Φ lx d< OSuc lx x
-   s<  : {lx : Nat} → {x y : OrdinalD {n} lx}  →  x d< y  → OSuc  lx x d< OSuc  lx y
+data _d<_ {n : Level} :   {lx ly : ℕ} → OrdinalD {n} lx  →  OrdinalD {n} ly  → Set n where
+   Φ<  : {lx : ℕ} → {x : OrdinalD {n} lx}  →  Φ lx d< OSuc lx x
+   s<  : {lx : ℕ} → {x y : OrdinalD {n} lx}  →  x d< y  → OSuc  lx x d< OSuc  lx y
 
 open Ordinal
 
 _o<_ : {n : Level} ( x y : Ordinal ) → Set n
 _o<_ x y =  (lv x < lv y )  ∨ ( ord x d< ord y )
 
-s<refl : {n : Level } {lx : Nat } { x : OrdinalD {n} lx } → x d< OSuc lx x
+s<refl : {n : Level } {lx : ℕ } { x : OrdinalD {n} lx } → x d< OSuc lx x
 s<refl {n} {lv} {Φ lv}  = Φ<
 s<refl {n} {lv} {OSuc lv x}  = s< s<refl 
 
-trio<> : {n : Level} →  {lx : Nat} {x  : OrdinalD {n} lx } { y : OrdinalD  lx }  →  y d< x → x d< y → ⊥
+trio<> : {n : Level} →  {lx : ℕ} {x  : OrdinalD {n} lx } { y : OrdinalD  lx }  →  y d< x → x d< y → ⊥
 trio<>  {n} {lx} {.(OSuc lx _)} {.(OSuc lx _)} (s< s) (s< t) = trio<> s t
 trio<> {n} {lx} {.(OSuc lx _)} {.(Φ lx)} Φ< ()
 
@@ -56,16 +56,16 @@ ordinal-cong : {n : Level} {x y : Ordinal {n}}  →
       lv x  ≡ lv y → ord x ≅ ord y →  x ≡ y
 ordinal-cong refl refl = refl
 
-≡→¬d< : {n : Level} →  {lv : Nat} → {x  : OrdinalD {n}  lv }  → x d< x → ⊥
+≡→¬d< : {n : Level} →  {lv : ℕ} → {x  : OrdinalD {n}  lv }  → x d< x → ⊥
 ≡→¬d<  {n} {lx} {OSuc lx y} (s< t) = ≡→¬d< t
 
-trio<≡ : {n : Level} →  {lx : Nat} {x  : OrdinalD {n} lx } { y : OrdinalD  lx }  → x ≡ y  → x d< y → ⊥
+trio<≡ : {n : Level} →  {lx : ℕ} {x  : OrdinalD {n} lx } { y : OrdinalD  lx }  → x ≡ y  → x d< y → ⊥
 trio<≡ refl = ≡→¬d<
 
-trio>≡ : {n : Level} →  {lx : Nat} {x  : OrdinalD {n} lx } { y : OrdinalD  lx }  → x ≡ y  → y d< x → ⊥
+trio>≡ : {n : Level} →  {lx : ℕ} {x  : OrdinalD {n} lx } { y : OrdinalD  lx }  → x ≡ y  → y d< x → ⊥
 trio>≡ refl = ≡→¬d<
 
-triOrdd : {n : Level} →  {lx : Nat}   → Trichotomous  _≡_ ( _d<_  {n} {lx} {lx} )
+triOrdd : {n : Level} →  {lx : ℕ}   → Trichotomous  _≡_ ( _d<_  {n} {lx} {lx} )
 triOrdd  {_} {lv} (Φ lv) (Φ lv) = tri≈ ≡→¬d< refl ≡→¬d<
 triOrdd  {_} {lv} (Φ lv) (OSuc lv y) = tri< Φ< (λ ()) ( λ lt → trio<> lt Φ< )
 triOrdd  {_} {lv} (OSuc lv x) (Φ lv) = tri> (λ lt → trio<> lt Φ<) (λ ()) Φ<
@@ -97,7 +97,7 @@ o<> {n} {record { lv = lv₁ ; ord = .(OSuc lv₁ _) }} {record { lv = .lv₁ ; 
 o<> {n} {record { lv = lv₁ ; ord = .(OSuc lv₁ _) }} {record { lv = .lv₁ ; ord = .(OSuc lv₁ _) }} (case2 (s< y<x)) (case2 (s< x<y)) = 
    o<> (case2 y<x) (case2 x<y)
 
-orddtrans : {n : Level} {lx : Nat} {x y z : OrdinalD {n}  lx }   → x d< y → y d< z → x d< z
+orddtrans : {n : Level} {lx : ℕ} {x y z : OrdinalD {n}  lx }   → x d< y → y d< z → x d< z
 orddtrans {_} {lx} {.(Φ lx)} {.(OSuc lx _)} {.(OSuc lx _)} Φ< (s< y<z) = Φ< 
 orddtrans {_} {lx} {.(OSuc lx _)} {.(OSuc lx _)} {.(OSuc lx _)} (s< x<y) (s< y<z) = s< ( orddtrans x<y y<z )
 
@@ -163,11 +163,11 @@ trio< record { lv = .(lv b) ; ord = x } b | tri≈ ¬a refl ¬c | tri≈ ¬a₁ 
 open _∧_
 
 TransFinite : {n m : Level} → { ψ : Ordinal {suc n} → Set m }
-  → ( ∀ (lx : Nat ) → ( (x : Ordinal {suc n} ) → x o< ordinal lx (Φ lx)  → ψ x ) → ψ ( record { lv = lx ; ord = Φ lx } ) )
-  → ( ∀ (lx : Nat ) → (x : OrdinalD lx ) → ( (y : Ordinal {suc n} ) → y o< ordinal lx (OSuc lx x)  → ψ y )   → ψ ( record { lv = lx ; ord = OSuc lx x } ) )
+  → ( ∀ (lx : ℕ ) → ( (x : Ordinal {suc n} ) → x o< ordinal lx (Φ lx)  → ψ x ) → ψ ( record { lv = lx ; ord = Φ lx } ) )
+  → ( ∀ (lx : ℕ ) → (x : OrdinalD lx ) → ( (y : Ordinal {suc n} ) → y o< ordinal lx (OSuc lx x)  → ψ y )   → ψ ( record { lv = lx ; ord = OSuc lx x } ) )
   →  ∀ (x : Ordinal)  → ψ x
 TransFinite {n} {m} {ψ} caseΦ caseOSuc x = proj1 (TransFinite1 (lv x) (ord x) ) where
-  TransFinite1 : (lx : Nat) (ox : OrdinalD lx ) → ψ (ordinal lx ox) ∧ ( ( (x : Ordinal {suc n} ) → x o< ordinal lx ox  → ψ x ) )
+  TransFinite1 : (lx : ℕ) (ox : OrdinalD lx ) → ψ (ordinal lx ox) ∧ ( ( (x : Ordinal {suc n} ) → x o< ordinal lx ox  → ψ x ) )
   TransFinite1 Zero (Φ 0) = ⟪  caseΦ Zero lemma , lemma1 ⟫ where
       lemma : (x : Ordinal) → x o< ordinal Zero (Φ Zero) → ψ x
       lemma x (case1 ())
@@ -176,9 +176,9 @@ TransFinite {n} {m} {ψ} caseΦ caseOSuc x = proj1 (TransFinite1 (lv x) (ord x) 
       lemma1 x (case1 ())
       lemma1 x (case2 ())
   TransFinite1 (Suc lx) (Φ (Suc lx)) = ⟪ caseΦ (Suc lx) (λ x → lemma (lv x) (ord x)) , (λ x → lemma (lv x) (ord x)) ⟫ where
-      lemma0 : (ly : Nat) (oy : OrdinalD ly ) → ordinal ly oy  o< ordinal lx (Φ lx) → ψ (ordinal ly oy)
+      lemma0 : (ly : ℕ) (oy : OrdinalD ly ) → ordinal ly oy  o< ordinal lx (Φ lx) → ψ (ordinal ly oy)
       lemma0 ly oy lt = proj2 ( TransFinite1 lx (Φ lx) ) (ordinal ly oy) lt
-      lemma : (ly : Nat) (oy : OrdinalD ly ) → ordinal ly oy  o< ordinal (Suc lx) (Φ (Suc lx)) → ψ (ordinal ly oy)
+      lemma : (ly : ℕ) (oy : OrdinalD ly ) → ordinal ly oy  o< ordinal (Suc lx) (Φ (Suc lx)) → ψ (ordinal ly oy)
       lemma lx1 ox1            (case1 lt) with <-∨ lt
       lemma lx (Φ lx)          (case1 lt) | case1 refl = proj1 ( TransFinite1 lx (Φ lx) )
       lemma lx (Φ lx)          (case1 lt) | case2 lt1 = lemma0  lx (Φ lx) (case1 lt1)
@@ -200,17 +200,34 @@ TransFinite {n} {m} {ψ} caseΦ caseOSuc x = proj1 (TransFinite1 (lv x) (ord x) 
       lemma y lt | case1 refl = proj1 ( TransFinite1 lx ox ) 
       lemma y lt | case2 lt1 = proj2 ( TransFinite1 lx ox ) y lt1
 
-open import Data.Nat.Properties as DP
 OrdIrr : {n : Level } {x y : Ordinal {suc n} } {lt lt1 : x o< y} → lt ≡ lt1
-OrdIrr {n} {ordinal lv₁ ord₁} {ordinal lv₂ ord₂} {case1 x} {case1 x₁} = cong case1 (DP.<-irrelevant _ _ )
+OrdIrr {n} {ordinal lv₁ ord₁} {ordinal lv₂ ord₂} {case1 x} {case1 x₁} = cong case1 (NP.<-irrelevant _ _ )
 OrdIrr {n} {ordinal lv₁ ord₁} {ordinal lv₂ ord₂} {case1 x} {case2 x₁} = ⊥-elim ( nat-≡< ( d<→lv x₁ ) x )
 OrdIrr {n} {ordinal lv₁ ord₁} {ordinal lv₂ ord₂} {case2 x} {case1 x₁} = ⊥-elim ( nat-≡< ( d<→lv x ) x₁ )
 OrdIrr {n} {ordinal lv₁ .(Φ lv₁)} {ordinal .lv₁ .(OSuc lv₁ _)} {case2 Φ<} {case2 Φ<} = refl
 OrdIrr {n} {ordinal lv₁ (OSuc lv₁ a)} {ordinal .lv₁ (OSuc lv₁ b)} {case2 (s< x)} {case2 (s< x₁)} = cong (λ k → case2 (s< k)) (lemma1 _ _ x x₁) where
-      lemma1 : {lx : Nat} (a b : OrdinalD {suc n} lx) → (x y : a d< b ) → x ≡ y
+      lemma1 : {lx : ℕ} (a b : OrdinalD {suc n} lx) → (x y : a d< b ) → x ≡ y
       lemma1 {lx} .(Φ lx) .(OSuc lx _) Φ< Φ< = refl
       lemma1 {lx} (OSuc lx a) (OSuc lx b) (s< x) (s< y) = cong s< (lemma1 {lx} a b x y )
+
+TransFinite3 : {n m : Level} { ψ : Ordinal {suc n} → Set m }
+          → ( (x : Ordinal {suc n})  → ( (y : Ordinal {suc n}  ) → y o< x → ψ y ) → ψ x )
+          →  ∀ (x : Ordinal {suc n} )  → ψ x
+TransFinite3 {n} {m} {ψ} ind x = TransFinite {n} {m} {ψ} caseΦ caseOSuc x where
+        caseΦ : (lx : ℕ) → ((x₁ : Ordinal {suc n}) → x₁ o< ordinal lx (Φ lx) → ψ x₁) →
+            ψ (record { lv = lx ; ord = Φ lx })
+        caseΦ lx prev = ind (ordinal lx (Φ lx) ) prev
+        caseOSuc :  (lx : ℕ) (x₁ : OrdinalD lx) → ((y : Ordinal) → y o< ordinal lx (OSuc lx x₁) → ψ y) →
+            ψ (record { lv = lx ; ord = OSuc lx x₁ })
+        caseOSuc lx ox prev = ind (ordinal lx (OSuc lx ox)) prev 
+
+-- TP : {n m l : Level} → {Q : Ordinal {suc n} → Set m} {P : { x y : Ordinal {suc n} } → Q x → Q y → Set l}  
+--     → ( ind : (x : Ordinal {suc n})  → ( (y : Ordinal  {suc n} ) → y o< x → Q y ) → Q x )                                                                 
+--     → ( (x : Ordinal {suc n} )  → ( prev : (y : Ordinal {suc n} ) → y o< x → Q y ) → {y : Ordinal {suc n}} → (y<x : y o< x)  → P (prev y y<x) (ind x prev)  )  
+--     →  {x z : Ordinal {suc n} } → (z≤x : z o< osuc x ) → P (TransFinite3 {n} {m} { λ x → Q x } {!!} x  )  {!!} -- P (TransFinite {?} ind z) (TransFinite {?} ind x )
+-- TP = ?
  
+
 open import Ordinals 
 
 C-Ordinal : {n : Level} →  Ordinals {suc n} 
@@ -250,7 +267,7 @@ C-Ordinal {n} = record {
          lemma2 (ordinal Zero (OSuc 0 dx)) (case2 (s< x)) (case1 (s≤s z≤n)) not = not _ refl
          lemma2 (ordinal (Suc lx) (OSuc (Suc lx) ox)) y<x (case1 (s≤s (s≤s lt))) not = not _ refl
          lemma2 (ordinal (Suc lx) (Φ (Suc lx))) (case1 x) (case1 (s≤s (s≤s lt))) not = lemma3 x lt where
-             lemma3 : {n l : Nat} → (Suc (Suc n) ≤ Suc l) → l ≤ n → ⊥
+             lemma3 : {n l : ℕ} → (Suc (Suc n) ≤ Suc l) → l ≤ n → ⊥
              lemma3   (s≤s sn≤l) (s≤s l≤n) = lemma3 sn≤l l≤n
      open Oprev
      Oprev-p  : (x : Ordinal) → Dec ( Oprev (Ordinal {suc n})  osuc x )
@@ -263,13 +280,13 @@ C-Ordinal {n} = record {
      TransFinite2 : { ψ : ord1  → Set (suc (suc n)) }
           → ( (x : ord1)  → ( (y : ord1  ) → y o< x → ψ y ) → ψ x )
           →  ∀ (x : ord1)  → ψ x
-     TransFinite2 {ψ} lt x = TransFinite {n} {suc (suc n)} {ψ} caseΦ caseOSuc x where
-        caseΦ : (lx : Nat) → ((x₁ : Ordinal) → x₁ o< ordinal lx (Φ lx) → ψ x₁) →
+     TransFinite2 {ψ} ind x = TransFinite {n} {suc (suc n)} {ψ} caseΦ caseOSuc x where
+        caseΦ : (lx : ℕ) → ((x₁ : Ordinal) → x₁ o< ordinal lx (Φ lx) → ψ x₁) →
             ψ (record { lv = lx ; ord = Φ lx })
-        caseΦ lx prev = lt (ordinal lx (Φ lx) ) prev
-        caseOSuc :  (lx : Nat) (x₁ : OrdinalD lx) → ((y : Ordinal) → y o< ordinal lx (OSuc lx x₁) → ψ y) →
+        caseΦ lx prev = ind (ordinal lx (Φ lx) ) prev
+        caseOSuc :  (lx : ℕ) (x₁ : OrdinalD lx) → ((y : Ordinal) → y o< ordinal lx (OSuc lx x₁) → ψ y) →
             ψ (record { lv = lx ; ord = OSuc lx x₁ })
-        caseOSuc lx ox prev = lt (ordinal lx (OSuc lx ox)) prev 
+        caseOSuc lx ox prev = ind (ordinal lx (OSuc lx ox)) prev 
 
 
 -- H-Ordinal : {n : Level} → Ordinals {suc n} →  Ordinals {suc n}  →  Ordinals {suc n} 

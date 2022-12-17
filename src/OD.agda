@@ -100,7 +100,7 @@ record ODAxiom : Set (suc n) where
   &iso   :  {x : Ordinal }  → & ( * x ) ≡ x
   ==→o≡  :  {x y : HOD  }   → (od x == od y) → x ≡ y
   sup-o  :  (A : HOD) → (     ( x : Ordinal ) → def (od A) x →  Ordinal ) →  Ordinal 
-  sup-o< :  (A : HOD) → { ψ : ( x : Ordinal ) → def (od A) x →  Ordinal } → ∀ {x : Ordinal } → (lt : def (od A) x ) → ψ x lt o<  sup-o A ψ 
+  sup-o≤ :  (A : HOD) → { ψ : ( x : Ordinal ) → def (od A) x →  Ordinal } → ∀ {x : Ordinal } → (lt : def (od A) x ) → ψ x lt o≤  sup-o A ψ 
 -- possible order restriction
   ho< : {x : HOD} → & x o< next (odmax x)
 
@@ -120,7 +120,7 @@ odmaxmin = (y : HOD) (z : Ordinal) → ((x : Ordinal)→ def (od y) x → x o< z
 
 -- OD ⇔ Ordinal leads a contradiction, so we need bounded HOD
 ¬OD-order : ( & : OD  → Ordinal ) → ( * : Ordinal  → OD ) → ( { x y : OD  }  → def y ( & x ) → & x o< & y) → ⊥
-¬OD-order & * c<→o< = osuc-< <-osuc (c<→o< {Ords} OneObj )
+¬OD-order & * c<→o< = o≤> <-osuc (c<→o< {Ords} OneObj )
 
 -- Open supreme upper bound leads a contradition, so we use domain restriction on sup
 ¬open-sup : ( sup-o : (Ordinal →  Ordinal ) → Ordinal) → ((ψ : Ordinal →  Ordinal ) → (x : Ordinal) → ψ x  o<  sup-o ψ ) → ⊥
@@ -223,6 +223,12 @@ eq← ∅0 {w} lt = lift (¬x<0 lt)
 ∅<  {x} {y} d eq with eq→ (==-trans eq (==-sym ∅0) ) d
 ∅<  {x} {y} d eq | lift ()
 
+∈∅< : { x : HOD  } {y : Ordinal } → odef x y → o∅  o< (& x)
+∈∅<  {x} {y} d with trio< o∅ (& x)
+... | tri< a ¬b ¬c = a
+... | tri≈ ¬a b ¬c = ⊥-elim ( ∅< {x} {* y} (subst (λ k → odef x k ) (sym &iso) d )  ( ≡o∅→=od∅ (sym b) ) )
+... | tri> ¬a ¬b c = ⊥-elim (  ¬x<0 c  )
+
 ∅6 : { x : HOD  }  → ¬ ( x ∋ x )    --  no Russel paradox
 ∅6  {x} x∋x = o<¬≡ refl ( c<→o<  {x} {x} x∋x )
 
@@ -248,7 +254,7 @@ pair<y {x} {y} y∋x = ⊆→o≤ lemma where
    lemma (case1 refl) = y∋x
    lemma (case2 refl) = y∋x
 
--- another possible restriction. We reqest no minimality on odmax, so it may arbitrary larger.
+-- another possible restriction. We require no minimality on odmax, so it may arbitrary larger.
 odmax<&  : { x y : HOD } → x ∋ y →  Set n
 odmax<& {x} {y} x∋y = odmax x o< & x
 
@@ -296,10 +302,10 @@ Select : (X : HOD  ) → ((x : HOD  ) → Set n ) → HOD
 Select X ψ = record { od = record { def = λ x →  ( odef X x ∧ ψ ( * x )) } ; odmax = odmax X ; <odmax = λ y → <odmax X (proj1 y) }
 
 Replace : HOD  → (HOD  → HOD) → HOD 
-Replace X ψ = record { od = record { def = λ x → (x o< sup-o X (λ y X∋y → & (ψ (* y)))) ∧ def (in-codomain X ψ) x }
+Replace X ψ = record { od = record { def = λ x → (x o≤ sup-o X (λ y X∋y → & (ψ (* y)))) ∧ def (in-codomain X ψ) x }
     ; odmax = rmax ; <odmax = rmax<} where 
         rmax : Ordinal
-        rmax = sup-o X (λ y X∋y → & (ψ (* y)))
+        rmax = osuc ( sup-o X (λ y X∋y → & (ψ (* y))))
         rmax< :  {y : Ordinal} → (y o< rmax) ∧ def (in-codomain X ψ) y → y o< rmax
         rmax< lt = proj1 lt
 
@@ -336,7 +342,7 @@ _∈_ : ( A B : HOD  ) → Set n
 A ∈ B = B ∋ A
 
 OPwr :  (A :  HOD ) → HOD 
-OPwr  A = Ord ( sup-o (Ord (osuc (& A))) ( λ x A∋x → & ( A ∩ (* x)) ) )   
+OPwr  A = Ord ( osuc ( sup-o (Ord (osuc (& A))) ( λ x A∋x → & ( A ∩ (* x)) ) ) )
 
 Power : HOD  → HOD 
 Power A = Replace (OPwr (Ord (& A))) ( λ x → A ∩ x )
@@ -427,10 +433,11 @@ selection {ψ} {X} {y} = ⟪
 selection-in-domain : {ψ : HOD → Set n} {X y : HOD} → Select X ψ ∋ y → X ∋ y 
 selection-in-domain {ψ} {X} {y} lt = proj1 ((proj2 (selection {ψ} {X} )) lt)
 
-sup-c< :  (ψ : HOD → HOD) → {X x : HOD} → X ∋ x  → & (ψ x) o< (sup-o X (λ y X∋y → & (ψ (* y))))
-sup-c< ψ {X} {x} lt = subst (λ k → & (ψ k) o< _ ) *iso (sup-o< X lt )
+sup-c≤ :  (ψ : HOD → HOD) → {X x : HOD} → X ∋ x  → & (ψ x) o≤ (sup-o X (λ y X∋y → & (ψ (* y))))
+sup-c≤ ψ {X} {x} lt = subst (λ k → & (ψ k) o< _ ) *iso (sup-o≤ X lt )
+
 replacement← : {ψ : HOD → HOD} (X x : HOD) →  X ∋ x → Replace X ψ ∋ ψ x
-replacement← {ψ} X x lt = ⟪ sup-c< ψ {X} {x} lt , lemma ⟫ where 
+replacement← {ψ} X x lt = ⟪ sup-c≤ ψ {X} {x} lt , lemma ⟫ where 
     lemma : def (in-codomain X ψ) (& (ψ x))
     lemma not = ⊥-elim ( not ( & x ) ⟪ lt , cong (λ k → & (ψ k)) (sym *iso)⟫ )
 replacement→ : {ψ : HOD → HOD} (X x : HOD) → (lt : Replace X ψ ∋ x) → ¬ ( (y : HOD) → ¬ (x =h= ψ y))
@@ -471,8 +478,8 @@ ord-power← a t t→A  = subst (λ k → odef (OPwr (Ord a)) k ) (lemma1 lemma-
     lemma1  {a} {t} eq = subst (λ k → & ((Ord a) ∩ k) ≡ & t ) (sym *iso) (cong (λ k → & k ) (==→o≡ eq ))
     lemma2 : (& t) o< (osuc (& (Ord a)))
     lemma2 = ⊆→o≤  {t} {Ord a} (λ {x} x<t → subst (λ k → def (od (Ord a)) k) &iso (t→A (d→∋ t x<t))) 
-    lemma :  & ((Ord a) ∩ (* (& t)) ) o< sup-o (Ord (osuc (& (Ord a)))) (λ x lt → & ((Ord a) ∩ (* x)))
-    lemma = sup-o< _ lemma2
+    lemma :  & ((Ord a) ∩ (* (& t)) ) o≤ sup-o (Ord (osuc (& (Ord a)))) (λ x lt → & ((Ord a) ∩ (* x)))
+    lemma = sup-o≤ _ lemma2
 
 -- 
 -- Every set in HOD is a subset of Ordinals, so make OPwr (Ord (& A)) first
@@ -513,8 +520,8 @@ power← A t t→A = ⟪ lemma1 , lemma2 ⟫ where
     sup1 =  sup-o (Ord (osuc (& (Ord (& A))))) (λ x A∋x → & ((Ord (& A)) ∩ (* x)))
     lemma9 : def (od (Ord (Ordinals.osuc O (& (Ord (& A)))))) (& (Ord (& A)))
     lemma9 = <-osuc 
-    lemmab : & ((Ord (& A)) ∩ (* (& (Ord (& A) )))) o< sup1
-    lemmab = sup-o< (Ord (osuc (& (Ord (& A))))) lemma9 
+    lemmab : & ((Ord (& A)) ∩ (* (& (Ord (& A) )))) o≤ sup1
+    lemmab = sup-o≤ (Ord (osuc (& (Ord (& A))))) lemma9 
     lemmad : Ord (osuc (& A)) ∋ t
     lemmad = ⊆→o≤ (λ {x} lt → subst (λ k → def (od A) k ) &iso (t→A (d→∋ t lt))) 
     lemmac : ((Ord (& A)) ∩  (* (& (Ord (& A) )))) =h= Ord (& A)
@@ -527,13 +534,13 @@ power← A t t→A = ⟪ lemma1 , lemma2 ⟫ where
     lemmae = cong (λ k → & k ) ( ==→o≡ lemmac)
     lemma7 : def (od (OPwr (Ord (& A)))) (& t)
     lemma7 with osuc-≡< lemmad
-    lemma7 | case2 lt = ordtrans (c<→o< lt) (subst (λ k → k o< sup1) lemmae lemmab )
+    lemma7 | case2 lt = ordtrans (c<→o< lt) (subst (λ k → k o≤ sup1) lemmae lemmab )
     lemma7 | case1 eq with osuc-≡< (⊆→o≤ {* (& t)} {* (& (Ord (& t)))} (λ {x} lt → lemmah lt )) where
         lemmah : {x : Ordinal } → def (od (* (& t))) x → def (od (* (& (Ord (& t))))) x
         lemmah {x} lt = subst (λ k → def (od k) x ) (sym *iso) (subst (λ k → k o< (& t))
             &iso
             (c<→o< (subst₂ (λ j k → def (od j)  k) *iso (sym &iso) lt )))
-    lemma7 | case1 eq | case1 eq1 = subst (λ k → k o< sup1) (trans lemmae lemmai) lemmab where 
+    lemma7 | case1 eq | case1 eq1 = subst (λ k → k o≤ sup1) (trans lemmae lemmai) lemmab where 
         lemmai : & (Ord (& A)) ≡ & t
         lemmai = let open ≡-Reasoning in begin
                 & (Ord (& A)) 
@@ -546,7 +553,7 @@ power← A t t→A = ⟪ lemma1 , lemma2 ⟫ where
             ≡⟨ &iso ⟩
                 & t 
             ∎
-    lemma7 | case1 eq | case2 lt = ordtrans lemmaj (subst (λ k → k o< sup1) lemmae lemmab ) where
+    lemma7 | case1 eq | case2 lt = ordtrans lemmaj (subst (λ k → k o≤ sup1) lemmae lemmab ) where
         lemmak : & (* (& (Ord (& t)))) ≡ & (Ord (& A))
         lemmak = let open ≡-Reasoning in begin
                 & (* (& (Ord (& t))))
@@ -557,9 +564,9 @@ power← A t t→A = ⟪ lemma1 , lemma2 ⟫ where
             ∎
         lemmaj : & t o< & (Ord (& A))
         lemmaj = subst₂ (λ j k → j o< k ) &iso lemmak lt 
-    lemma1 : & t o< sup-o (OPwr (Ord (& A))) (λ x lt → & (A ∩ (* x)))
-    lemma1 = subst (λ k → & k o< sup-o (OPwr (Ord (& A)))  (λ x lt → & (A ∩ (* x))))
-        lemma4 (sup-o< (OPwr (Ord (& A))) lemma7 )
+    lemma1 : & t o≤ sup-o (OPwr (Ord (& A))) (λ x lt → & (A ∩ (* x)))
+    lemma1 = subst (λ k → & k o≤ sup-o (OPwr (Ord (& A)))  (λ x lt → & (A ∩ (* x))))
+        lemma4 (sup-o≤ (OPwr (Ord (& A))) lemma7 )
     lemma2 :  def (in-codomain (OPwr (Ord (& A))) (_∩_ A)) (& t)
     lemma2 not = ⊥-elim ( not (& t) ⟪ lemma3 , lemma6 ⟫ ) where
         lemma6 : & t ≡ & (A ∩ * (& t)) 

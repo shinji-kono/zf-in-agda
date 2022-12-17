@@ -88,6 +88,13 @@ double-neg-eilm  {A} notnot with decp  A                         -- assuming axi
 ... | yes p = p
 ... | no ¬p = ⊥-elim ( notnot ¬p )
 
+or-exclude : {A B : Set n} → A ∨ B → A ∨ ( (¬ A)  ∧  B )
+or-exclude {A} {B} ab with p∨¬p A
+or-exclude {A} {B} (case1 a) | case1 a0 = case1 a
+or-exclude {A} {B} (case1 a) | case2 ¬a = ⊥-elim ( ¬a a )
+or-exclude {A} {B} (case2 b) | case1 a = case1 a
+or-exclude {A} {B} (case2 b) | case2 ¬a = case2 ⟪ ¬a , b ⟫
+
 open _⊆_
 
 power→⊆ :  ( A t : HOD) → Power A ∋ t → t ⊆ A
