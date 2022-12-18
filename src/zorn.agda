@@ -801,7 +801,7 @@ Zorn-lemma {A}  0<A supP = zorn00 where
      ind : ( f : Ordinal → Ordinal ) → (mf< : <-monotonic-f A f ) {y : Ordinal} (ay : odef A y) → (x : Ordinal)
          → ((z : Ordinal) → z o< x → ZChain A f mf< ay z) → ZChain A f mf< ay x
      ind f mf< {y} ay x prev with Oprev-p x
-     ... | yes op = zc41 where
+     ... | yes op = zc41 sup1 where
           --
           -- we have previous ordinal to use induction
           --
@@ -879,23 +879,16 @@ Zorn-lemma {A}  0<A supP = zorn00 where
 
           sup1 : MinSUP A pchainpx
           sup1 = minsupP pchainpx pcha ptotal
-          sp1 = MinSUP.sup sup1
 
           --
           --     supf0 px o≤ sp1
           --
 
-          sfpx≤sp1 : supf0 px o< x → supf0 px ≤ sp1
-          sfpx≤sp1 spx<x = MinSUP.x≤sup sup1 (case2 ⟪ init (ZChain.asupf zc {px}) refl , spx<x ⟫ )
-
-          m13 : supf0 px o< x → supf0 px o≤ sp1
-          m13 spx<x = IsMinSUP.minsup (ZChain.is-minsup zc o≤-refl ) (MinSUP.as sup1)  m14 where
-             m14 : {z : Ordinal} → odef (UnionCF A f ay (ZChain.supf zc) px) z → (z ≡ sp1) ∨ (z << sp1)
-             m14 {z} uz = MinSUP.x≤sup sup1 (case1 uz)
-
-          zc41 : ZChain A f mf< ay x
-          zc41 =  record { supf = supf1 ; asupf = asupf1 ; supf-mono = supf1-mono ; order = order
+          zc41 : MinSUP A pchainpx → ZChain A f mf< ay x
+          zc41 sup1 =  record { supf = supf1 ; asupf = asupf1 ; supf-mono = supf1-mono ; order = order
               ; zo≤sz = zo≤sz ;  is-minsup = is-minsup ;  cfcs = cfcs  }  where
+
+                 sp1 = MinSUP.sup sup1
 
                  supf1 : Ordinal → Ordinal
                  supf1 z with trio< z px
@@ -1235,7 +1228,8 @@ Zorn-lemma {A}  0<A supP = zorn00 where
      ... | tri< a ¬b ¬c = ⊥-elim ( ¬x<0 a )
      ... | tri≈ ¬a x=0 ¬c = record { supf = λ _ → MinSUP.sup (ysup f mf ay) ; asupf = MinSUP.as (ysup f mf ay) 
               ; supf-mono = λ _ → o≤-refl ; order = λ _ s<s → ⊥-elim ( o<¬≡ refl s<s )
-              ; zo≤sz = zo≤sz ; is-minsup = is-minsup ; cfcs = λ a<b b≤0 → ⊥-elim ( ¬x<0 (subst (λ k → _ o< k ) x=0 (ordtrans<-≤ a<b b≤0)))    } where
+          ; zo≤sz = zo≤sz ; is-minsup = is-minsup ; cfcs = λ a<b b≤0 → ⊥-elim ( ¬x<0 (subst (λ k → _ o< k ) x=0 (ordtrans<-≤ a<b b≤0)))    } where
+
           mf : ≤-monotonic-f A f
           mf x ax = ⟪ case2 mf00 , proj2 (mf< x ax ) ⟫ where
              mf00 : * x < * (f x)
@@ -1260,184 +1254,189 @@ Zorn-lemma {A}  0<A supP = zorn00 where
                   is02 : {w : Ordinal } →  odef (uchain f mf ay) w → (w ≡ s) ∨ (w << s)
                   is02 fc = sup ⟪ A∋fc _ f mf fc , ch-init fc ⟫
           ... | case2 lt = ⊥-elim ( ¬x<0  (subst (λ k → z o< k ) x=0 lt ) )
-     ... | tri> ¬a ¬b 0<x = record { supf = supf1 ; asupf = asupf ; supf-mono = supf-mono ; order = order 
-              ; zo≤sz = zo≤sz   ; is-minsup = is-minsup ; cfcs = cfcs    }  where
 
-          mf : ≤-monotonic-f A f
-          mf x ax = ⟪ case2 mf00 , proj2 (mf< x ax ) ⟫ where
-             mf00 : * x < * (f x)
-             mf00 = proj1 ( mf< x ax )
+     ... | tri> ¬a ¬b 0<x = zc400 usup ssup where
 
-          pzc : {z : Ordinal} → z o< x → ZChain A f mf< ay z
-          pzc {z} z<x = prev z z<x
+      mf : ≤-monotonic-f A f
+      mf x ax = ⟪ case2 mf00 , proj2 (mf< x ax ) ⟫ where
+         mf00 : * x < * (f x)
+         mf00 = proj1 ( mf< x ax )
 
-          ysp =  MinSUP.sup (ysup f mf ay)
+      pzc : {z : Ordinal} → z o< x → ZChain A f mf< ay z
+      pzc {z} z<x = prev z z<x
 
-          supfz : {z : Ordinal } → z o< x → Ordinal
-          supfz {z} z<x = ZChain.supf (pzc  (ob<x lim z<x)) z
+      ysp =  MinSUP.sup (ysup f mf ay)
 
-          pchainU : HOD
-          pchainU = UnionIC A f ay supfz
+      supfz : {z : Ordinal } → z o< x → Ordinal
+      supfz {z} z<x = ZChain.supf (pzc  (ob<x lim z<x)) z
 
-          zeq : {xa xb z : Ordinal }
-             → (xa<x : xa o< x) → (xb<x : xb o< x) → xa o≤ xb → z o≤ xa
-             → ZChain.supf (pzc  xa<x) z ≡  ZChain.supf (pzc  xb<x) z
-          zeq {xa} {xb} {z} xa<x xb<x xa≤xb z≤xa =  supf-unique A f mf< ay xa≤xb
-              (pzc xa<x)  (pzc xb<x)  z≤xa
+      pchainU : HOD
+      pchainU = UnionIC A f ay supfz
 
-          iceq : {ix iy : Ordinal } → ix ≡ iy → {i<x : ix o< x } {i<y : iy o< x } → supfz i<x ≡ supfz i<y
-          iceq refl = cong supfz  o<-irr
+      zeq : {xa xb z : Ordinal }
+         → (xa<x : xa o< x) → (xb<x : xb o< x) → xa o≤ xb → z o≤ xa
+         → ZChain.supf (pzc  xa<x) z ≡  ZChain.supf (pzc  xb<x) z
+      zeq {xa} {xb} {z} xa<x xb<x xa≤xb z≤xa =  supf-unique A f mf< ay xa≤xb
+          (pzc xa<x)  (pzc xb<x)  z≤xa
 
-          IChain-i : {z : Ordinal } → IChain ay supfz z → Ordinal
-          IChain-i (ic-init fc) = o∅
-          IChain-i (ic-isup ia ia<x sa<x fca) = ia
+      iceq : {ix iy : Ordinal } → ix ≡ iy → {i<x : ix o< x } {i<y : iy o< x } → supfz i<x ≡ supfz i<y
+      iceq refl = cong supfz  o<-irr
 
-          pic<x : {z : Ordinal } → (ic : IChain ay supfz z ) → osuc (IChain-i ic) o< x
-          pic<x {z} (ic-init fc) = ob<x lim 0<x   -- 0<x ∧ lim x → osuc o∅ o< x
-          pic<x {z} (ic-isup ia ia<x sa<x fca) = ob<x lim ia<x
+      IChain-i : {z : Ordinal } → IChain ay supfz z → Ordinal
+      IChain-i (ic-init fc) = o∅
+      IChain-i (ic-isup ia ia<x sa<x fca) = ia
 
-          pchainU⊆chain : {z : Ordinal } → (pz : odef pchainU z) → odef (ZChain.chain (pzc (pic<x (proj2 pz)))) z
-          pchainU⊆chain {z} ⟪ aw , ic-init fc ⟫ = ⟪ aw , ch-init fc ⟫
-          pchainU⊆chain {z} ⟪ aw , (ic-isup ia ia<x sa<x fca) ⟫ = ZChain.cfcs (pzc (ob<x lim ia<x) ) <-osuc o≤-refl uz03 fca where
-               uz02 : FClosure A f (ZChain.supf (pzc (ob<x lim ia<x)) ia ) z
-               uz02 = fca
-               uz03 : ZChain.supf (pzc (ob<x lim ia<x)) ia o≤ ia
-               uz03 = sa<x
+      pic<x : {z : Ordinal } → (ic : IChain ay supfz z ) → osuc (IChain-i ic) o< x
+      pic<x {z} (ic-init fc) = ob<x lim 0<x   -- 0<x ∧ lim x → osuc o∅ o< x
+      pic<x {z} (ic-isup ia ia<x sa<x fca) = ob<x lim ia<x
 
-          chain⊆pchainU : {z w : Ordinal } → (oz<x : osuc z o< x) → odef (ZChain.chain (pzc oz<x)) w → odef pchainU w
-          chain⊆pchainU {z} {w} oz<x ⟪ aw , ch-init fc ⟫ = ⟪ aw , ic-init fc ⟫
-          chain⊆pchainU {z} {w} oz<x ⟪ aw , ch-is-sup u u<oz su=u fc ⟫
-             = ⟪ aw , ic-isup u u<x (o≤-refl0 su≡u) (subst (λ  k → FClosure A f k w ) su=su fc) ⟫ where
-                 u<x : u o< x
-                 u<x = ordtrans u<oz oz<x
-                 su=su : ZChain.supf (pzc oz<x) u ≡ supfz u<x
-                 su=su = sym ( zeq _ _  (osucc u<oz) (o<→≤ <-osuc) )
-                 su≡u :  supfz u<x ≡ u
-                 su≡u = begin
-                    ZChain.supf (pzc (ob<x lim u<x )) u ≡⟨ sym su=su ⟩
-                    ZChain.supf (pzc oz<x) u  ≡⟨ su=u ⟩
-                    u ∎ where open ≡-Reasoning
+      pchainU⊆chain : {z : Ordinal } → (pz : odef pchainU z) → odef (ZChain.chain (pzc (pic<x (proj2 pz)))) z
+      pchainU⊆chain {z} ⟪ aw , ic-init fc ⟫ = ⟪ aw , ch-init fc ⟫
+      pchainU⊆chain {z} ⟪ aw , (ic-isup ia ia<x sa<x fca) ⟫ = ZChain.cfcs (pzc (ob<x lim ia<x) ) <-osuc o≤-refl uz03 fca where
+           uz02 : FClosure A f (ZChain.supf (pzc (ob<x lim ia<x)) ia ) z
+           uz02 = fca
+           uz03 : ZChain.supf (pzc (ob<x lim ia<x)) ia o≤ ia
+           uz03 = sa<x
 
-          chain⊆pchainU1 : {z w : Ordinal } → (z<x : z o< x) → odef (UnionCF A f ay (ZChain.supf (pzc (ob<x lim z<x))) z) w → odef pchainU w
-          chain⊆pchainU1 {z} {w} z<x ⟪ aw , ch-init fc ⟫ = ⟪ aw , ic-init fc ⟫
-          chain⊆pchainU1 {z} {w} z<x ⟪ aw , ch-is-sup u u<oz su=u fc ⟫
-             = ⟪ aw , ic-isup u u<x (o≤-refl0 su≡u) (subst (λ  k → FClosure A f k w ) su=su fc) ⟫ where
-                 u<x : u o< x
-                 u<x = ordtrans u<oz z<x
-                 su=su : ZChain.supf (pzc (ob<x lim z<x)) u ≡ supfz u<x
-                 su=su = sym ( zeq _ _  (o<→≤ (osucc u<oz)) (o<→≤ <-osuc) )
-                 su≡u :  supfz u<x ≡ u
-                 su≡u = begin
-                    ZChain.supf (pzc (ob<x lim u<x )) u ≡⟨ sym su=su ⟩
-                    ZChain.supf (pzc (ob<x lim z<x)) u  ≡⟨ su=u ⟩
-                    u ∎ where open ≡-Reasoning
+      chain⊆pchainU : {z w : Ordinal } → (oz<x : osuc z o< x) → odef (ZChain.chain (pzc oz<x)) w → odef pchainU w
+      chain⊆pchainU {z} {w} oz<x ⟪ aw , ch-init fc ⟫ = ⟪ aw , ic-init fc ⟫
+      chain⊆pchainU {z} {w} oz<x ⟪ aw , ch-is-sup u u<oz su=u fc ⟫
+         = ⟪ aw , ic-isup u u<x (o≤-refl0 su≡u) (subst (λ  k → FClosure A f k w ) su=su fc) ⟫ where
+             u<x : u o< x
+             u<x = ordtrans u<oz oz<x
+             su=su : ZChain.supf (pzc oz<x) u ≡ supfz u<x
+             su=su = sym ( zeq _ _  (osucc u<oz) (o<→≤ <-osuc) )
+             su≡u :  supfz u<x ≡ u
+             su≡u = begin
+                ZChain.supf (pzc (ob<x lim u<x )) u ≡⟨ sym su=su ⟩
+                ZChain.supf (pzc oz<x) u  ≡⟨ su=u ⟩
+                u ∎ where open ≡-Reasoning
 
-          ichain-inject : {a b : Ordinal } {ia : IChain ay supfz a } {ib : IChain ay supfz b }
-            → ZChain.supf (pzc (pic<x ia)) (IChain-i ia) o< ZChain.supf (pzc (pic<x ib)) (IChain-i ib)
-            → IChain-i ia o< IChain-i ib
-          ichain-inject {a} {b} {ia} {ib} sa<sb = uz11 where
-                 uz11 : IChain-i ia o< IChain-i ib
-                 uz11 with trio< (IChain-i ia ) (IChain-i ib)
-                 ... | tri< a ¬b ¬c = a
-                 ... | tri≈ ¬a b ¬c = ⊥-elim ( o<¬≡ (trans (zeq _ _ (o≤-refl0 (cong osuc b)) (o<→≤ <-osuc) )
-                     ( cong (ZChain.supf (pzc (pic<x ib))) b )) sa<sb )
-                 ... | tri> ¬a ¬b c = ⊥-elim ( o≤> ( begin
-                     ZChain.supf (pzc (pic<x ib)) (IChain-i ib)  ≡⟨ zeq _ _ (o<→≤ (osucc c)) (o<→≤ <-osuc)  ⟩
-                     ZChain.supf (pzc (pic<x ia)) (IChain-i ib)  ≤⟨ ZChain.supf-mono (pzc (pic<x ia)) (o<→≤ c) ⟩
-                     ZChain.supf (pzc (pic<x ia)) (IChain-i ia)  ∎ ) sa<sb ) where open o≤-Reasoning O
+      chain⊆pchainU1 : {z w : Ordinal } → (z<x : z o< x) → odef (UnionCF A f ay (ZChain.supf (pzc (ob<x lim z<x))) z) w → odef pchainU w
+      chain⊆pchainU1 {z} {w} z<x ⟪ aw , ch-init fc ⟫ = ⟪ aw , ic-init fc ⟫
+      chain⊆pchainU1 {z} {w} z<x ⟪ aw , ch-is-sup u u<oz su=u fc ⟫
+         = ⟪ aw , ic-isup u u<x (o≤-refl0 su≡u) (subst (λ  k → FClosure A f k w ) su=su fc) ⟫ where
+             u<x : u o< x
+             u<x = ordtrans u<oz z<x
+             su=su : ZChain.supf (pzc (ob<x lim z<x)) u ≡ supfz u<x
+             su=su = sym ( zeq _ _  (o<→≤ (osucc u<oz)) (o<→≤ <-osuc) )
+             su≡u :  supfz u<x ≡ u
+             su≡u = begin
+                ZChain.supf (pzc (ob<x lim u<x )) u ≡⟨ sym su=su ⟩
+                ZChain.supf (pzc (ob<x lim z<x)) u  ≡⟨ su=u ⟩
+                u ∎ where open ≡-Reasoning
 
-          IC⊆ : {a b : Ordinal } (ia : IChain ay supfz a ) (ib : IChain ay supfz b )
-              → IChain-i ia o< IChain-i ib → odef (ZChain.chain (pzc (pic<x ib))) a
-          IC⊆ {a} {b} (ic-init fc ) ib ia<ib = ⟪ A∋fc _ f mf fc , ch-init fc ⟫
-          IC⊆ {a} {b} (ic-isup i i<x sa<x fc ) (ic-init fcb ) ia<ib = ⊥-elim ( ¬x<0 ia<ib  )
-          IC⊆ {a} {b} (ic-isup i i<x sa<x fc ) (ic-isup j j<x sb<x fcb ) ia<ib
-              = ZChain.cfcs (pzc (ob<x lim j<x) ) (o<→≤ ia<ib) o≤-refl (OrdTrans (ZChain.supf-mono (pzc (ob<x lim j<x)) (o<→≤ ia<ib)) sb<x)
-                  (subst (λ k → FClosure A f k a) (zeq _ _ (osucc (o<→≤ ia<ib)) (o<→≤ <-osuc)) fc )
+      ichain-inject : {a b : Ordinal } {ia : IChain ay supfz a } {ib : IChain ay supfz b }
+        → ZChain.supf (pzc (pic<x ia)) (IChain-i ia) o< ZChain.supf (pzc (pic<x ib)) (IChain-i ib)
+        → IChain-i ia o< IChain-i ib
+      ichain-inject {a} {b} {ia} {ib} sa<sb = uz11 where
+             uz11 : IChain-i ia o< IChain-i ib
+             uz11 with trio< (IChain-i ia ) (IChain-i ib)
+             ... | tri< a ¬b ¬c = a
+             ... | tri≈ ¬a b ¬c = ⊥-elim ( o<¬≡ (trans (zeq _ _ (o≤-refl0 (cong osuc b)) (o<→≤ <-osuc) )
+                 ( cong (ZChain.supf (pzc (pic<x ib))) b )) sa<sb )
+             ... | tri> ¬a ¬b c = ⊥-elim ( o≤> ( begin
+                 ZChain.supf (pzc (pic<x ib)) (IChain-i ib)  ≡⟨ zeq _ _ (o<→≤ (osucc c)) (o<→≤ <-osuc)  ⟩
+                 ZChain.supf (pzc (pic<x ia)) (IChain-i ib)  ≤⟨ ZChain.supf-mono (pzc (pic<x ia)) (o<→≤ c) ⟩
+                 ZChain.supf (pzc (pic<x ia)) (IChain-i ia)  ∎ ) sa<sb ) where open o≤-Reasoning O
 
-          ptotalU : IsTotalOrderSet pchainU
-          ptotalU {a} {b} ia ib with trio< (IChain-i (proj2 ia)) (IChain-i (proj2 ib))
-          ... | tri< ia<ib ¬b ¬c = ZChain.f-total (pzc (pic<x (proj2 ib))) (IC⊆ (proj2 ia) (proj2 ib) ia<ib) (pchainU⊆chain ib)
-          ... | tri≈ ¬a ia=ib ¬c = subst₂ (λ j k → Tri (j < k) (j ≡ k) (k < j)) *iso *iso ( pcmp (proj2 ia) (proj2 ib) ia=ib ) where
-               pcmp : (ia : IChain ay supfz (& a)) → (ib : IChain ay supfz (& b)) → IChain-i ia ≡ IChain-i ib
-                   → Tri (* (& a) < * (& b)) (* (& a) ≡ * (& b)) (* (& b) < * (& a) )
-               pcmp (ic-init fca) (ic-init fcb) eq = fcn-cmp _ f mf fca fcb
-               pcmp (ic-init fca) (ic-isup i i<x s<x fcb) eq with ZChain.fcy<sup (pzc i<x) o≤-refl fca
-               ... | case1 eq1 = ct22 where
-                   ct22 : Tri (* (& a) < * (& b)) (* (& a) ≡ * (& b)) (* (& b) < * (& a) )
-                   ct22 with subst (λ k → k ≤ & b) (sym (zeq _ _ (o<→≤ <-osuc) o≤-refl )) (s≤fc _ f mf fcb )
-                   ... | case1 eq2 =  tri≈ (λ lt → ⊥-elim (<-irr (case1 (sym ct00)) lt)) ct00  (λ lt → ⊥-elim (<-irr (case1 ct00) lt)) where
-                       ct00 : * (& a) ≡ * (& b)
-                       ct00 = cong (*) (trans eq1 eq2)
-                   ... | case2 lt = tri< fc11 (λ eq → <-irr (case1 (sym eq)) fc11) (λ lt → <-irr (case2 fc11) lt) where
-                       fc11 : * (& a) < * (& b)
-                       fc11 = subst (λ k →  k < * (& b) ) (cong (*) (sym eq1)) lt
+      IC⊆ : {a b : Ordinal } (ia : IChain ay supfz a ) (ib : IChain ay supfz b )
+          → IChain-i ia o< IChain-i ib → odef (ZChain.chain (pzc (pic<x ib))) a
+      IC⊆ {a} {b} (ic-init fc ) ib ia<ib = ⟪ A∋fc _ f mf fc , ch-init fc ⟫
+      IC⊆ {a} {b} (ic-isup i i<x sa<x fc ) (ic-init fcb ) ia<ib = ⊥-elim ( ¬x<0 ia<ib  )
+      IC⊆ {a} {b} (ic-isup i i<x sa<x fc ) (ic-isup j j<x sb<x fcb ) ia<ib
+          = ZChain.cfcs (pzc (ob<x lim j<x) ) (o<→≤ ia<ib) o≤-refl (OrdTrans (ZChain.supf-mono (pzc (ob<x lim j<x)) (o<→≤ ia<ib)) sb<x)
+              (subst (λ k → FClosure A f k a) (zeq _ _ (osucc (o<→≤ ia<ib)) (o<→≤ <-osuc)) fc )
+
+      ptotalU : IsTotalOrderSet pchainU
+      ptotalU {a} {b} ia ib with trio< (IChain-i (proj2 ia)) (IChain-i (proj2 ib))
+      ... | tri< ia<ib ¬b ¬c = ZChain.f-total (pzc (pic<x (proj2 ib))) (IC⊆ (proj2 ia) (proj2 ib) ia<ib) (pchainU⊆chain ib)
+      ... | tri≈ ¬a ia=ib ¬c = subst₂ (λ j k → Tri (j < k) (j ≡ k) (k < j)) *iso *iso ( pcmp (proj2 ia) (proj2 ib) ia=ib ) where
+           pcmp : (ia : IChain ay supfz (& a)) → (ib : IChain ay supfz (& b)) → IChain-i ia ≡ IChain-i ib
+               → Tri (* (& a) < * (& b)) (* (& a) ≡ * (& b)) (* (& b) < * (& a) )
+           pcmp (ic-init fca) (ic-init fcb) eq = fcn-cmp _ f mf fca fcb
+           pcmp (ic-init fca) (ic-isup i i<x s<x fcb) eq with ZChain.fcy<sup (pzc i<x) o≤-refl fca
+           ... | case1 eq1 = ct22 where
+               ct22 : Tri (* (& a) < * (& b)) (* (& a) ≡ * (& b)) (* (& b) < * (& a) )
+               ct22 with subst (λ k → k ≤ & b) (sym (zeq _ _ (o<→≤ <-osuc) o≤-refl )) (s≤fc _ f mf fcb )
+               ... | case1 eq2 =  tri≈ (λ lt → ⊥-elim (<-irr (case1 (sym ct00)) lt)) ct00  (λ lt → ⊥-elim (<-irr (case1 ct00) lt)) where
+                   ct00 : * (& a) ≡ * (& b)
+                   ct00 = cong (*) (trans eq1 eq2)
                ... | case2 lt = tri< fc11 (λ eq → <-irr (case1 (sym eq)) fc11) (λ lt → <-irr (case2 fc11) lt) where
                    fc11 : * (& a) < * (& b)
-                   fc11 = ftrans<-≤ lt (subst (λ k → k ≤ & b) (sym (zeq _ _ (o<→≤ <-osuc) o≤-refl )) (s≤fc _ f mf fcb ) )
-               pcmp (ic-isup i i<x s<x fca) (ic-init fcb) eq with ZChain.fcy<sup (pzc i<x) o≤-refl fcb
-               ... | case1 eq1 =  ct22 where
-                   ct22 : Tri (* (& a) < * (& b)) (* (& a) ≡ * (& b)) (* (& b) < * (& a) )
-                   ct22 with subst (λ k → k ≤ & a) (sym (zeq _ _ (o<→≤ <-osuc) o≤-refl )) (s≤fc _ f mf fca )
-                   ... | case1 eq2 =  tri≈ (λ lt → ⊥-elim (<-irr (case1 (sym ct00)) lt)) ct00  (λ lt → ⊥-elim (<-irr (case1 ct00) lt)) where
-                       ct00 : * (& a) ≡ * (& b)
-                       ct00 = cong (*) (sym (trans eq1 eq2))
-                   ... | case2 lt = tri> (λ lt → <-irr (case2 fc11) lt) (λ eq → <-irr (case1 eq) fc11) fc11  where
-                       fc11 : * (& b) < * (& a)
-                       fc11 = subst (λ k →  k < * (& a) ) (cong (*) (sym eq1)) lt
-               ... | case2 lt = tri> (λ lt → <-irr (case2 fc12) lt) (λ eq → <-irr (case1 eq) fc12) fc12  where
-                   fc12 : * (& b) < * (& a)
-                   fc12 = ftrans<-≤ lt (subst (λ k → k ≤ & a) (sym (zeq _ _ (o<→≤ <-osuc) o≤-refl )) (s≤fc _ f mf fca ) )
-               pcmp (ic-isup i i<x s<x fca) (ic-isup i i<y s<y fcb) refl = fcn-cmp _ f mf fca (subst (λ k → FClosure A f k (& b)) pc01 fcb ) where
-                   pc01 : supfz i<y ≡ supfz i<x
-                   pc01 = cong supfz  o<-irr
-          ... | tri> ¬a ¬b ib<ia = ZChain.f-total (pzc (pic<x (proj2 ia))) (pchainU⊆chain ia) (IC⊆ (proj2 ib) (proj2 ia) ib<ia)
+                   fc11 = subst (λ k →  k < * (& b) ) (cong (*) (sym eq1)) lt
+           ... | case2 lt = tri< fc11 (λ eq → <-irr (case1 (sym eq)) fc11) (λ lt → <-irr (case2 fc11) lt) where
+               fc11 : * (& a) < * (& b)
+               fc11 = ftrans<-≤ lt (subst (λ k → k ≤ & b) (sym (zeq _ _ (o<→≤ <-osuc) o≤-refl )) (s≤fc _ f mf fcb ) )
+           pcmp (ic-isup i i<x s<x fca) (ic-init fcb) eq with ZChain.fcy<sup (pzc i<x) o≤-refl fcb
+           ... | case1 eq1 =  ct22 where
+               ct22 : Tri (* (& a) < * (& b)) (* (& a) ≡ * (& b)) (* (& b) < * (& a) )
+               ct22 with subst (λ k → k ≤ & a) (sym (zeq _ _ (o<→≤ <-osuc) o≤-refl )) (s≤fc _ f mf fca )
+               ... | case1 eq2 =  tri≈ (λ lt → ⊥-elim (<-irr (case1 (sym ct00)) lt)) ct00  (λ lt → ⊥-elim (<-irr (case1 ct00) lt)) where
+                   ct00 : * (& a) ≡ * (& b)
+                   ct00 = cong (*) (sym (trans eq1 eq2))
+               ... | case2 lt = tri> (λ lt → <-irr (case2 fc11) lt) (λ eq → <-irr (case1 eq) fc11) fc11  where
+                   fc11 : * (& b) < * (& a)
+                   fc11 = subst (λ k →  k < * (& a) ) (cong (*) (sym eq1)) lt
+           ... | case2 lt = tri> (λ lt → <-irr (case2 fc12) lt) (λ eq → <-irr (case1 eq) fc12) fc12  where
+               fc12 : * (& b) < * (& a)
+               fc12 = ftrans<-≤ lt (subst (λ k → k ≤ & a) (sym (zeq _ _ (o<→≤ <-osuc) o≤-refl )) (s≤fc _ f mf fca ) )
+           pcmp (ic-isup i i<x s<x fca) (ic-isup i i<y s<y fcb) refl = fcn-cmp _ f mf fca (subst (λ k → FClosure A f k (& b)) pc01 fcb ) where
+               pc01 : supfz i<y ≡ supfz i<x
+               pc01 = cong supfz  o<-irr
+      ... | tri> ¬a ¬b ib<ia = ZChain.f-total (pzc (pic<x (proj2 ia))) (pchainU⊆chain ia) (IC⊆ (proj2 ib) (proj2 ia) ib<ia)
 
 
-          usup : MinSUP A pchainU
-          usup = minsupP pchainU (λ ic → proj1 ic ) ptotalU
+      usup : MinSUP A pchainU
+      usup = minsupP pchainU (λ ic → proj1 ic ) ptotalU
+      spu0 = MinSUP.sup usup
+
+
+      pchainS : HOD
+      pchainS = record { od = record { def = λ z →  (odef A z  ∧ IChain  ay supfz z )
+            ∨ (FClosure A f spu0 z ∧ (spu0 o< x)) } ; odmax = & A ; <odmax = zc00 } where
+           zc00 : {z : Ordinal } → (odef A z ∧ IChain ay supfz z ) ∨ (FClosure A f spu0 z ∧ (spu0 o< x) )→ z o< & A
+           zc00 {z} (case1 lt) = z07 lt
+           zc00 {z} (case2 fc) = z09 ( A∋fc spu0 f mf (proj1 fc) )
+
+      zc02 : { a b : Ordinal } → odef A a ∧ IChain ay supfz a → FClosure A f spu0 b ∧ ( spu0 o< x) → a ≤ b
+      zc02 {a} {b} ca fb = zc05 (proj1 fb) where
+         zc05 : {b : Ordinal } → FClosure A f spu0 b → a ≤ b
+         zc05 (fsuc b1 fb ) with proj1 ( mf b1 (A∋fc spu0 f mf fb ))
+         ... | case1 eq = subst (λ k → a ≤ k ) eq (zc05 fb)
+         ... | case2 lt = ≤-ftrans (zc05 fb) (case2 lt)
+         zc05 (init b1 refl) = MinSUP.x≤sup usup ca
+
+      ptotalS : IsTotalOrderSet pchainS
+      ptotalS (case1 a) (case1 b) =  ptotalU a b
+      ptotalS {a0} {b0} (case1 a) (case2 b) with zc02 a b
+      ... | case1 eq = tri≈ (<-irr (case1 (sym eq1))) eq1 (<-irr (case1 eq1)) where
+           eq1 : a0 ≡ b0
+           eq1 = subst₂ (λ j k → j ≡ k ) *iso *iso (cong (*) eq )
+      ... | case2 lt = tri< lt1 (λ eq → <-irr (case1 (sym eq)) lt1) (<-irr (case2 lt1)) where
+           lt1 : a0 < b0
+           lt1 = subst₂ (λ j k → j < k ) *iso *iso lt
+      ptotalS {b0} {a0} (case2 b) (case1 a) with zc02 a b
+      ... | case1 eq = tri≈ (<-irr (case1 eq1)) (sym eq1) (<-irr (case1 (sym eq1))) where
+           eq1 : a0 ≡ b0
+           eq1 = subst₂ (λ j k → j ≡ k ) *iso *iso (cong (*) eq )
+      ... | case2 lt = tri> (<-irr (case2 lt1)) (λ eq → <-irr (case1 eq) lt1) lt1  where
+           lt1 : a0 < b0
+           lt1 = subst₂ (λ j k → j < k ) *iso *iso lt
+      ptotalS (case2 a) (case2 b) = subst₂ (λ j k → Tri (j < k) (j ≡ k) (k < j)) *iso *iso (fcn-cmp spu0 f mf (proj1 a) (proj1 b))
+
+      S⊆A : pchainS ⊆' A
+      S⊆A (case1 lt) = proj1 lt
+      S⊆A (case2 fc) = A∋fc _ f mf (proj1 fc)
+
+      ssup : MinSUP A pchainS
+      ssup = minsupP pchainS S⊆A ptotalS
+
+      zc400 : MinSUP A pchainU → MinSUP A pchainS → ZChain A f mf< ay x
+      zc400 usup ssup = record { supf = supf1 ; asupf = asupf ; supf-mono = supf-mono ; order = order 
+              ; zo≤sz = zo≤sz   ; is-minsup = is-minsup ; cfcs = cfcs    }  where
+
           spu = MinSUP.sup usup
-
-
-          pchainS : HOD
-          pchainS = record { od = record { def = λ z →  (odef A z  ∧ IChain  ay supfz z )
-                ∨ (FClosure A f spu z ∧ (spu o< x)) } ; odmax = & A ; <odmax = zc00 } where
-               zc00 : {z : Ordinal } → (odef A z ∧ IChain ay supfz z ) ∨ (FClosure A f spu z ∧ (spu o< x) )→ z o< & A
-               zc00 {z} (case1 lt) = z07 lt
-               zc00 {z} (case2 fc) = z09 ( A∋fc spu f mf (proj1 fc) )
-
-          zc02 : { a b : Ordinal } → odef A a ∧ IChain ay supfz a → FClosure A f spu b ∧ ( spu o< x) → a ≤ b
-          zc02 {a} {b} ca fb = zc05 (proj1 fb) where
-             zc05 : {b : Ordinal } → FClosure A f spu b → a ≤ b
-             zc05 (fsuc b1 fb ) with proj1 ( mf b1 (A∋fc spu f mf fb ))
-             ... | case1 eq = subst (λ k → a ≤ k ) eq (zc05 fb)
-             ... | case2 lt = ≤-ftrans (zc05 fb) (case2 lt)
-             zc05 (init b1 refl) = MinSUP.x≤sup usup ca
-
-          ptotalS : IsTotalOrderSet pchainS
-          ptotalS (case1 a) (case1 b) =  ptotalU a b
-          ptotalS {a0} {b0} (case1 a) (case2 b) with zc02 a b
-          ... | case1 eq = tri≈ (<-irr (case1 (sym eq1))) eq1 (<-irr (case1 eq1)) where
-               eq1 : a0 ≡ b0
-               eq1 = subst₂ (λ j k → j ≡ k ) *iso *iso (cong (*) eq )
-          ... | case2 lt = tri< lt1 (λ eq → <-irr (case1 (sym eq)) lt1) (<-irr (case2 lt1)) where
-               lt1 : a0 < b0
-               lt1 = subst₂ (λ j k → j < k ) *iso *iso lt
-          ptotalS {b0} {a0} (case2 b) (case1 a) with zc02 a b
-          ... | case1 eq = tri≈ (<-irr (case1 eq1)) (sym eq1) (<-irr (case1 (sym eq1))) where
-               eq1 : a0 ≡ b0
-               eq1 = subst₂ (λ j k → j ≡ k ) *iso *iso (cong (*) eq )
-          ... | case2 lt = tri> (<-irr (case2 lt1)) (λ eq → <-irr (case1 eq) lt1) lt1  where
-               lt1 : a0 < b0
-               lt1 = subst₂ (λ j k → j < k ) *iso *iso lt
-          ptotalS (case2 a) (case2 b) = subst₂ (λ j k → Tri (j < k) (j ≡ k) (k < j)) *iso *iso (fcn-cmp spu f mf (proj1 a) (proj1 b))
-
-          S⊆A : pchainS ⊆' A
-          S⊆A (case1 lt) = proj1 lt
-          S⊆A (case2 fc) = A∋fc _ f mf (proj1 fc)
-
-          ssup : MinSUP A pchainS
-          ssup = minsupP pchainS S⊆A ptotalS
-
           sps = MinSUP.sup ssup
 
           supf1 : Ordinal → Ordinal
