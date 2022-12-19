@@ -320,18 +320,6 @@ record MinSUP ( A B : HOD )  : Set n where
 z09 : {b : Ordinal } { A : HOD } → odef A b → b o< & A
 z09 {b} {A} ab = subst (λ k → k o< & A) &iso ( c<→o< (subst (λ k → odef A k ) (sym &iso ) ab))
 
-M→S  : { A : HOD } { f : Ordinal → Ordinal } {mf : ≤-monotonic-f A f} {y : Ordinal} {ay : odef A y}  { x : Ordinal }
-      →  (supf : Ordinal → Ordinal )
-      →  MinSUP A (UnionCF A f ay supf x)
-      → SUP A (UnionCF A f ay supf x)
-M→S {A} {f} {mf} {y} {ay} {x} supf ms = record { sup = * (MinSUP.sup ms)
-        ; isSUP = record { ax = subst (λ k → odef A k) (sym &iso) (MinSUP.as ms) ; x≤sup = ms00 } } where
-   ms00 :  {z : Ordinal} → odef (UnionCF A f ay supf x) z → (z ≡ & (* (MinSUP.sup ms))) ∨ (z << & (* (MinSUP.sup ms)))
-   ms00 {z} uz with MinSUP.x≤sup ms uz
-   ... | case1 eq = case1 (subst (λ k → z ≡ k) (sym &iso) eq)
-   ... | case2 lt = case2  (subst (λ k →  * z < k ) (sym *iso) lt )
-
-
 chain-mono : {A : HOD}  ( f : Ordinal → Ordinal ) → (mf : ≤-monotonic-f A f )  {y : Ordinal} (ay : odef A y) (supf : Ordinal → Ordinal )
    (supf-mono : {x y : Ordinal } →  x o≤  y  → supf x o≤ supf y ) {a b c : Ordinal} → a o≤ b
         → odef (UnionCF A f ay supf a) c → odef (UnionCF A f ay supf b) c
@@ -343,13 +331,10 @@ record ZChain ( A : HOD )    ( f : Ordinal → Ordinal )  (mf< : <-monotonic-f A
    field
       supf :  Ordinal → Ordinal
 
+      supf-mono : {a b : Ordinal } → a o≤ b → supf a o≤ supf b
       cfcs  : {a b w : Ordinal } → a o< b → b o≤ z → supf a o< b → FClosure A f (supf a) w → odef (UnionCF A f ay supf b) w
-      order : {a b w : Ordinal } → b o≤ z → supf a o< supf b → FClosure A f (supf a) w → w ≤ supf b
-
       asupf :  {x : Ordinal } → odef A (supf x)
-      supf-mono : {x y : Ordinal } → x o≤  y → supf x o≤ supf y
       zo≤sz : {x : Ordinal } → x o≤ z → x o≤ supf x
-
       is-minsup : {x : Ordinal } → (x≤z : x o≤ z) → IsMinSUP A (UnionCF A f ay supf x) (supf x)
 
    chain : HOD
@@ -377,9 +362,6 @@ record ZChain ( A : HOD )    ( f : Ordinal → Ordinal )  (mf< : <-monotonic-f A
    ... | case1 eq = ⊥-elim ( o<¬≡ (sym eq) sx<sy )
    ... | case2 lt = ⊥-elim ( o<> sx<sy lt )
 
-   supf<A : {x : Ordinal } → supf x o< & A
-   supf<A = z09 asupf
-
    csupf : {b : Ordinal } → supf b o< supf z → supf b o< z → odef (UnionCF A f ay supf z) (supf b) -- supf z is not an element of this chain
    csupf {b} sb<sz sb<z = cfcs (supf-inject sb<sz) o≤-refl sb<z (init asupf refl)
 
@@ -399,6 +381,71 @@ record ZChain ( A : HOD )    ( f : Ordinal → Ordinal )  (mf< : <-monotonic-f A
    initial : {x : Ordinal } → x o≤ z → odef (UnionCF A f ay supf x) x →  y ≤ x
    initial {x} x≤z ⟪ aa , ch-init fc ⟫ = s≤fc y f mf fc
    initial {x} x≤z ⟪ aa , ch-is-sup u u<x is-sup fc ⟫ = ≤-ftrans (fcy<sup (ordtrans u<x x≤z) (init ay refl)) (s≤fc _ f mf fc)
+
+   supfeq : {a b : Ordinal } → a o≤ z →  b o≤ z → UnionCF A f ay supf a ≡ UnionCF A f ay supf b → supf a ≡ supf b
+   supfeq {a} {b} a≤z b≤z ua=ub with trio< (supf a) (supf b)
+   ... | tri< sa<sb ¬b ¬c = ⊥-elim ( o≤> (
+             IsMinSUP.minsup (is-minsup b≤z) asupf (λ {z} uzb → IsMinSUP.x≤sup (is-minsup a≤z) (subst (λ k → odef k z) (sym ua=ub) uzb)) ) sa<sb )
+   ... | tri≈ ¬a b ¬c = b
+   ... | tri> ¬a ¬b sb<sa = ⊥-elim ( o≤> (
+             IsMinSUP.minsup (is-minsup a≤z) asupf (λ {z} uza → IsMinSUP.x≤sup (is-minsup b≤z) (subst (λ k → odef k z) ua=ub uza)) ) sb<sa )
+
+   sup=u : {b : Ordinal} → (ab : odef A b) → b o≤ z
+       → IsSUP A (UnionCF A f ay supf b) b  → supf b ≡ b
+   sup=u {b} ab b≤z is-sup = z50 where
+           z48 : supf b o≤ b
+           z48 = IsMinSUP.minsup (is-minsup b≤z) ab (λ ux → IsSUP.x≤sup is-sup ux )
+           z50 : supf b ≡ b
+           z50 with trio< (supf b) b
+           ... | tri< sb<b ¬b ¬c = ⊥-elim ( o≤> z47 sb<b ) where
+                 z47 : b o≤ supf b
+                 z47 = zo≤sz b≤z
+           ... | tri≈ ¬a b ¬c = b
+           ... | tri> ¬a ¬b b<sb = ⊥-elim ( o≤> z48 b<sb )
+
+   union-max : {a b : Ordinal } → b o≤ supf a → b o≤ z → supf a o< supf b → UnionCF A f ay supf a ≡ UnionCF A f ay supf b
+   union-max {a} {b} b≤sa b≤z sa<sb = ==→o≡ record { eq→ = z47 ; eq← = z48 } where
+          z47 : {w : Ordinal } → odef (UnionCF A f ay supf a ) w → odef ( UnionCF A f ay supf b ) w
+          z47 {w} ⟪ aw , ch-init fc ⟫ = ⟪ aw , ch-init fc ⟫
+          z47 {w} ⟪ aw , ch-is-sup u u<a su=u fc ⟫ = ⟪ aw , ch-is-sup u u<b su=u fc ⟫ where
+              u<b : u o< b
+              u<b = ordtrans u<a (supf-inject sa<sb )
+          z48 : {w : Ordinal } → odef (UnionCF A f ay supf b ) w → odef ( UnionCF A f ay supf a ) w
+          z48 {w} ⟪ aw , ch-init fc ⟫ = ⟪ aw , ch-init fc ⟫
+          z48 {w} ⟪ aw , ch-is-sup u u<b su=u fc ⟫ = ⟪ aw , ch-is-sup u u<a su=u fc ⟫ where
+              u<a : u o< a
+              u<a = supf-inject ( osucprev (begin
+                 osuc (supf u)  ≡⟨ cong osuc su=u ⟩
+                 osuc u  ≤⟨ osucc u<b ⟩
+                 b  ≤⟨ b≤sa ⟩
+                 supf a ∎ )) where open o≤-Reasoning O
+
+   x≤supfx→¬sa<sa : {a b : Ordinal } → b o≤ z → b o≤ supf a → ¬ (supf a o< supf b )
+   x≤supfx→¬sa<sa {a} {b} b≤z b≤sa sa<sb = ⊥-elim ( o<¬≡ z27 sa<sb ) where -- x o≤ supf a ∧ supf a o< supf b → ⊥, because it defines the same UnionCF
+         z27 : supf a ≡ supf b
+         z27 = supfeq (ordtrans (supf-inject sa<sb) b≤z) b≤z ( union-max  b≤sa b≤z sa<sb)
+
+   order : {a b w : Ordinal } → b o≤ z → supf a o< supf b → FClosure A f (supf a) w → w ≤ supf b
+   order {a} {b} {w} b≤z sa<sb fc = IsMinSUP.x≤sup (is-minsup b≤z) (cfcs (supf-inject sa<sb) b≤z sa<b fc) where
+         sa<b : supf a o< b
+         sa<b with x<y∨y≤x (supf a) b
+         ... | case1 lt = lt
+         ... | case2 b≤sa = ⊥-elim (x≤supfx→¬sa<sa b≤z b≤sa sa<sb)
+
+   supf-idem : {b : Ordinal } → b o≤ z → supf b o≤ z  → supf (supf b) ≡ supf b
+   supf-idem {b} b≤z sfb≤x = z52 where
+       z54 :  {w : Ordinal} → odef (UnionCF A f ay supf (supf b)) w → (w ≡ supf b) ∨ (w << supf b)
+       z54 {w} ⟪ aw , ch-init fc ⟫ = fcy<sup b≤z fc
+       z54 {w} ⟪ aw , ch-is-sup u u<x su=u fc ⟫ = order b≤z (subst (λ k → k o< supf b) (sym su=u) u<x)  fc where
+               u<b : u o< b
+               u<b = supf-inject (subst (λ k → k o< supf b ) (sym (su=u)) u<x )
+       z52 : supf (supf b) ≡ supf b
+       z52 = sup=u asupf sfb≤x  record { ax = asupf  ; x≤sup = z54  }
+
+   supf-mono< : {a b : Ordinal } → b o≤ z → supf a o< supf b → supf a << supf b
+   supf-mono< {a} {b} b≤z sa<sb  with order {a} {b} b≤z sa<sb (init asupf refl)
+   ... | case2 lt = lt
+   ... | case1 eq = ⊥-elim ( o<¬≡ eq sa<sb )
 
    f-total : IsTotalOrderSet chain
    f-total {a} {b} ⟪ uaa , ch-is-sup ua sua<x sua=ua fca ⟫ ⟪ uab , ch-is-sup ub sub<x sub=ub fcb ⟫ =
@@ -438,80 +485,6 @@ record ZChain ( A : HOD )    ( f : Ordinal → Ordinal )  (mf< : <-monotonic-f A
       ft00 = ft01 (≤-ftrans (fcy<sup (o<→≤ sua<x) fcb) (s≤fc {A} _ f mf fca))
    f-total {a} {b} ⟪ uaa , ch-init fca ⟫ ⟪ uab , ch-init fcb ⟫ =
       subst₂ (λ j k → Tri (j < k) (j ≡ k) (k < j)) *iso *iso  (fcn-cmp y f mf fca fcb )
-
-   supf-mono< : {a b : Ordinal } → b o≤ z → supf a o< supf b → supf a << supf b
-   supf-mono< {a} {b} b≤z sa<sb  with order {a} {b} b≤z sa<sb (init asupf refl)
-   ... | case2 lt = lt
-   ... | case1 eq = ⊥-elim ( o<¬≡ eq sa<sb )
-
-   supfeq : {a b : Ordinal } → a o≤ z →  b o≤ z → UnionCF A f ay supf a ≡ UnionCF A f ay supf b → supf a ≡ supf b
-   supfeq {a} {b} a≤z b≤z ua=ub with trio< (supf a) (supf b)
-   ... | tri< sa<sb ¬b ¬c = ⊥-elim ( o≤> (
-             IsMinSUP.minsup (is-minsup b≤z) asupf (λ {z} uzb → IsMinSUP.x≤sup (is-minsup a≤z) (subst (λ k → odef k z) (sym ua=ub) uzb)) ) sa<sb )
-   ... | tri≈ ¬a b ¬c = b
-   ... | tri> ¬a ¬b sb<sa = ⊥-elim ( o≤> (
-             IsMinSUP.minsup (is-minsup a≤z) asupf (λ {z} uza → IsMinSUP.x≤sup (is-minsup b≤z) (subst (λ k → odef k z) ua=ub uza)) ) sb<sa )
-
-   union-max : {a b : Ordinal } → z o≤ supf a → b o≤ z → supf a o< supf b → UnionCF A f ay supf a ≡ UnionCF A f ay supf b
-   union-max {a} {b} z≤sa b≤z sa<sb = ==→o≡ record { eq→ = z47 ; eq← = z48 } where
-          z47 : {w : Ordinal } → odef (UnionCF A f ay supf a ) w → odef ( UnionCF A f ay supf b ) w
-          z47 {w} ⟪ aw , ch-init fc ⟫ = ⟪ aw , ch-init fc ⟫
-          z47 {w} ⟪ aw , ch-is-sup u u<a su=u fc ⟫ = ⟪ aw , ch-is-sup u u<b su=u fc ⟫ where
-              u<b : u o< b
-              u<b = ordtrans u<a (supf-inject sa<sb )
-          z48 : {w : Ordinal } → odef (UnionCF A f ay supf b ) w → odef ( UnionCF A f ay supf a ) w
-          z48 {w} ⟪ aw , ch-init fc ⟫ = ⟪ aw , ch-init fc ⟫
-          z48 {w} ⟪ aw , ch-is-sup u u<b su=u fc ⟫ = ⟪ aw , ch-is-sup u u<a su=u fc ⟫ where
-              u<a : u o< a
-              u<a = supf-inject ( osucprev (begin
-                 osuc (supf u)  ≡⟨ cong osuc su=u ⟩
-                 osuc u  ≤⟨ osucc (ordtrans<-≤ u<b b≤z ) ⟩
-                 z  ≤⟨ z≤sa ⟩
-                 supf a ∎ )) where open o≤-Reasoning O
-
-   sup=u : {b : Ordinal} → (ab : odef A b) → b o≤ z
-       → IsSUP A (UnionCF A f ay supf b) b  → supf b ≡ b
-   sup=u {b} ab b≤z is-sup = z50 where
-           z48 : supf b o≤ b
-           z48 = IsMinSUP.minsup (is-minsup b≤z) ab (λ ux → IsSUP.x≤sup is-sup ux )
-           z50 : supf b ≡ b
-           z50 with trio< (supf b) b
-           ... | tri< sb<b ¬b ¬c = ⊥-elim ( o≤> z47 sb<b ) where
-                 z47 : b o≤ supf b
-                 z47 = zo≤sz b≤z
-           ... | tri≈ ¬a b ¬c = b
-           ... | tri> ¬a ¬b b<sb = ⊥-elim ( o≤> z48 b<sb )
-
-   supf-idem : {b : Ordinal } → b o≤ z → supf b o≤ z  → supf (supf b) ≡ supf b
-   supf-idem {b} b≤z sfb≤x = z52 where
-       z54 :  {w : Ordinal} → odef (UnionCF A f ay supf (supf b)) w → (w ≡ supf b) ∨ (w << supf b)
-       z54 {w} ⟪ aw , ch-init fc ⟫ = fcy<sup b≤z fc
-       z54 {w} ⟪ aw , ch-is-sup u u<x su=u fc ⟫ = order b≤z (subst (λ k → k o< supf b) (sym su=u) u<x)  fc where
-               u<b : u o< b
-               u<b = supf-inject (subst (λ k → k o< supf b ) (sym (su=u)) u<x )
-       z52 : supf (supf b) ≡ supf b
-       z52 = sup=u asupf sfb≤x  record { ax = asupf  ; x≤sup = z54  }
-
-   x≤supfx : {x : Ordinal } → x o≤ z → supf x o≤ z → x o≤ supf x
-   x≤supfx {x} x≤z sx≤z with x<y∨y≤x (supf x) x
-   ... | case2 le = le
-   ... | case1 spx<px = ⊥-elim ( <<-irr z45 (proj1 ( mf< (supf x) asupf ))) where
-         z46 : odef (UnionCF A f ay supf x) (f (supf x))
-         z46 = ⟪ proj2 ( mf (supf x) asupf ) , ch-is-sup (supf x) spx<px z47 (fsuc _ (init asupf  z47 )) ⟫ where
-             z47 : supf (supf x) ≡ supf x
-             z47 = supf-idem x≤z  sx≤z
-         z45 : f (supf x) ≤ supf x
-         z45 = IsMinSUP.x≤sup (is-minsup x≤z ) z46
-
-   order0 : {a b w : Ordinal } → b o≤ z → supf a o< supf b → supf a o≤ z → FClosure A f (supf a) w → w ≤ supf b
-   order0 {a} {b} {w} b≤z sa<sb sa≤z fc = IsMinSUP.x≤sup (is-minsup b≤z) (cfcs (supf-inject sa<sb) b≤z sa<b fc) where
-         sa<b : supf a o< b
-         sa<b with x<y∨y≤x (supf a) b
-         ... | case1 lt = lt
-         ... | case2 b≤sa = ⊥-elim ( o≤> b≤sa ( supf-inject ( osucprev ( begin
-                 osuc (supf (supf a))  ≡⟨ cong osuc (supf-idem (ordtrans (supf-inject sa<sb) b≤z)  sa≤z)  ⟩
-                 osuc (supf a)  ≤⟨ osucc sa<sb ⟩
-                 supf b ∎ )))) where open o≤-Reasoning O
 
 record ZChain1 ( A : HOD )    ( f : Ordinal → Ordinal )  (mf< : <-monotonic-f A f)
         {y : Ordinal} (ay : odef A y)  (zc : ZChain A f mf< ay (& A)) ( z : Ordinal ) : Set (Level.suc n) where
@@ -784,16 +757,6 @@ Zorn-lemma {A}  0<A supP = zorn00 where
        →  MinSUP A (uchain f mf ay)
      ysup f mf {y} ay = minsupP (uchain f mf ay) (λ lt → A∋fc y f mf lt)  (utotal f mf ay)
 
-
-     SUP⊆ : { B C : HOD } → B ⊆' C → SUP A C → SUP A B
-     SUP⊆ {B} {C} B⊆C sup = record { sup = SUP.sup sup ; isSUP = record { ax = SUP.ax sup ; x≤sup = λ lt → SUP.x≤sup sup (B⊆C lt)    } }
-
-     zc43 : (x sp1 : Ordinal ) → ( x o< sp1 ) ∨ ( sp1 o≤ x )
-     zc43 x sp1 with trio< x sp1
-     ... | tri< a ¬b ¬c = case1 a
-     ... | tri≈ ¬a b ¬c = case2 (o≤-refl0 (sym b))
-     ... | tri> ¬a ¬b c = case2 (o<→≤ c)
-
      --
      -- create all ZChains under o< x
      --
@@ -820,7 +783,6 @@ Zorn-lemma {A}  0<A supP = zorn00 where
           pchain  : HOD
           pchain   = UnionCF A f ay supf0 px
 
-          supf-mono : {a b : Ordinal } → a o≤ b → supf0 a o≤ supf0 b
           supf-mono = ZChain.supf-mono zc
 
           zc04 : {b : Ordinal} → b o≤ x → (b o≤ px ) ∨ (b ≡ x )
@@ -885,8 +847,7 @@ Zorn-lemma {A}  0<A supP = zorn00 where
           --
 
           zc41 : MinSUP A pchainpx → ZChain A f mf< ay x
-          zc41 sup1 =  record { supf = supf1 ; asupf = asupf1 ; supf-mono = supf1-mono ; order = order
-              ; zo≤sz = zo≤sz ;  is-minsup = is-minsup ;  cfcs = cfcs  }  where
+          zc41 sup1 =  record { supf = supf1 ; asupf = asupf1 ; zo≤sz = zo≤sz ;  is-minsup = is-minsup ;  cfcs = cfcs ; supf-mono = supf1-mono }  where
 
                  sp1 = MinSUP.sup sup1
 
@@ -949,7 +910,7 @@ Zorn-lemma {A}  0<A supP = zorn00 where
                  --
                  cfcs : {a b w : Ordinal }
                      → a o< b → b o≤ x → supf1 a o< b  → FClosure A f (supf1 a) w → odef (UnionCF A f ay supf1 b) w
-                 cfcs {a} {b} {w} a<b b≤x sa<b fc with zc43 (supf0 a) px
+                 cfcs {a} {b} {w} a<b b≤x sa<b fc with x<y∨y≤x  (supf0 a) px
                  ... | case2 px≤sa = z50 where
                       a<x : a o< x
                       a<x = ordtrans<-≤ a<b b≤x
@@ -1020,7 +981,7 @@ Zorn-lemma {A}  0<A supP = zorn00 where
                       z53 : odef A w
                       z53 = A∋fc {A} _ f mf fc
                       csupf1 : odef (UnionCF A f ay supf1 b) w
-                      csupf1 with zc43 px (supf0 px)
+                      csupf1 with x<y∨y≤x  px (supf0 px)
                       ... | case2 spx≤px = ⟪ z53 , ch-is-sup (supf0 px) z54 z52 fc1 ⟫  where
                           z54 : supf0 px o< b
                           z54 = subst (λ k → supf0 px o< k ) (trans (Oprev.oprev=x op) (sym b=x) ) spx≤px
@@ -1111,32 +1072,6 @@ Zorn-lemma {A}  0<A supP = zorn00 where
                                 u≤px : u o≤ px
                                 u≤px = ordtrans u<x z≤px
 
-                 supfeq1 : {a b : Ordinal } → a o≤ x →  b o≤ x → UnionCF A f ay supf1 a ≡ UnionCF A f ay supf1 b → supf1 a ≡ supf1 b
-                 supfeq1 {a} {b} a≤z b≤z ua=ub with trio< (supf1 a) (supf1 b)
-                 ... | tri< sa<sb ¬b ¬c = ⊥-elim ( o≤> (
-                         IsMinSUP.minsup (is-minsup b≤z) asupf1 (λ {z} uzb → IsMinSUP.x≤sup (is-minsup a≤z) (subst (λ k → odef k z) (sym ua=ub) uzb)) ) sa<sb )
-                 ... | tri≈ ¬a b ¬c = b
-                 ... | tri> ¬a ¬b sb<sa = ⊥-elim ( o≤> (
-                         IsMinSUP.minsup (is-minsup a≤z) asupf1 (λ {z} uza → IsMinSUP.x≤sup (is-minsup b≤z) (subst (λ k → odef k z) ua=ub uza)) ) sb<sa )
-
-                 union-max1 : {a b : Ordinal } → x o≤ supf1 a → b o≤ x → supf1 a o< supf1 b → UnionCF A f ay supf1 a ≡ UnionCF A f ay supf1 b
-                 union-max1 {a} {b} z≤sa b≤z sa<sb = ==→o≡ record { eq→ = z47 ; eq← = z48 } where
-                      z47 : {w : Ordinal } → odef (UnionCF A f ay supf1 a ) w → odef ( UnionCF A f ay supf1 b ) w
-                      z47 {w} ⟪ aw , ch-init fc ⟫ = ⟪ aw , ch-init fc ⟫
-                      z47 {w} ⟪ aw , ch-is-sup u u<a su=u fc ⟫ = ⟪ aw , ch-is-sup u u<b su=u fc ⟫ where
-                          u<b : u o< b
-                          u<b = ordtrans u<a (supf-inject0 supf1-mono sa<sb )
-                      z48 : {w : Ordinal } → odef (UnionCF A f ay supf1 b ) w → odef ( UnionCF A f ay supf1 a ) w
-                      z48 {w} ⟪ aw , ch-init fc ⟫ = ⟪ aw , ch-init fc ⟫
-                      z48 {w} ⟪ aw , ch-is-sup u u<b su=u fc ⟫ = ⟪ aw , ch-is-sup u u<a su=u fc ⟫ where
-                          u<a : u o< a
-                          u<a = supf-inject0 supf1-mono ( osucprev (begin
-                             osuc (supf1 u)  ≡⟨ cong osuc su=u ⟩
-                             osuc u  ≤⟨ osucc (ordtrans<-≤ u<b b≤z ) ⟩
-                             x  ≤⟨ z≤sa ⟩
-                             supf1 a ∎ )) where open o≤-Reasoning O
-
-
                  zo≤sz : {z : Ordinal} →  z o≤ x → z o≤ supf1 z
                  zo≤sz {z} z≤x with osuc-≡< z≤x
                  ... | case2 z<x = subst (λ k → z o≤ k) (sym (sf1=sf0 (zc-b<x _ z<x ))) (ZChain.zo≤sz zc (zc-b<x _ z<x ))
@@ -1167,67 +1102,9 @@ Zorn-lemma {A}  0<A supP = zorn00 where
                      zc40 = subst (λ k → f (supf0 px) ≤ k ) (sym zc39)
                            ( MinSUP.x≤sup sup1 (case2 ⟪ fsuc _ (init (ZChain.asupf zc) refl) , subst (λ k → k o< x) (sym zc37) px<x ⟫  ))
 
-                 order : {a b : Ordinal} {w : Ordinal} →
-                    b o≤ x → supf1 a o< supf1 b → FClosure A f (supf1 a) w → w ≤ supf1 b
-                 order {a} {b} {w} b≤x sa<sb fc = z20 where
-                     a<b : a o< b
-                     a<b = supf-inject0 supf1-mono sa<sb
-                     a≤px : a o≤ px
-                     a≤px with trio< a px
-                     ... | tri< a ¬b ¬c = o<→≤ a
-                     ... | tri≈ ¬a b ¬c = o≤-refl0 b
-                     ... | tri> ¬a ¬b c = ⊥-elim ( ¬p<x<op ⟪ c , subst (λ k → a o< k) (sym (Oprev.oprev=x op))
-                        ( ordtrans<-≤ a<b b≤x) ⟫ ) -- px o< a o< b o≤ x
-                     z20 : w ≤ supf1 b
-                     z20 with trio< b px
-                     ... | tri< b<px ¬b ¬c = ZChain.order zc (o<→≤ b<px) (subst (λ k → k o< supf0 b) (sf1=sf0 (o<→≤ (ordtrans a<b b<px))) sa<sb)
-                          (fcup fc (o<→≤ (ordtrans a<b b<px)))
-                     ... | tri≈ ¬a b=px ¬c = IsMinSUP.x≤sup (ZChain.is-minsup zc (o≤-refl0 b=px)) z26  where
-                          a≤x : a o≤ x
-                          a≤x = o<→≤ (ordtrans ( subst (λ k → a o< k ) b=px a<b ) px<x )
-                          z26 : odef ( UnionCF A f ay supf0 b ) w
-                          z26 with x<y∨y≤x (supf1 a) b
-                          ... | case2 b≤sa = z27 where
-                              z27 : odef (UnionCF A f ay supf0 b) w
-                              z27 with osuc-≡< b≤sa
-                              ... | case2 b<sa = ⊥-elim ( o<¬≡ ( supfeq1 a≤x b≤x
-                                    ( union-max1 x≤sa b≤x (subst (λ k → supf1 a o< k) (sym (sf1=sf0 (o≤-refl0 b=px)))  sa<sb) ))
-                                       (ordtrans<-≤ sa<sb (o≤-refl0 (sym (sf1=sf0 (o≤-refl0 b=px))) ))) where
-                                  x≤sa : x o≤ supf1 a
-                                  x≤sa = subst (λ k → k o≤ supf1 a ) (trans (cong osuc b=px) (Oprev.oprev=x op)) (osucc b<sa )
-                              ... | case1 b=sa = ⊥-elim (o<¬≡ sa=sb sa<sb)  where
-                                  sa=sb : supf1 a ≡ supf0 b
-                                  sa=sb = begin
-                                    supf1 a ≡⟨ sf1=sf0 a≤px ⟩
-                                    supf0 a ≡⟨ sym (ZChain.supf-idem zc a≤px (o≤-refl0 (sym (trans (sym b=px) (trans b=sa (sf1=sf0 a≤px) )))))  ⟩
-                                    supf0 (supf0 a) ≡⟨ cong supf0 (sym (sf1=sf0 a≤px )) ⟩
-                                    supf0 (supf1 a) ≡⟨ cong supf0 (sym b=sa) ⟩
-                                    supf0 b ∎ where open ≡-Reasoning
-                          ... | case1 sa<b with cfcs a<b b≤x sa<b fc
-                          ... | ⟪ ua , ch-init fc ⟫ = ⟪ ua , ch-init fc ⟫
-                          ... | ⟪ ua , ch-is-sup u u<x su=u fc ⟫ = ⟪ ua , ch-is-sup u u<x (trans (sym (sf1=sf0 u≤px)) su=u) (fcup fc u≤px)  ⟫ where
-                              u≤px : u o≤ px
-                              u≤px = o<→≤ ( subst (λ k → u o< k ) b=px u<x )
-                     ... | tri> ¬a ¬b px<b with x<y∨y≤x (supf1 a) b
-                     ... | case1 sa<b = MinSUP.x≤sup sup1 (zc11 ( chain-mono f mf ay supf1 supf1-mono b≤x (cfcs a<b b≤x sa<b fc)))
-                     ... | case2 b≤sa = ⊥-elim ( o<¬≡ z27 sa<sb ) where -- x=b  x o≤ sa   UnionCF a ≡ UnionCF b → supf1 a ≡ supfb b → ⊥
-                          b=x : b ≡ x
-                          b=x with trio< b x
-                          ... | tri< a ¬b ¬c = ⊥-elim ( ¬p<x<op ⟪ px<b , zc-b<x _ a ⟫   ) -- px o< b o< x
-                          ... | tri≈ ¬a b ¬c = b
-                          ... | tri> ¬a ¬b c = ⊥-elim ( o≤> b≤x c ) -- x o< b ≤ x
-                          a≤x : a o≤ x
-                          a≤x = o<→≤ ( subst (λ k → a o< k ) b=x a<b )
-                          sf1b=sp1 : supf1 b ≡ sp1
-                          sf1b=sp1  = sf1=sp1 (subst (λ k → px o< k) (trans (Oprev.oprev=x op) (sym b=x))  <-osuc)
-                          z27 : supf1 a ≡ sp1
-                          z27 = trans ( supfeq1 a≤x b≤x ( union-max1 (subst (λ k → k o≤ supf1 a) b=x b≤sa)
-                              b≤x (subst (λ k → supf1 a o< k ) (sym sf1b=sp1)  sa<sb )  ) ) sf1b=sp1
-
      ... | no lim with trio< x o∅
      ... | tri< a ¬b ¬c = ⊥-elim ( ¬x<0 a )
-     ... | tri≈ ¬a x=0 ¬c = record { supf = λ _ → MinSUP.sup (ysup f mf ay) ; asupf = MinSUP.as (ysup f mf ay) 
-              ; supf-mono = λ _ → o≤-refl ; order = λ _ s<s → ⊥-elim ( o<¬≡ refl s<s )
+     ... | tri≈ ¬a x=0 ¬c = record { supf = λ _ → MinSUP.sup (ysup f mf ay) ; asupf = MinSUP.as (ysup f mf ay) ; supf-mono = λ _ → o≤-refl 
           ; zo≤sz = zo≤sz ; is-minsup = is-minsup ; cfcs = λ a<b b≤0 → ⊥-elim ( ¬x<0 (subst (λ k → _ o< k ) x=0 (ordtrans<-≤ a<b b≤0)))    } where
 
           mf : ≤-monotonic-f A f
@@ -1433,8 +1310,7 @@ Zorn-lemma {A}  0<A supP = zorn00 where
       ssup = minsupP pchainS S⊆A ptotalS
 
       zc400 : MinSUP A pchainU → MinSUP A pchainS → ZChain A f mf< ay x
-      zc400 usup ssup = record { supf = supf1 ; asupf = asupf ; supf-mono = supf-mono ; order = order 
-              ; zo≤sz = zo≤sz   ; is-minsup = is-minsup ; cfcs = cfcs    }  where
+      zc400 usup ssup = record { supf = supf1 ; asupf = asupf ; zo≤sz = zo≤sz   ; is-minsup = is-minsup ; cfcs = cfcs ; supf-mono = supf-mono  }  where
 
           spu = MinSUP.sup usup
           sps = MinSUP.sup ssup
@@ -1644,63 +1520,6 @@ Zorn-lemma {A}  0<A supP = zorn00 where
                    z48 = ⟪  proj2 (mf _ (MinSUP.as usup) ) , ic-isup _ (subst (λ k → k o< x) refl spu<x) z50
                         (fsuc _ (init (ZChain.asupf (pzc (ob<x lim spu<x))) z49)) ⟫
 
-          supfeq1 : {a b : Ordinal } → a o≤ x →  b o≤ x → UnionCF A f ay supf1 a ≡ UnionCF A f ay supf1 b → supf1 a ≡ supf1 b
-          supfeq1 {a} {b} a≤z b≤z ua=ub with trio< (supf1 a) (supf1 b)
-          ... | tri< sa<sb ¬b ¬c = ⊥-elim ( o≤> (
-                IsMinSUP.minsup (is-minsup b≤z) asupf (λ {z} uzb → IsMinSUP.x≤sup (is-minsup a≤z) (subst (λ k → odef k z) (sym ua=ub) uzb)) ) sa<sb )
-          ... | tri≈ ¬a b ¬c = b
-          ... | tri> ¬a ¬b sb<sa = ⊥-elim ( o≤> (
-                IsMinSUP.minsup (is-minsup a≤z) asupf (λ {z} uza → IsMinSUP.x≤sup (is-minsup b≤z) (subst (λ k → odef k z) ua=ub uza)) ) sb<sa )
-
-          union-max1 : {a b : Ordinal } → x o≤ supf1 a → b o≤ x → supf1 a o< supf1 b → UnionCF A f ay supf1 a ≡ UnionCF A f ay supf1 b
-          union-max1 {a} {b} z≤sa b≤z sa<sb = ==→o≡ record { eq→ = z47 ; eq← = z48 } where
-              z47 : {w : Ordinal } → odef (UnionCF A f ay supf1 a ) w → odef ( UnionCF A f ay supf1 b ) w
-              z47 {w} ⟪ aw , ch-init fc ⟫ = ⟪ aw , ch-init fc ⟫
-              z47 {w} ⟪ aw , ch-is-sup u u<a su=u fc ⟫ = ⟪ aw , ch-is-sup u u<b su=u fc ⟫ where
-                  u<b : u o< b
-                  u<b = ordtrans u<a (supf-inject0 supf-mono sa<sb )
-              z48 : {w : Ordinal } → odef (UnionCF A f ay supf1 b ) w → odef ( UnionCF A f ay supf1 a ) w
-              z48 {w} ⟪ aw , ch-init fc ⟫ = ⟪ aw , ch-init fc ⟫
-              z48 {w} ⟪ aw , ch-is-sup u u<b su=u fc ⟫ = ⟪ aw , ch-is-sup u u<a su=u fc ⟫ where
-                  u<a : u o< a
-                  u<a = supf-inject0 supf-mono ( osucprev (begin
-                     osuc (supf1 u)  ≡⟨ cong osuc su=u ⟩
-                     osuc u  ≤⟨ osucc (ordtrans<-≤ u<b b≤z ) ⟩
-                     x  ≤⟨ z≤sa ⟩
-                     supf1 a ∎ )) where open o≤-Reasoning O
-
-          order : {a b w : Ordinal } → b o≤ x → supf1 a o< supf1 b → FClosure A f (supf1 a) w → w ≤ supf1 b
-          order {a} {b} {w} b≤x sa<sb fc with osuc-≡< b≤x
-          ... | case2 b<x = subst (λ k → w ≤ k ) (sym (trans (sf1=sf b<x) (sym (zeq _ _ (o<→≤ <-osuc) o≤-refl ))))  (
-             ZChain.order (pzc b<x) o≤-refl
-                  (subst₂ (λ j k → j o< k ) (trans (sf1=sf a<x) (zeq _ _ (osucc a<b) (o<→≤ <-osuc)))
-                      (trans (sf1=sf b<x) (sym (zeq _ _ (o<→≤ <-osuc) o≤-refl)))  sa<sb)
-                  (subst  (λ k → FClosure A f k w) (trans (sf1=sf a<x) (zeq _ _ (osucc a<b) (o<→≤ <-osuc)) )  fc ) ) where
-               a<b : a o< b
-               a<b = supf-inject0 supf-mono sa<sb
-               a<x : a o< x
-               a<x = ordtrans<-≤ a<b b≤x
-          ... | case1 refl = subst (λ k → w ≤ k ) (sym (sf1=spu refl)) (  zc40 (subst₂ (λ j k → j o< k) (sf1=sf a<x) (sf1=spu refl) sa<sb)
-                   (subst (λ k → FClosure A f k w) (sf1=sf a<x) fc )) where
-               a<x : a o< x
-               a<x = supf-inject0 supf-mono sa<sb
-               zc40 : ZChain.supf (pzc  (ob<x lim a<x )) a o< spu → FClosure A f (ZChain.supf (pzc  (ob<x lim a<x )) a) w → w ≤ spu
-               zc40 sa<sp fc with x<y∨y≤x (supfz a<x) x
-               ... | case1 sa<x = z29 where
-                      z28 : odef (UnionCF A f ay supf1 b) w
-                      z28 = cfcs a<x o≤-refl (subst (λ k → k o< x) (sym (sf1=sf a<x)) sa<x) (subst (λ k → FClosure A f k w ) (sym (sf1=sf a<x)) fc )
-                      z29 : w ≤ spu
-                      z29 with z28
-                      ... | ⟪ aw , ch-init fc ⟫ = MinSUP.x≤sup usup ⟪ aw , ic-init fc ⟫
-                      ... | ⟪ aw , ch-is-sup u u<b su=u fc ⟫ = MinSUP.x≤sup usup ⟪ aw , ic-isup u u<b z30
-                                    (subst (λ k → FClosure A f k w) (sf1=sf u<b) fc) ⟫ where
-                          z30 : supfz u<b o≤ u
-                          z30 = o≤-refl0 ( trans (sym (sf1=sf u<b)) su=u )
-               ... | case2 x≤sa = ⊥-elim ( o<¬≡ z27 sa<sb ) where
-                      z27 : supf1 a ≡ supf1 b
-                      z27 = begin
-                         supf1 a  ≡⟨ ( supfeq1 (o<→≤ a<x) o≤-refl ( union-max1 (subst (λ k → x o≤ k ) (sym (sf1=sf a<x)) x≤sa ) b≤x sa<sb) ) ⟩
-                         supf1 x  ∎ where open ≡-Reasoning
 
      ---
      --- the maximum chain  has fix point of any ≤-monotonic function
@@ -1714,6 +1533,9 @@ Zorn-lemma {A}  0<A supP = zorn00 where
          → MinSUP A (UnionCF A f ay (ZChain.supf zc) x)
      msp0 f mf< {x} ay zc = minsupP (UnionCF A f ay (ZChain.supf zc) x) (ZChain.chain⊆A zc) (ZChain.f-total zc)
 
+     -- f eventualy stop
+     --    we can prove contradict here, it is here for a historical reason
+     --
      fixpoint :  ( f : Ordinal → Ordinal ) → (mf : ≤-monotonic-f A f ) (mf< : <-monotonic-f A f )  (zc : ZChain A f mf< as0 (& A) )
             → (sp1 : MinSUP A (ZChain.chain zc))
             → f (MinSUP.sup sp1)  ≡ MinSUP.sup sp1
@@ -1768,8 +1590,8 @@ Zorn-lemma {A}  0<A supP = zorn00 where
      -- ¬ Maximal create cf which is a <-monotonic function by axiom of choice. This contradicts fix point of ZChain
      --
 
-     z04 :  (nmx : ¬ Maximal A ) → (zc : ZChain A (cf nmx) (cf-is-<-monotonic nmx) as0 (& A)) → ⊥
-     z04 nmx zc = <-irr0  {* (cf nmx c)} {* c}
+     ¬Maximal→¬cf-mono :  (nmx : ¬ Maximal A ) → (zc : ZChain A (cf nmx) (cf-is-<-monotonic nmx) as0 (& A)) → ⊥
+     ¬Maximal→¬cf-mono nmx zc = <-irr0  {* (cf nmx c)} {* c}
            (subst (λ k → odef A k ) (sym &iso) (proj1 (is-cf nmx (MinSUP.as  msp1 ))))
            (subst (λ k → odef A k) (sym &iso) (MinSUP.as msp1) )
            (case1 ( cong (*)( fixpoint (cf nmx) (cf-is-≤-monotonic nmx ) (cf-is-<-monotonic nmx ) zc msp1  ))) -- x ≡ f x ̄
@@ -1782,16 +1604,16 @@ Zorn-lemma {A}  0<A supP = zorn00 where
           c = MinSUP.sup msp1
 
      zorn00 : Maximal A
-     zorn00 with is-o∅ ( & HasMaximal )  -- we have no Level (suc n) LEM
+     zorn00 with is-o∅ ( & HasMaximal )  
      ... | no not = record { maximal = ODC.minimal O HasMaximal  (λ eq → not (=od∅→≡o∅ eq)) ; as = zorn01 ; ¬maximal<x  = zorn02 } where
-         -- yes we have the maximal
+         -- yes we have the maximal because of the axiom of choice 
          zorn03 :  odef HasMaximal ( & ( ODC.minimal O HasMaximal  (λ eq → not (=od∅→≡o∅ eq)) ) )
          zorn03 =  ODC.x∋minimal  O HasMaximal  (λ eq → not (=od∅→≡o∅ eq))   -- Axiom of choice
          zorn01 :  A ∋ ODC.minimal O HasMaximal (λ eq → not (=od∅→≡o∅ eq))
          zorn01  = proj1  zorn03
          zorn02 : {x : HOD} → A ∋ x → ¬ (ODC.minimal O HasMaximal (λ eq → not (=od∅→≡o∅ eq)) < x)
          zorn02 {x} ax m<x = proj2 zorn03 (& x) ax (subst₂ (λ j k → j < k) (sym *iso) (sym *iso) m<x )
-     ... | yes ¬Maximal = ⊥-elim ( z04 nmx (SZ (cf nmx) (cf-is-<-monotonic nmx) as0 (& A) )) where
+     ... | yes ¬Maximal = ⊥-elim ( ¬Maximal→¬cf-mono nmx (SZ (cf nmx) (cf-is-<-monotonic nmx) as0 (& A) )) where
          -- if we have no maximal, make ZChain, which contradict SUP condition
          nmx : ¬ Maximal A
          nmx mx =  ∅< {HasMaximal} zc5 ( ≡o∅→=od∅  ¬Maximal ) where
