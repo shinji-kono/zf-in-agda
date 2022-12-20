@@ -4,7 +4,7 @@ open import Ordinals
 open import Relation.Binary
 open import Relation.Binary.Core
 open import Relation.Binary.PropositionalEquality
-import OD
+import OD hiding ( _⊆_ )
 module zorn {n : Level } (O : Ordinals {n}) (_<_ : (x y : OD.HOD O ) → Set n ) (PO : IsStrictPartialOrder _≡_ _<_ ) where
 
 --
@@ -14,7 +14,7 @@ module zorn {n : Level } (O : Ordinals {n}) (_<_ : (x y : OD.HOD O ) → Set n )
 --     → Maximal A
 --
 
-open import zf
+open import zf -- hiding ( _⊆_ )
 open import logic
 -- open import partfunc {n} O
 
@@ -90,10 +90,12 @@ ftrans<-≤ {x} {y} {z} x<y (case2 lt) = IsStrictPartialOrder.trans PO x<y lt
 ptrans =  IsStrictPartialOrder.trans PO
 
 open _==_
-open _⊆_
+-- open _⊆_ -- we use different definition
 
+-- We cannot prove this without Well foundedness of A
+--
 -- <-TransFinite : {A x : HOD} → {P : HOD → Set n} → x ∈ A
---     → ({x : HOD} → A ∋ x →  ({y : HOD} → A ∋  y → y < x → P y ) → P x) → P x
+--     → ({y : HOD} → A ∋  y → y < x → P y ) → P x
 -- <-TransFinite = ?
 
 --
@@ -216,16 +218,11 @@ fcn-cmp {A} s {x} {y} f mf cx cy with <-cmp ( fcn s mf cx ) (fcn s mf cy )
 IsTotalOrderSet : ( A : HOD ) → Set (Level.suc n)
 IsTotalOrderSet A = {a b : HOD} → odef A (& a) → odef A (& b)  → Tri (a < b) (a ≡ b) (b < a )
 
+_⊆_ : ( A B : HOD ) → Set n
+_⊆_ A B = {x : Ordinal } → odef A x → odef B x
+
 ⊆-IsTotalOrderSet : { A B : HOD } →  B ⊆ A  → IsTotalOrderSet A → IsTotalOrderSet B
-⊆-IsTotalOrderSet {A} {B} B⊆A T  ax ay = T (incl B⊆A ax) (incl B⊆A ay)
-
-_⊆'_ : ( A B : HOD ) → Set n
-_⊆'_ A B = {x : Ordinal } → odef A x → odef B x
-
---
--- inductive masum tree from x
--- tree structure
---
+⊆-IsTotalOrderSet {A} {B} B⊆A T  ax ay = T (B⊆A ax) (B⊆A ay)
 
 record HasPrev (A B : HOD) ( f : Ordinal → Ordinal ) (x : Ordinal )   : Set n where
    field
@@ -247,6 +244,7 @@ record SUP ( A B : HOD )  : Set (Level.suc n) where
    x≤sup = IsSUP.x≤sup isSUP
 
 --
+--   Our Proof strategy of the Zorn Lemma  
 --
 --         f (f ( ... (supf y))) f (f ( ... (supf z1)))
 --        /          |         /             |
@@ -339,7 +337,7 @@ record ZChain ( A : HOD )    ( f : Ordinal → Ordinal )  (mf< : <-monotonic-f A
 
    chain : HOD
    chain = UnionCF A f ay supf z
-   chain⊆A : chain ⊆' A
+   chain⊆A : chain ⊆ A
    chain⊆A = λ lt → proj1 lt
 
    chain∋init : {x : Ordinal } → odef (UnionCF A f ay supf x) y
@@ -382,14 +380,6 @@ record ZChain ( A : HOD )    ( f : Ordinal → Ordinal )  (mf< : <-monotonic-f A
    initial {x} x≤z ⟪ aa , ch-init fc ⟫ = s≤fc y f mf fc
    initial {x} x≤z ⟪ aa , ch-is-sup u u<x is-sup fc ⟫ = ≤-ftrans (fcy<sup (ordtrans u<x x≤z) (init ay refl)) (s≤fc _ f mf fc)
 
-   supfeq : {a b : Ordinal } → a o≤ z →  b o≤ z → UnionCF A f ay supf a ≡ UnionCF A f ay supf b → supf a ≡ supf b
-   supfeq {a} {b} a≤z b≤z ua=ub with trio< (supf a) (supf b)
-   ... | tri< sa<sb ¬b ¬c = ⊥-elim ( o≤> (
-             IsMinSUP.minsup (is-minsup b≤z) asupf (λ {z} uzb → IsMinSUP.x≤sup (is-minsup a≤z) (subst (λ k → odef k z) (sym ua=ub) uzb)) ) sa<sb )
-   ... | tri≈ ¬a b ¬c = b
-   ... | tri> ¬a ¬b sb<sa = ⊥-elim ( o≤> (
-             IsMinSUP.minsup (is-minsup a≤z) asupf (λ {z} uza → IsMinSUP.x≤sup (is-minsup b≤z) (subst (λ k → odef k z) ua=ub uza)) ) sb<sa )
-
    sup=u : {b : Ordinal} → (ab : odef A b) → b o≤ z
        → IsSUP A (UnionCF A f ay supf b) b  → supf b ≡ b
    sup=u {b} ab b≤z is-sup = z50 where
@@ -402,6 +392,14 @@ record ZChain ( A : HOD )    ( f : Ordinal → Ordinal )  (mf< : <-monotonic-f A
                  z47 = zo≤sz b≤z
            ... | tri≈ ¬a b ¬c = b
            ... | tri> ¬a ¬b b<sb = ⊥-elim ( o≤> z48 b<sb )
+
+   supfeq : {a b : Ordinal } → a o≤ z →  b o≤ z → UnionCF A f ay supf a ≡ UnionCF A f ay supf b → supf a ≡ supf b
+   supfeq {a} {b} a≤z b≤z ua=ub with trio< (supf a) (supf b)
+   ... | tri< sa<sb ¬b ¬c = ⊥-elim ( o≤> (
+             IsMinSUP.minsup (is-minsup b≤z) asupf (λ {z} uzb → IsMinSUP.x≤sup (is-minsup a≤z) (subst (λ k → odef k z) (sym ua=ub) uzb)) ) sa<sb )
+   ... | tri≈ ¬a b ¬c = b
+   ... | tri> ¬a ¬b sb<sa = ⊥-elim ( o≤> (
+             IsMinSUP.minsup (is-minsup a≤z) asupf (λ {z} uza → IsMinSUP.x≤sup (is-minsup b≤z) (subst (λ k → odef k z) ua=ub uza)) ) sb<sa )
 
    union-max : {a b : Ordinal } → b o≤ supf a → b o≤ z → supf a o< supf b → UnionCF A f ay supf a ≡ UnionCF A f ay supf b
    union-max {a} {b} b≤sa b≤z sa<sb = ==→o≡ record { eq→ = z47 ; eq← = z48 } where
@@ -553,7 +551,7 @@ supf-unique A f mf< {y} {xa} {xb} ay xa≤xb za zb {z} z≤xa = TransFinite0 {λ
 
 Zorn-lemma : { A : HOD }
     → o∅ o< & A
-    → ( ( B : HOD) → (B⊆A : B ⊆' A) → IsTotalOrderSet B → SUP A B   ) -- SUP condition
+    → ( ( B : HOD) → (B⊆A : B ⊆ A) → IsTotalOrderSet B → SUP A B   ) -- SUP condition
     → Maximal A
 Zorn-lemma {A}  0<A supP = zorn00 where
      <-irr0 : {a b : HOD} → A ∋ a → A ∋ b  → (a ≡ b ) ∨ (a < b ) → b < a → ⊥
@@ -585,7 +583,7 @@ Zorn-lemma {A}  0<A supP = zorn00 where
      --
      -- we have minsup using LEM, this is similar to the proof of the axiom of choice
      --
-     minsupP :  ( B : HOD) → (B⊆A : B ⊆' A) → IsTotalOrderSet B → MinSUP A B
+     minsupP :  ( B : HOD) → (B⊆A : B ⊆ A) → IsTotalOrderSet B → MinSUP A B
      minsupP B B⊆A total = m02 where
          xsup : (sup : Ordinal ) → Set n
          xsup sup = {w : Ordinal } → odef B w → (w ≡ sup ) ∨ (w << sup )
@@ -835,7 +833,7 @@ Zorn-lemma {A}  0<A supP = zorn00 where
                lt1 = subst₂ (λ j k → j < k ) *iso *iso lt
           ptotal (case2 a) (case2 b) = subst₂ (λ j k → Tri (j < k) (j ≡ k) (k < j)) *iso *iso (fcn-cmp (supf0 px) f mf (proj1 a) (proj1 b))
 
-          pcha : pchainpx ⊆' A
+          pcha : pchainpx ⊆ A
           pcha (case1 lt) = proj1 lt
           pcha (case2 fc) = A∋fc _ f mf (proj1 fc)
 
@@ -1175,23 +1173,9 @@ Zorn-lemma {A}  0<A supP = zorn00 where
            uz03 : ZChain.supf (pzc (ob<x lim ia<x)) ia o≤ ia
            uz03 = sa<x
 
-      chain⊆pchainU : {z w : Ordinal } → (oz<x : osuc z o< x) → odef (ZChain.chain (pzc oz<x)) w → odef pchainU w
-      chain⊆pchainU {z} {w} oz<x ⟪ aw , ch-init fc ⟫ = ⟪ aw , ic-init fc ⟫
-      chain⊆pchainU {z} {w} oz<x ⟪ aw , ch-is-sup u u<oz su=u fc ⟫
-         = ⟪ aw , ic-isup u u<x (o≤-refl0 su≡u) (subst (λ  k → FClosure A f k w ) su=su fc) ⟫ where
-             u<x : u o< x
-             u<x = ordtrans u<oz oz<x
-             su=su : ZChain.supf (pzc oz<x) u ≡ supfz u<x
-             su=su = sym ( zeq _ _  (osucc u<oz) (o<→≤ <-osuc) )
-             su≡u :  supfz u<x ≡ u
-             su≡u = begin
-                ZChain.supf (pzc (ob<x lim u<x )) u ≡⟨ sym su=su ⟩
-                ZChain.supf (pzc oz<x) u  ≡⟨ su=u ⟩
-                u ∎ where open ≡-Reasoning
-
-      chain⊆pchainU1 : {z w : Ordinal } → (z<x : z o< x) → odef (UnionCF A f ay (ZChain.supf (pzc (ob<x lim z<x))) z) w → odef pchainU w
-      chain⊆pchainU1 {z} {w} z<x ⟪ aw , ch-init fc ⟫ = ⟪ aw , ic-init fc ⟫
-      chain⊆pchainU1 {z} {w} z<x ⟪ aw , ch-is-sup u u<oz su=u fc ⟫
+      chain⊆pchainU : {z w : Ordinal } → (z<x : z o< x) → odef (UnionCF A f ay (ZChain.supf (pzc (ob<x lim z<x))) z) w → odef pchainU w
+      chain⊆pchainU {z} {w} z<x ⟪ aw , ch-init fc ⟫ = ⟪ aw , ic-init fc ⟫
+      chain⊆pchainU {z} {w} z<x ⟪ aw , ch-is-sup u u<oz su=u fc ⟫
          = ⟪ aw , ic-isup u u<x (o≤-refl0 su≡u) (subst (λ  k → FClosure A f k w ) su=su fc) ⟫ where
              u<x : u o< x
              u<x = ordtrans u<oz z<x
@@ -1202,20 +1186,6 @@ Zorn-lemma {A}  0<A supP = zorn00 where
                 ZChain.supf (pzc (ob<x lim u<x )) u ≡⟨ sym su=su ⟩
                 ZChain.supf (pzc (ob<x lim z<x)) u  ≡⟨ su=u ⟩
                 u ∎ where open ≡-Reasoning
-
-      ichain-inject : {a b : Ordinal } {ia : IChain ay supfz a } {ib : IChain ay supfz b }
-        → ZChain.supf (pzc (pic<x ia)) (IChain-i ia) o< ZChain.supf (pzc (pic<x ib)) (IChain-i ib)
-        → IChain-i ia o< IChain-i ib
-      ichain-inject {a} {b} {ia} {ib} sa<sb = uz11 where
-             uz11 : IChain-i ia o< IChain-i ib
-             uz11 with trio< (IChain-i ia ) (IChain-i ib)
-             ... | tri< a ¬b ¬c = a
-             ... | tri≈ ¬a b ¬c = ⊥-elim ( o<¬≡ (trans (zeq _ _ (o≤-refl0 (cong osuc b)) (o<→≤ <-osuc) )
-                 ( cong (ZChain.supf (pzc (pic<x ib))) b )) sa<sb )
-             ... | tri> ¬a ¬b c = ⊥-elim ( o≤> ( begin
-                 ZChain.supf (pzc (pic<x ib)) (IChain-i ib)  ≡⟨ zeq _ _ (o<→≤ (osucc c)) (o<→≤ <-osuc)  ⟩
-                 ZChain.supf (pzc (pic<x ia)) (IChain-i ib)  ≤⟨ ZChain.supf-mono (pzc (pic<x ia)) (o<→≤ c) ⟩
-                 ZChain.supf (pzc (pic<x ia)) (IChain-i ia)  ∎ ) sa<sb ) where open o≤-Reasoning O
 
       IC⊆ : {a b : Ordinal } (ia : IChain ay supfz a ) (ib : IChain ay supfz b )
           → IChain-i ia o< IChain-i ib → odef (ZChain.chain (pzc (pic<x ib))) a
@@ -1302,7 +1272,7 @@ Zorn-lemma {A}  0<A supP = zorn00 where
            lt1 = subst₂ (λ j k → j < k ) *iso *iso lt
       ptotalS (case2 a) (case2 b) = subst₂ (λ j k → Tri (j < k) (j ≡ k) (k < j)) *iso *iso (fcn-cmp spu0 f mf (proj1 a) (proj1 b))
 
-      S⊆A : pchainS ⊆' A
+      S⊆A : pchainS ⊆ A
       S⊆A (case1 lt) = proj1 lt
       S⊆A (case2 fc) = A∋fc _ f mf (proj1 fc)
 
@@ -1368,12 +1338,12 @@ Zorn-lemma {A}  0<A supP = zorn00 where
                zc01 with osuc-≡< (subst (λ k → z o≤ k) b z≤y)
                ... | case1 z=x = o≤-refl0 (sf1=spu (sym z=x))
                ... | case2 z<x = subst (λ k → k o≤ spu ) (sym (sf1=sf z<x)) ( IsMinSUP.minsup (ZChain.is-minsup (pzc (ob<x lim z<x)) (o<→≤ <-osuc) )
-                 (MinSUP.as usup) (λ uw → MinSUP.x≤sup usup (chain⊆pchainU1 z<x uw)) )
+                 (MinSUP.as usup) (λ uw → MinSUP.x≤sup usup (chain⊆pchainU z<x uw)) )
           ... | tri> ¬a ¬b c = zc01 where  -- supf1 z o≤ sps
                zc01 : supf1 z o≤ sps
                zc01 with trio< z x
                ... | tri< z<x ¬b ¬c = IsMinSUP.minsup (ZChain.is-minsup (pzc (ob<x lim z<x)) (o<→≤ <-osuc) )
-                 (MinSUP.as ssup) (λ uw → MinSUP.x≤sup ssup (case1 (chain⊆pchainU1 z<x uw)) )
+                 (MinSUP.as ssup) (λ uw → MinSUP.x≤sup ssup (case1 (chain⊆pchainU z<x uw)) )
                ... | tri≈ ¬a z=x ¬c = MinSUP.minsup usup (MinSUP.as ssup) (λ uw → MinSUP.x≤sup ssup (case1 uw) )
                ... | tri> ¬a ¬b c = o≤-refl -- (sf1=sps c)
 
@@ -1420,7 +1390,6 @@ Zorn-lemma {A}  0<A supP = zorn00 where
                    zm02 {w} ⟪ az , ch-init fc ⟫ = sup ⟪ az , ch-init fc ⟫
                    zm02 {w} ⟪ az , ch-is-sup u u<b su=u fc ⟫ = sup
                        ⟪ az , ch-is-sup u u<b (trans (s1=0 u<b) su=u) (subst (λ k → FClosure A f k w) (sym (s1=0 u<b)) fc) ⟫
-
 
 
           cfcs :  {a b w : Ordinal } → a o< b → b o≤ x →  supf1 a o< b → FClosure A f (supf1 a) w → odef (UnionCF A f ay supf1 b) w
@@ -1509,7 +1478,7 @@ Zorn-lemma {A}  0<A supP = zorn00 where
                    z70 : odef (UnionCF A f ay supf1 z) (supf1 spu)
                    z70 = cfcs spu<x o≤-refl ssp<x (init asupf refl )
                    z73 : IsSUP A (UnionCF A f ay (ZChain.supf (pzc (ob<x lim spu<x))) spu) spu
-                   z73 = record { ax = MinSUP.as usup ; x≤sup = λ uw → MinSUP.x≤sup usup (chain⊆pchainU1 spu<x uw ) }
+                   z73 = record { ax = MinSUP.as usup ; x≤sup = λ uw → MinSUP.x≤sup usup (chain⊆pchainU spu<x uw ) }
                    z49 : supfz spu<x ≡ spu
                    z49 = begin
                       supfz spu<x ≡⟨ ZChain.sup=u (pzc (ob<x lim spu<x)) (MinSUP.as usup) (o<→≤ <-osuc) z73 ⟩
@@ -1622,12 +1591,19 @@ Zorn-lemma {A}  0<A supP = zorn00 where
 
 -- usage (see filter.agda )
 --
--- _⊆'_ : ( A B : HOD ) → Set n
--- _⊆'_ A B = (x : Ordinal ) → odef A x → odef B x
+--  import OD hiding ( _⊆_ )
+-- _⊆_ : ( A B : HOD ) → Set n
+-- _⊆_ A B = {x : Ordinal } → odef A x → odef B x
+-- 
+-- import zorn 
+-- open zorn O _⊆_   -- Zorn on Set inclusion order 
+-- 
+-- open import  Relation.Binary.Structures
 
 -- MaximumSubset : {L P : HOD}
 --        → o∅ o< & L →  o∅ o< & P → P ⊆ L
---        → IsPartialOrderSet P _⊆'_
---        → ( (B : HOD) → B ⊆ P → IsTotalOrderSet B _⊆'_ → SUP P B _⊆'_ )
---        → Maximal P (_⊆'_)
--- MaximumSubset {L} {P} 0<L 0<P P⊆L PO SP  = Zorn-lemma {P} {_⊆'_} 0<P PO SP
+--        → IsPartialOrderSet P _⊆_
+--        → ( (B : HOD) → B ⊆ P → IsTotalOrderSet B _⊆_ → SUP P B _⊆_ )
+--        → Maximal P (_⊆_)
+-- MaximumSubset {L} {P} 0<L 0<P P⊆L PO SP  = Zorn-lemma {P} {_⊆_} 0<P PO SP
+--
