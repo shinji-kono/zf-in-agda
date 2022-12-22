@@ -44,7 +44,7 @@ record IsZF {n m : Level }
   field
      empty :  ∀( x : ZFSet  ) → ¬ ( ∅ ∋ x )
      -- power : ∀ X ∃ A ∀ t ( t ∈ A ↔ t ⊆ X ) )
-     power→ : ∀( A t : ZFSet  ) → Power A ∋ t → ∀ {x}  →  t ∋ x → ¬ ¬ ( A ∋ x ) -- _⊆_ t A {x} 
+     power→ : ∀( A t : ZFSet  ) → Power A ∋ t → ∀ {x}  →  t ∋ x → A ∋ x  -- _⊆_ t A {x} 
      power← : ∀( A t : ZFSet  ) → ( ∀ {x}  →  _⊆_ t A {x})  → Power A ∋ t 
      -- extensionality : ∀ z ( z ∈ x ⇔ z ∈ y ) ⇒ ∀ w ( x ∈ w ⇔ y ∈ w )
      extensionality :  { A B w : ZFSet  } → ( (z : ZFSet) → ( A ∋ z ) ⇔ (B ∋ z)  ) → ( A ∈ w ⇔ B ∈ w )
