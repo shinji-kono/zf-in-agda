@@ -26,7 +26,6 @@ open OD.OD
 open ODAxiom odAxiom
 
 open HOD
-open _⊆_
 open _∧_
 open _==_
 
@@ -58,25 +57,25 @@ pair-ord< {x} ho< = subst (λ k → & (x , x) o< k ) lemmab0 lemmab1  where
        lemmab1 = ho<
 
 trans-⊆ :  { A B C : HOD} → A ⊆ B → B ⊆ C → A ⊆ C
-trans-⊆ A⊆B B⊆C = record { incl = λ x → incl B⊆C (incl A⊆B x) }
+trans-⊆ A⊆B B⊆C ab = B⊆C (A⊆B ab) 
 
 refl-⊆ : {A : HOD} → A ⊆ A
-refl-⊆ {A} = record { incl = λ x → x }
+refl-⊆ x = x
 
 od⊆→o≤  : {x y : HOD } → x ⊆ y → & x o< osuc (& y)
-od⊆→o≤ {x} {y} lt  =  ⊆→o≤ {x} {y} (λ {z} x>z  → subst (λ k → def (od y) k ) &iso (incl lt (d→∋ x x>z)))
+od⊆→o≤ {x} {y} lt  =  ⊆→o≤ {x} {y} (λ {z} x>z  → subst (λ k → def (od y) k ) &iso (lt (d→∋ x x>z)))
 
 ⊆→= : {F U : HOD} → F ⊆ U  → U ⊆ F → F =h= U
-⊆→= {F} {U} FU UF = record { eq→ = λ {x} lt → subst (λ k → odef U k) &iso (incl FU (subst (λ k → odef F k) (sym &iso) lt) )
-                                     ; eq← = λ {x} lt → subst (λ k → odef F k) &iso (incl UF (subst (λ k → odef U k) (sym &iso) lt) ) }
+⊆→= {F} {U} FU UF = record { eq→ = λ {x} lt → subst (λ k → odef U k) &iso (FU (subst (λ k → odef F k) (sym &iso) lt) )
+                                     ; eq← = λ {x} lt → subst (λ k → odef F k) &iso (UF (subst (λ k → odef U k) (sym &iso) lt) ) }
 
 ¬A∋x→A≡od∅ : (A : HOD) → {x : HOD} → A ∋ x  → ¬ ( & A ≡ o∅ )
 ¬A∋x→A≡od∅ A {x} ax a=0 = ¬x<0 ( subst (λ k → & x o< k) a=0 (c<→o< ax ))
 
 subset-lemma : {A x : HOD  } → ( {y : HOD } →  x ∋ y → (A ∩ x ) ∋  y ) ⇔  ( x ⊆ A  )
 subset-lemma  {A} {x} = record {
-      proj1 = λ lt  → record { incl = λ x∋z → proj1 (lt x∋z)  }
-    ; proj2 = λ x⊆A lt → ⟪ incl x⊆A lt , lt ⟫
+      proj1 = λ lt x∋z → subst (λ k → odef A k ) &iso ( proj1 (lt (subst (λ k →  odef x k) (sym &iso) x∋z ) ))
+    ; proj2 = λ x⊆A lt → ⟪ x⊆A lt , lt ⟫
    } 
 
 ω<next-o∅ : {y : Ordinal} → infinite-d y → y o< next o∅
@@ -109,20 +108,34 @@ single : {x y : HOD } → (x , x ) ∋ y → x ≡ y
 single (case1 eq) = ==→o≡ ( ord→== (sym eq) )
 single (case2 eq) = ==→o≡ ( ord→== (sym eq) )
 
+single& : {x y : Ordinal } → odef (* x , * x ) y → x ≡ y
+single& (case1 eq) = sym (trans eq &iso) 
+single& (case2 eq) = sym (trans eq &iso)
+
 open import Relation.Binary.HeterogeneousEquality as HE using (_≅_ ) 
 -- postulate f-extensionality : { n m : Level}  → HE.Extensionality n m
 
+pair=∨ : {a b c : Ordinal  } → odef (* a , * b) c → (  a ≡ c ) ∨  (  b ≡ c )
+pair=∨ {a} {b} {c} (case1 c=a) = case1 ( sym (trans c=a &iso))
+pair=∨ {a} {b} {c} (case2 c=b) = case2 ( sym (trans c=b &iso))
+
 ω-prev-eq1 : {x y : Ordinal} →  & (Union (* y , (* y , * y))) ≡ & (Union (* x , (* x , * x))) → ¬ (x o< y)
-ω-prev-eq1 {x} {y} eq x<y = eq→ (ord→== eq) {& (* y)} (λ not2 → not2 (& (* y , * y))
-      ⟪ case2 refl , subst (λ k → odef k (& (* y))) (sym *iso) (case1 refl)⟫ ) (λ u → lemma u ) where
-   lemma : (u : Ordinal) → ¬ def (od (* x , (* x , * x))) u ∧ def (od (* u)) (& (* y))
-   lemma u t with proj1 t
-   lemma u t | case1 u=x = o<> (c<→o< {* y} {* u} (proj2 t)) (subst₂ (λ j k → j o< k )
-        (trans (sym &iso) (trans (sym u=x) (sym &iso)) ) (sym &iso) x<y ) -- x ≡ & (* u)
-   lemma u t | case2 u=xx = o<¬≡ (lemma1 (subst (λ k → odef k (& (* y)) ) (trans (cong (λ k → * k ) u=xx) *iso )  (proj2 t))) x<y where
-       lemma1 : {x y : Ordinal } → (* x , * x ) ∋ * y → x ≡ y    --  y = x ∈ ( x , x ) = u 
-       lemma1 (case1 eq) = subst₂ (λ j k → j ≡ k ) &iso &iso (sym eq)
-       lemma1 (case2 eq) = subst₂ (λ j k → j ≡ k ) &iso &iso (sym eq)
+ω-prev-eq1 {x} {y} eq x<y with  eq→ (ord→== eq) record { owner = & (* y , * y) ; ao = case2 refl  
+        ; ox = subst (λ k → odef k (& (* y))) (sym *iso) (case1 refl) }   --  (* x , (* x , * x)) ∋ * y
+... | record { owner = u ; ao = xxx∋u ; ox = uy } with xxx∋u
+... | case1 u=x = ⊥-elim ( o<> x<y (osucprev (begin
+       osuc y ≡⟨ sym (cong osuc  &iso) ⟩ 
+       osuc (& (* y)) ≤⟨ osucc (c<→o< {* y} {* u} uy) ⟩ -- * x ≡ * u ∋ * y
+       & (* u) ≡⟨ &iso ⟩ 
+       u ≡⟨ u=x ⟩ 
+       & (* x) ≡⟨ &iso ⟩ 
+       x ∎ ))) where open o≤-Reasoning O 
+... | case2 u=xx = ⊥-elim (o<¬≡ ( begin
+        x ≡⟨ single& (subst₂ (λ j k → odef j k ) (begin
+          * u ≡⟨ cong (*) u=xx ⟩ 
+          * (& (* x , * x)) ≡⟨ *iso  ⟩ 
+          (* x , * x ) ∎ ) &iso uy ) ⟩  -- (* x , * x ) ∋ * y
+        y ∎ ) x<y)  where open ≡-Reasoning
 
 ω-prev-eq : {x y : Ordinal} →  & (Union (* y , (* y , * y))) ≡ & (Union (* x , (* x , * x))) → x ≡ y
 ω-prev-eq {x} {y} eq with trio< x y
@@ -131,7 +144,7 @@ open import Relation.Binary.HeterogeneousEquality as HE using (_≅_ )
 ω-prev-eq {x} {y} eq | tri> ¬a ¬b c = ⊥-elim (ω-prev-eq1 (sym eq) c)
 
 ω-∈s : (x : HOD) →  Union ( x , (x , x)) ∋ x
-ω-∈s x not = not (& (x , x)) ⟪ case2 refl , subst (λ k → odef k (& x) ) (sym *iso) (case1 refl) ⟫
+ω-∈s x = record { owner = & ( x , x ) ; ao = case2 refl  ; ox = subst₂ (λ j k → odef j k ) (sym *iso) refl (case2 refl) }  
 
 ωs≠0 : (x : HOD) →  ¬ ( Union ( x , (x , x)) ≡ od∅ )
 ωs≠0 y eq =  ⊥-elim ( ¬x<0 (subst (λ k → & y  o< k ) ord-od∅ (c<→o< (subst (λ k → odef k (& y )) eq (ω-∈s y) ))) )
@@ -154,8 +167,8 @@ nat→ω-iso {i} = ε-induction {λ i →  (lt : infinite ∋ i ) → nat→ω (
            ∎ where
                open ≡-Reasoning 
                lemma0 :  x ∋ * x₁
-               lemma0 = subst (λ k → odef k (& (* x₁))) (trans (sym *iso) ox=x) (λ not → not 
-                  (& (* x₁ , * x₁))  ⟪ pair2 , subst (λ k → odef k (& (* x₁))) (sym *iso) pair1 ⟫ )
+               lemma0 = subst (λ k → odef k (& (* x₁))) (trans (sym *iso) ox=x) 
+                   record { owner = & ( * x₁ , * x₁ ) ; ao = case2 refl ; ox = subst (λ k → odef k (& (* x₁))) (sym *iso) (case1 refl)  }
                lemma1 : infinite ∋ * x₁
                lemma1 = subst (λ k → odef infinite k) (sym &iso) ltd
                lemma3 : {x y : Ordinal} → (ltd : infinite-d x ) (ltd1 : infinite-d y ) → y ≡ x → ltd ≅ ltd1

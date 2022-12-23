@@ -58,7 +58,7 @@ A ＼ B = record { od = record { def = λ x → odef A x ∧ ( ¬ ( odef B x ) )
      ; eq→ =  λ {x} lt → ⊥-elim (proj2 (proj1 lt ) (proj2 lt)) }
 
 U-F=∅→F⊆U : {F U : HOD} →  ((x : Ordinal) →  ¬ ( odef F x ∧ ( ¬ odef U x ))) → F ⊆ U
-U-F=∅→F⊆U {F} {U} not = record { incl = gt02 } where
+U-F=∅→F⊆U {F} {U} not = gt02  where
     gt02 : { x : Ordinal } → odef F x → odef U x
     gt02 {x} fx with ODC.∋-p O U (* x)
     ... | yes y = subst (λ k → odef U k ) &iso y
@@ -67,13 +67,12 @@ U-F=∅→F⊆U {F} {U} not = record { incl = gt02 } where
 ∪-Union : { A B : HOD } → Union (A , B) ≡ ( A ∪ B )
 ∪-Union {A} {B} = ==→o≡ ( record { eq→ =  lemma1 ; eq← = lemma2 } )  where
     lemma1 :  {x : Ordinal} → odef (Union (A , B)) x → odef (A ∪ B) x
-    lemma1 {x} lt = lemma3 lt where
-        lemma4 : {y : Ordinal} → odef (A , B) y ∧ odef (* y) x → ¬ (¬ ( odef A x ∨ odef B x) )
-        lemma4 {y} z with proj1 z
-        lemma4 {y} z | case1 refl = double-neg (case1 ( subst (λ k → odef k x ) *iso (proj2 z)) )
-        lemma4 {y} z | case2 refl = double-neg (case2 ( subst (λ k → odef k x ) *iso (proj2 z)) )
-        lemma3 : (((u : Ordinal ) → ¬ odef (A , B) u ∧ odef (* u) x) → ⊥) → odef (A ∪ B) x
-        lemma3 not = ODC.double-neg-eilm O (FExists _ lemma4 not)   -- choice
+    lemma1 {x} record { owner = owner ; ao = abo ; ox = ox } with pair=∨ (subst₂ (λ j k → odef (j , k ) owner) (sym *iso) (sym *iso) abo )
+    ... | case1 a=o = case1 (subst (λ k → odef k x ) ( begin 
+         * owner ≡⟨ cong (*) (sym a=o)  ⟩ 
+         * (& A) ≡⟨ *iso ⟩ 
+         A ∎ ) ox ) where open ≡-Reasoning
+    ... | case2 b=o = case2 (subst (λ k → odef k x ) (trans (cong (*) (sym b=o)) *iso ) ox)
     lemma2 :  {x : Ordinal} → odef (A ∪ B) x → odef (Union (A , B)) x
     lemma2 {x} (case1 A∋x) = subst (λ k → odef (Union (A , B)) k) &iso ( IsZF.union→ isZF (A , B) (* x) A
         ⟪ case1 refl , d→∋ A A∋x ⟫ )

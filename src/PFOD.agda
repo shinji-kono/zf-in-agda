@@ -130,8 +130,6 @@ postulate f-extensionality : { n m : Level}  → Axiom.Extensionality.Propositio
 ω→2f≡i1 X i iω lt eq with ODC.∋-p O X (nat→ω (ω→nat i iω))
 ω→2f≡i1 X i iω lt eq | yes p = subst (λ k → X ∋ k ) (nat→ω-iso iω) p
 
-open _⊆_
-
 -- someday ...
 -- postulate 
 --    ω→2f-iso : (X : HOD) → ( lt : ω→2 ∋ X ) → fω→2 ( ω→2f X lt )  =h= X

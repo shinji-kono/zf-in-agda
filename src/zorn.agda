@@ -4,7 +4,7 @@ open import Ordinals
 open import Relation.Binary
 open import Relation.Binary.Core
 open import Relation.Binary.PropositionalEquality
-import OD hiding ( _⊆_ )
+import OD 
 module zorn {n : Level } (O : Ordinals {n}) (_<_ : (x y : OD.HOD O ) → Set n ) (PO : IsStrictPartialOrder _≡_ _<_ ) where
 
 --
@@ -217,9 +217,6 @@ fcn-cmp {A} s {x} {y} f mf cx cy with <-cmp ( fcn s mf cx ) (fcn s mf cy )
 
 IsTotalOrderSet : ( A : HOD ) → Set (Level.suc n)
 IsTotalOrderSet A = {a b : HOD} → odef A (& a) → odef A (& b)  → Tri (a < b) (a ≡ b) (b < a )
-
-_⊆_ : ( A B : HOD ) → Set n
-_⊆_ A B = {x : Ordinal } → odef A x → odef B x
 
 ⊆-IsTotalOrderSet : { A B : HOD } →  B ⊆ A  → IsTotalOrderSet A → IsTotalOrderSet B
 ⊆-IsTotalOrderSet {A} {B} B⊆A T  ax ay = T (B⊆A ax) (B⊆A ay)

@@ -166,8 +166,7 @@ _⊗_ : (A B : HOD) → HOD
 A ⊗ B  = Union ( Replace B (λ b → Replace A (λ a → < a , b > ) ))
 
 product→ : {A B a b : HOD} → A ∋ a → B ∋ b  → ( A ⊗ B ) ∋ < a , b >
-product→ {A} {B} {a} {b} A∋a B∋b = λ t → t (& (Replace A (λ a → < a , b >)))
-             ⟪ lemma1 , subst (λ k → odef k (& < a , b >)) (sym *iso) lemma2 ⟫ where
+product→ {A} {B} {a} {b} A∋a B∋b = record { owner = _ ; ao = lemma1 ; ox = subst (λ k → odef k _) (sym *iso) lemma2  } where
     lemma1 :  odef (Replace B (λ b₁ → Replace A (λ a₁ → < a₁ , b₁ >))) (& (Replace A (λ a₁ → < a₁ , b >)))
     lemma1 = replacement← B b B∋b
     lemma2 : odef (Replace A (λ a₁ → < a₁ , b >)) (& < a , b >)

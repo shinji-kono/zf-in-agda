@@ -57,22 +57,20 @@ record ultra-filter { L P : HOD } {LP : L ⊆ Power P} (F : Filter LP) : Set (su
        proper  : ¬ (filter F ∋ od∅)
        ultra   : {p : HOD } → L ∋ p → L ∋  ( P ＼ p) → ( filter F ∋ p ) ∨ (  filter F ∋ ( P ＼ p) )
 
-open _⊆_
-
 ∈-filter : {L P p : HOD} →  {LP : L ⊆ Power P}  → (F : Filter LP ) → filter F ∋ p → L ∋ p 
-∈-filter {L} {p} {LP} F lt = incl ( f⊆L F) lt 
+∈-filter {L} {p} {LP} F lt = ( f⊆L F) lt 
 
 ⊆-filter : {L P p q : HOD } →  {LP : L ⊆ Power P } → (F : Filter LP) →  L ∋ q → q ⊆ P
-⊆-filter {L} {P} {p} {q} {LP} F lt = power→⊆ P q ( incl LP lt )
+⊆-filter {L} {P} {p} {q} {LP} F lt = power→⊆ P q ( LP lt )
 
 ∪-lemma1 : {L p q : HOD } → (p ∪ q)  ⊆ L → p ⊆ L
-∪-lemma1 {L} {p} {q} lt = record { incl = λ {x} p∋x → incl lt (case1 p∋x) }
+∪-lemma1 {L} {p} {q} lt p∋x = lt (case1 p∋x) 
 
 ∪-lemma2 : {L p q : HOD } → (p ∪ q)  ⊆ L → q ⊆ L
-∪-lemma2 {L} {p} {q} lt = record { incl = λ {x} p∋x → incl lt (case2 p∋x) }
+∪-lemma2 {L} {p} {q} lt p∋x = lt (case2 p∋x) 
 
 q∩q⊆q : {p q : HOD } → (q ∩ p) ⊆ q 
-q∩q⊆q = record { incl = λ lt → proj1 lt } 
+q∩q⊆q lt = proj1 lt 
 
 open HOD
 
@@ -120,16 +118,16 @@ filter-lemma2 :  {P L : HOD} → (LP : L ⊆ Power P)
        → (F : Filter LP)  → filter F ∋ P → prime-filter F → ultra-filter F
 filter-lemma2 {P} {L} LP Lm F f∋P prime = record {
          proper = prime-filter.proper prime
-       ; ultra = λ {p}  L∋p _ → prime-filter.prime prime L∋p (Lm  L∋p) (lemma10 L∋p (incl (f⊆L F) f∋P) ) (lemma p (p⊆L  L∋p ))  
+       ; ultra = λ {p}  L∋p _ → prime-filter.prime prime L∋p (Lm  L∋p) (lemma10 L∋p ((f⊆L F) f∋P) ) (lemma p (p⊆L  L∋p ))  
    } where
         open _==_
         p⊆L : {p : HOD} → L ∋ p  → p ⊆ P
-        p⊆L {p} lt = power→⊆ P p ( incl LP lt )
+        p⊆L {p} lt = power→⊆ P p ( LP lt )
         p+1-p=1 : {p : HOD} → p ⊆ P  → P =h= (p ∪ (P ＼ p)) 
         eq→ (p+1-p=1 {p} p⊆P) {x} lt with ODC.decp O (odef p x)
         eq→ (p+1-p=1 {p} p⊆P) {x} lt | yes p∋x = case1 p∋x
         eq→ (p+1-p=1 {p} p⊆P) {x} lt | no ¬p = case2 ⟪ lt , ¬p ⟫
-        eq← (p+1-p=1 {p} p⊆P) {x} ( case1 p∋x ) = subst (λ k → odef P k ) &iso (incl p⊆P ( subst (λ k → odef p k) (sym &iso) p∋x  )) 
+        eq← (p+1-p=1 {p} p⊆P) {x} ( case1 p∋x ) = subst (λ k → odef P k ) &iso (p⊆P ( subst (λ k → odef p k) (sym &iso) p∋x  )) 
         eq← (p+1-p=1 {p} p⊆P) {x} ( case2 ¬p  ) = proj1 ¬p
         lemma : (p : HOD) → p ⊆ P   →  filter F ∋ (p ∪ (P ＼ p))
         lemma p p⊆P = subst (λ k → filter F ∋ k ) (==→o≡ (p+1-p=1 {p} p⊆P)) f∋P 
@@ -187,7 +185,7 @@ max→ultra {L} {P} LP mx = record { proper = MaximumFilter.proper mx ; ultra = 
     ... | yes y = case1 y
     ... | no np with ∋-p (filter mf) (P ＼ p) 
     ... | yes y = case2 y
-    ... | no n-p = ⊥-elim (MaximumFilter.is-maximum mx FisFilter FisProper  {!!}  record { incl = FisGreater } ) where
+    ... | no n-p = ⊥-elim (MaximumFilter.is-maximum mx FisFilter FisProper  {!!}  ?  ) where
          Y : (y : Ordinal) → (my : odef (filter mf) y ) → HOD
          Y y my = record { od = record { def = λ x → (x ≡ y) ∨ (x ≡ & p) } ; odmax = & L ; <odmax = {!!} }
          F : HOD
@@ -225,21 +223,18 @@ ultra→max {L} {P} LP NG CAP U u  = record { mf = U ; proper = ultra-filter.pro
      F∋p : filter F ∋ p
      F∋p = proj1 (ODC.x∋minimal O GT GT≠∅)
      F∋-p : filter F ∋ ( P ＼ p )
-     F∋-p = incl U⊆F U∋-p 
+     F∋-p = U⊆F U∋-p 
      f0 : filter F ∋ od∅
      f0 = subst (λ k → odef (filter F) k ) (trans (cong (&) ∩-comm) (cong (&) [a-b]∩b=0 ) ) ( filter2 F F∋p F∋-p ( CAP {!!} {!!}) )
 
-_⊆'_ : ( A B : HOD ) → Set n
-_⊆'_ A B = {x : Ordinal } → odef A x → odef B x
-
 import zorn 
-open zorn O _⊆'_ hiding (  _⊆'_ )
+open zorn O _⊆_ 
 
 open import  Relation.Binary.Structures
 
 MaximumSubset : {L P : HOD} 
-      → o∅ o< & L →  o∅ o< & P → P ⊆' L
-      → (PO : IsStrictPartialOrder _≡_ _⊆'_ )
+      → o∅ o< & L →  o∅ o< & P → P ⊆ L
+      → (PO : IsStrictPartialOrder _≡_ _⊆_ )
       → ( (B : HOD) → B ⊆ P → IsTotalOrderSet PO B  → SUP PO P B  )
       → Maximal PO P
 MaximumSubset {L} {P} 0<L 0<P P⊆L PO C = Zorn-lemma PO 0<P {!!}

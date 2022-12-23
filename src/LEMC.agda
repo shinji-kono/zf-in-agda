@@ -32,8 +32,6 @@ open import zfc
 
 open HOD
 
-open _⊆_
-
 decp : ( p : Set n ) → Dec p   -- assuming axiom of choice    
 decp  p with p∨¬p p
 decp  p | case1 x = yes x
@@ -50,8 +48,8 @@ double-neg-eilm  {A} notnot with decp  A                         -- assuming axi
 ... | no ¬p = ⊥-elim ( notnot ¬p )
 
 power→⊆ :  ( A t : HOD) → Power A ∋ t → t ⊆ A
-power→⊆ A t  PA∋t = record { incl = λ {x} t∋x → double-neg-eilm (λ not → t1 t∋x (λ x → not x) ) } where
-   t1 : {x : HOD }  → t ∋ x → ¬ ¬ (A ∋ x)
+power→⊆ A t  PA∋t t∋x = subst (λ k → odef A k ) &iso ( t1 (subst (λ k → odef t k ) (sym &iso) t∋x))  where
+   t1 : {x : HOD }  → t ∋ x → A ∋ x
    t1 = power→ A t PA∋t
 
 --- With assuption of HOD is ordered,  p ∨ ( ¬ p ) <=> axiom of choice

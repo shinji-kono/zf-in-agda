@@ -95,17 +95,13 @@ or-exclude {A} {B} (case1 a) | case2 ¬a = ⊥-elim ( ¬a a )
 or-exclude {A} {B} (case2 b) | case1 a = case1 a
 or-exclude {A} {B} (case2 b) | case2 ¬a = case2 ⟪ ¬a , b ⟫
 
-open _⊆_
-
 power→⊆ :  ( A t : HOD) → Power A ∋ t → t ⊆ A
-power→⊆ A t  PA∋t = record { incl = λ {x} t∋x → double-neg-eilm (t1 t∋x) } where
-   t1 : {x : HOD }  → t ∋ x → ¬ ¬ (A ∋ x)
-   t1 = power→ A t PA∋t
+power→⊆ A t  PA∋t tx = subst (λ k → odef A k ) &iso ( power→ A t PA∋t (subst (λ k → odef t k) (sym &iso) tx ) )
 
 power-∩ : { A x y : HOD } → Power A ∋ x → Power A ∋ y → Power A ∋ ( x ∩ y )
 power-∩ {A} {x} {y} ax ay = power← A (x ∩ y) p01  where
    p01 :  {z : HOD} → (x ∩ y) ∋ z → A ∋ z
-   p01 {z} xyz = double-neg-eilm (  power→ A x ax (proj1 xyz ))
+   p01 {z} xyz = power→ A x ax (proj1 xyz )
 
 OrdP : ( x : Ordinal  ) ( y : HOD  ) → Dec ( Ord x ∋ y )
 OrdP  x y with trio< x (& y)

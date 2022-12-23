@@ -265,11 +265,9 @@ _∩_ : ( A B : HOD ) → HOD
 A ∩ B = record { od = record { def = λ x → odef A x ∧ odef B x }
         ; odmax = omin (odmax A) (odmax B) ; <odmax = λ y → min1 (<odmax A (proj1 y)) (<odmax B (proj2 y))}
 
-record _⊆_ ( A B : HOD   ) : Set (suc n) where
-  field
-     incl : { x : HOD } → A ∋ x →  B ∋ x
+_⊆_ : ( A B : HOD)   → Set n
+_⊆_ A B = { x : Ordinal } → odef A x → odef B x
 
-open _⊆_
 infixr  220 _⊆_
 
 -- if we have & (x , x) ≡ osuc (& x),  ⊆→o≤ → c<→o<
@@ -446,13 +444,13 @@ pair← x y t (case1 t=h=x) = case1 (cong (λ k → & k ) (==→o≡ t=h=x))
 pair← x y t (case2 t=h=y) = case2 (cong (λ k → & k ) (==→o≡ t=h=y))
 
 o<→c< :  {x y : Ordinal } → x o< y → (Ord x) ⊆ (Ord y)
-o<→c< lt = record { incl = λ z → ordtrans z lt }
+o<→c< lt {z} ox = ordtrans ox lt
 
 ⊆→o< :  {x y : Ordinal } → (Ord x) ⊆ (Ord y) →  x o< osuc y
 ⊆→o< {x} {y}  lt with trio< x y
 ⊆→o< {x} {y}  lt | tri< a ¬b ¬c = ordtrans a <-osuc
 ⊆→o< {x} {y}  lt | tri≈ ¬a b ¬c = subst ( λ k → k o< osuc y) (sym b) <-osuc
-⊆→o< {x} {y}  lt | tri> ¬a ¬b c with (incl lt)  (o<-subst c (sym &iso) refl )
+⊆→o< {x} {y}  lt | tri> ¬a ¬b c with lt  (o<-subst c (sym &iso) refl )
 ... | ttt = ⊥-elim ( o<¬≡ refl (o<-subst ttt &iso refl ))
 
 ψiso :  {ψ : HOD  → Set n} {x y : HOD } → ψ x → x ≡ y   → ψ y

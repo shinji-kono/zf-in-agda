@@ -202,6 +202,22 @@ finite3cov [] = []
 finite3cov (just y ∷ x) = just y ∷ finite3cov x
 finite3cov (nothing ∷ x) = just i0 ∷ finite3cov x
 
+record F-Filter {n : Level} (L : Set n) (PL : (L → Set n) → Set n) ( _⊆_ : L  → L → Set n)  (_∩_ : L → L → L ) : Set (suc n) where
+   field
+       filter : L → Set n
+       f⊆P :  PL filter 
+       filter1 : { p q : L } → PL (λ x → q ⊆ x )  → filter p →  p ⊆ q  → filter q
+       filter2 : { p q : L } → filter p →  filter q  → filter (p ∩ q)
+
+record F-Dense {n : Level} (L : Set n) (PL : (L → Set n) → Set n) ( _⊆_ : L  → L → Set n)  (_∩_ : L → L → L ) : Set (suc n) where
+   field
+       dense : L → Set n
+       d⊆P :  PL dense 
+       dense-f : L → L 
+       dense-d :  { p : L} → PL (λ x → p ⊆ x ) → dense ( dense-f p  )
+       dense-p :  { p : L} → PL (λ x → p ⊆ x ) → p ⊆ (dense-f p) 
+
+
 Dense-3 : F-Dense (List (Maybe Two) ) (λ x → One) _3⊆_ _3∩_
 Dense-3 = record {
        dense =  λ x → Finite3b x ≡ true
