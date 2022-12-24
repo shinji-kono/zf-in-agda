@@ -99,9 +99,9 @@ record ODAxiom : Set (suc n) where
   *iso   :  {x : HOD }      → * ( & x ) ≡ x
   &iso   :  {x : Ordinal }  → & ( * x ) ≡ x
   ==→o≡  :  {x y : HOD  }   → (od x == od y) → x ≡ y
-  sup-o  :  (A : HOD) → (     ( x : Ordinal ) → def (od A) x →  Ordinal ) →  Ordinal
+  sup-o  :  (A : HOD) → (     ( x : Ordinal ) → def (od A) x →  Ordinal ) →  Ordinal -- required in Replace
   sup-o≤ :  (A : HOD) → { ψ : ( x : Ordinal ) → def (od A) x →  Ordinal } → ∀ {x : Ordinal } → (lt : def (od A) x ) → ψ x lt o≤  sup-o A ψ
--- possible order restriction
+-- possible order restriction (required in the axiom of infinite )
   ho< : {x : HOD} → & x o< next (odmax x)
 
 
@@ -402,12 +402,7 @@ data infinite-d  : ( x : Ordinal  ) → Set n where
 -- This means that many of OD may not be HODs because of the & mapping divergence.
 -- We should have some axioms to prevent this such as & x o< next (odmax x).
 --
--- postulate
---     ωmax : Ordinal
---     <ωmax : {y : Ordinal} → infinite-d y → y o< ωmax
---
--- infinite : HOD
--- infinite = record { od = record { def = λ x → infinite-d x } ; odmax = ωmax ; <odmax = <ωmax }
+--  Since we have Ord (next o∅), we don't need this, but ZF axiom requires this and ho<
 
 infinite : HOD
 infinite = record { od = record { def = λ x → infinite-d x } ; odmax = next o∅ ; <odmax = lemma }  where

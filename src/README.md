@@ -14,6 +14,7 @@ Shinji KONO (kono@ie.u-ryukyu.ac.jp), University of the Ryukyus
     ODC.agda           Law of exclude middle from axiom of choice assumptions
     LEMC.agda          model of choice with assumption of the Law of exclude middle 
     OPair.agda         ordered pair on OD
+    zorn.agda          Zorn Lemma
 
     BAlgbra.agda       Boolean algebra on OD (not yet done)
     filter.agda        Filter on OD (not yet done)
@@ -21,6 +22,17 @@ Shinji KONO (kono@ie.u-ryukyu.ac.jp), University of the Ryukyus
 
     logic.agda         some basics on logic
     nat.agda           some basics on Nat
+
+    NSet.agda          primitve set thoery examples
+
+    ODUtil.agda
+    OrdUtil.agda
+    PFOD.agda
+    Topology.agda
+    VL.agda
+    generic-filter.agda
+    partfunc.agda
+
 ```
 
 ## Ordinal Definable Set
@@ -85,3 +97,21 @@ In ψ : Ordinal → Set,  if A is a  record { def = λ x → ψ x } , then
 They say the existing of the mappings can be proved in Classical Set Theory, but we
 simply assumes these non constructively.
 
+## we need some more axiom to achive ZF Set Theory
+
+```
+    record ODAxiom : Set (suc n) where
+     field
+      -- HOD is isomorphic to Ordinal (by means of Goedel number)
+      & : HOD  → Ordinal
+      * : Ordinal  → HOD
+      c<→o<  :  {x y : HOD  }   → def (od y) ( & x ) → & x o< & y
+      ⊆→o≤   :  {y z : HOD  }   → ({x : Ordinal} → def (od y) x → def (od z) x ) → & y o< osuc (& z)
+      *iso   :  {x : HOD }      → * ( & x ) ≡ x
+      &iso   :  {x : Ordinal }  → & ( * x ) ≡ x
+      ==→o≡  :  {x y : HOD  }   → (od x == od y) → x ≡ y
+      sup-o  :  (A : HOD) → (     ( x : Ordinal ) → def (od A) x →  Ordinal ) →  Ordinal -- required in Replace
+      sup-o≤ :  (A : HOD) → { ψ : ( x : Ordinal ) → def (od A) x →  Ordinal } → ∀ {x : Ordinal } → (lt : def (od A) x ) → ψ x lt o≤  sup-o A ψ
+    -- possible order restriction (required in the axiom of infinite )
+      ho< : {x : HOD} → & x o< next (odmax x)
+```
