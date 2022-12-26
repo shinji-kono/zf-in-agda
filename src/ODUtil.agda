@@ -184,15 +184,17 @@ nat→ω-iso {i} = ε-induction {λ i →  (lt : infinite ∋ i ) → nat→ω (
                lemma :  nat→ω (ω→nato ltd) ≡ * x₁
                lemma = trans  (cong (λ k →  nat→ω  k) (lemma2 {x₁} {_} ltd (subst (λ k → infinite-d k ) (sym &iso) ltd)  &iso ) ) ( prev {* x₁} lemma0 lemma1 )
 
+                                                   
+ω→nat-iso0 : (x : Nat) → {ox : Ordinal } → (ltd : infinite-d ox) → * ox ≡ nat→ω x → ω→nato ltd ≡ x                                  
+ω→nat-iso0 Zero iφ eq = refl                                                                                                     
+ω→nat-iso0 (Suc x) iφ eq = ⊥-elim ( ωs≠0 _ (trans (sym eq) o∅≡od∅ )) 
+ω→nat-iso0 Zero (isuc ltd) eq = ⊥-elim ( ωs≠0 _ (subst (λ k → k ≡ od∅  ) *iso eq ))
+ω→nat-iso0 (Suc i) (isuc {x} ltd) eq = cong Suc ( ω→nat-iso0 i ltd (lemma1 eq) ) where
+       lemma1 :  * (& (Union (* x , (* x , * x)))) ≡ Union (nat→ω i , (nat→ω i , nat→ω i)) → * x ≡ nat→ω i
+       lemma1 eq = subst (λ k → * x ≡ k ) *iso (cong (λ k → * k)
+            ( ω-prev-eq (subst (λ k → _ ≡ k ) &iso (cong (λ k → & k ) (sym
+                (subst (λ k → _ ≡ Union ( k , ( k , k ))) (sym *iso ) eq ))))))
+
 ω→nat-iso : {i : Nat} → ω→nat ( nat→ω i ) (ω∋nat→ω {i}) ≡ i
-ω→nat-iso {i} = lemma i (ω∋nat→ω {i}) *iso where
-   lemma : {x : Ordinal } → ( i : Nat ) → (ltd : infinite-d x ) → * x ≡  nat→ω i → ω→nato ltd ≡ i
-   lemma {x} Zero iφ eq = refl
-   lemma {x} (Suc i) iφ eq = ⊥-elim ( ωs≠0 (nat→ω i) (trans (sym eq) o∅≡od∅ )) -- Union (nat→ω i , (nat→ω i , nat→ω i)) ≡ od∅
-   lemma Zero (isuc {x} ltd) eq = ⊥-elim ( ωs≠0 (* x) (subst (λ k → k ≡ od∅  ) *iso eq ))
-   lemma (Suc i) (isuc {x} ltd) eq = cong (λ k → Suc k ) (lemma i ltd (lemma1 eq) )  where -- * x ≡ nat→ω i
-           lemma1 :  * (& (Union (* x , (* x , * x)))) ≡ Union (nat→ω i , (nat→ω i , nat→ω i)) → * x ≡ nat→ω i
-           lemma1 eq = subst (λ k → * x ≡ k ) *iso (cong (λ k → * k)
-                ( ω-prev-eq (subst (λ k → _ ≡ k ) &iso (cong (λ k → & k ) (sym
-                    (subst (λ k → _ ≡ Union ( k , ( k , k ))) (sym *iso ) eq ))))))
+ω→nat-iso {i} = ω→nat-iso0 i (ω∋nat→ω {i}) *iso  
 

@@ -92,14 +92,17 @@ prod-eq {x} {x'} {y} {y'} eq = ⟪ lemmax , lemmay ⟫ where
     ... | refl with lemma4 eq -- with (x,y)≡(x,y')
     ... | eq1 = lemma4 (ord→== (cong (λ  k → & k )  eq1 ))
 
+prod-≡ : { x x' y y' : HOD } → < x , y > ≡ < x' , y' > → (x ≡ x' ) ∧ ( y ≡ y' )
+prod-≡ eq = prod-eq (ord→== (cong (&) eq ))
+
 --
--- unlike ordered pair, ZFProduct is not a HOD
+-- unlike ordered pair, ZFPair is not a HOD
 
 data ord-pair : (p : Ordinal) → Set n where
    pair : (x y : Ordinal ) → ord-pair ( & ( < * x , * y > ) )
 
-ZFProduct : OD
-ZFProduct = record { def = λ x → ord-pair x }
+ZFPair : OD
+ZFPair = record { def = λ x → ord-pair x }
 
 -- open import Relation.Binary.HeterogeneousEquality as HE using (_≅_ ) 
 -- eq-pair : { x x' y y' : Ordinal } → x ≡ x' → y ≡ y' → pair x y ≅ pair x' y'
@@ -108,23 +111,23 @@ ZFProduct = record { def = λ x → ord-pair x }
 pi1 : { p : Ordinal } →   ord-pair p →  Ordinal
 pi1 ( pair x y) = x
 
-π1 : { p : HOD } → def ZFProduct (& p) → HOD
+π1 : { p : HOD } → def ZFPair (& p) → HOD
 π1 lt = * (pi1 lt )
 
 pi2 : { p : Ordinal } →   ord-pair p →  Ordinal
 pi2 ( pair x y ) = y
 
-π2 : { p : HOD } → def ZFProduct (& p) → HOD
+π2 : { p : HOD } → def ZFPair (& p) → HOD
 π2 lt = * (pi2 lt )
 
-op-cons :  { ox oy  : Ordinal } → def ZFProduct (& ( < * ox , * oy >   ))
-op-cons {ox} {oy} = pair ox oy
+op-cons :  ( ox oy  : Ordinal ) → def ZFPair (& ( < * ox , * oy >   ))
+op-cons ox oy = pair ox oy
 
 def-subst :  {Z : OD } {X : Ordinal  }{z : OD } {x : Ordinal  }→ def Z X → Z ≡ z  →  X ≡ x  →  def z x
 def-subst df refl refl = df
 
-p-cons :  ( x y  : HOD ) → def ZFProduct (& ( < x , y >))
-p-cons x y = def-subst {_} {_} {ZFProduct} {& (< x , y >)} (pair (& x) ( & y )) refl (
+p-cons :  ( x y  : HOD ) → def ZFPair (& ( < x , y >))
+p-cons x y = def-subst {_} {_} {ZFPair} {& (< x , y >)} (pair (& x) ( & y )) refl (
    let open ≡-Reasoning in begin
        & < * (& x) , * (& y) >
    ≡⟨ cong₂ (λ j k → & < j , k >) *iso *iso ⟩
@@ -134,13 +137,13 @@ p-cons x y = def-subst {_} {_} {ZFProduct} {& (< x , y >)} (pair (& x) ( & y )) 
 op-iso :  { op : Ordinal } → (q : ord-pair op ) → & < * (pi1 q) , * (pi2 q) > ≡ op
 op-iso (pair ox oy) = refl
 
-p-iso :  { x  : HOD } → (p : def ZFProduct (&  x) ) → < π1 p , π2 p > ≡ x
+p-iso :  { x  : HOD } → (p : def ZFPair (&  x) ) → < π1 p , π2 p > ≡ x
 p-iso {x} p = ord≡→≡ (op-iso p) 
 
-p-pi1 :  { x y : HOD } → (p : def ZFProduct (&  < x , y >) ) →  π1 p ≡ x
+p-pi1 :  { x y : HOD } → (p : def ZFPair (&  < x , y >) ) →  π1 p ≡ x
 p-pi1 {x} {y} p = proj1 ( prod-eq ( ord→== (op-iso p) ))
 
-p-pi2 :  { x y : HOD } → (p : def ZFProduct (&  < x , y >) ) →  π2 p ≡ y
+p-pi2 :  { x y : HOD } → (p : def ZFPair (&  < x , y >) ) →  π2 p ≡ y
 p-pi2 {x} {y} p = proj2 ( prod-eq ( ord→== (op-iso p)))
 
 ω-pair :  {x y : HOD} → {m : Ordinal} → & x o< next m → & y o< next m → & (x , y) o< next m
@@ -186,27 +189,50 @@ A<Bnext {A} {B} {x} lt A∋x = osucprev (begin
           next (odmax B)
        ∎ ) where open o≤-Reasoning O
 
+data ZFProduct  (A B : HOD) : (p : Ordinal) → Set n where
+    ab-pair : {a b : Ordinal } → odef A a → odef B b → ZFProduct A B ( & ( < * a , * b > ) )
+
 ZFP  : (A B : HOD) → HOD
-ZFP  A B = record { od = record { def = λ x → ord-pair x ∧ ((p : ord-pair x ) → odef A (pi1 p) ∧ odef B (pi2 p) )} ;
-        odmax = omax (next (odmax A)) (next (odmax B)) ; <odmax = λ {y} px → lemma y px } 
+ZFP  A B = record { od = record { def = λ x → ZFProduct A B x  } 
+        ; odmax = omax (next (odmax A)) (next (odmax B)) ; <odmax = λ {y} px → lemma y px } 
    where
-       lemma : (y : Ordinal) → ( ord-pair y ∧ ((p : ord-pair y) → odef A (pi1 p) ∧ odef B (pi2 p))) → y o< omax (next (odmax A)) (next (odmax B))
-       lemma y lt with proj1 lt
-       lemma p lt | pair x y with trio< (& A) (& B) 
-       lemma p lt | pair x y | tri< a ¬b ¬c = ordtrans (ω-opair (A<Bnext a (subst (λ k → odef A k ) (sym &iso)
-           (proj1 (proj2 lt (pair x y))))) (lemma1 (proj2 (proj2 lt (pair x y))))) (omax-y _ _ ) where
+       lemma : (y : Ordinal) → ZFProduct A B y → y o< omax (next (odmax A)) (next (odmax B))
+       lemma p ( ab-pair {x} {y} ax by ) with trio< (& A) (& B) 
+       lemma p ( ab-pair {x} {y} ax by ) | tri< a ¬b ¬c = ordtrans (ω-opair (A<Bnext a (subst (λ k → odef A k ) (sym &iso)
+            ax ))  (lemma1 by )) (omax-y _ _ ) where
                lemma1 : odef B y → & (* y) o< next (HOD.odmax B)
                lemma1 lt = x<nextA {B} (d→∋ B lt)
-       lemma p lt | pair x y | tri≈ ¬a b ¬c = ordtrans (ω-opair (x<nextA {A} (d→∋ A ((proj1 (proj2 lt (pair x y)))))) lemma2 ) (omax-x _ _ ) where
+       lemma p ( ab-pair {x} {y} ax by ) | tri≈ ¬a b ¬c = ordtrans (ω-opair (x<nextA {A} 
+          (d→∋ A ax)) lemma2 ) (omax-x _ _ ) where
                 lemma2 :  & (* y) o< next (HOD.odmax A)
-                lemma2 = ordtrans ( subst (λ k → & (* y) o< k ) (sym b) (c<→o< (d→∋ B ((proj2 (proj2 lt (pair x y))))))) ho<
-       lemma p lt | pair x y | tri> ¬a ¬b c = ordtrans (ω-opair  (x<nextA {A} (d→∋ A ((proj1 (proj2 lt (pair x y))))))
-           (A<Bnext c (subst (λ k → odef B k ) (sym &iso) (proj2 (proj2 lt (pair x y)))))) (omax-x _ _ ) 
+                lemma2 = ordtrans ( subst (λ k → & (* y) o< k ) (sym b) (c<→o< (d→∋ B by))) ho<
+       lemma p ( ab-pair {x} {y} ax by ) | tri> ¬a ¬b c = ordtrans (ω-opair  (x<nextA {A} (d→∋ A ax ))
+           (A<Bnext c (subst (λ k → odef B k ) (sym &iso) by))) (omax-x _ _ ) 
+
+ZFP→ : {A B a b : HOD} → A ∋ a → B ∋ b  → ZFP A B ∋ < a , b >
+ZFP→ {A} {B} {a} {b} aa bb = subst (λ k → ZFProduct A B k ) (cong₂ (λ j k → & < j , k >) *iso *iso ) ( ab-pair aa bb ) 
 
 ZFP⊆⊗ :  {A B : HOD} {x : Ordinal} → odef (ZFP A B) x → odef (A ⊗ B) x
-ZFP⊆⊗ {A} {B} {px} ⟪ (pair x y) ,  p2 ⟫ = product→ (d→∋ A (proj1 (p2 (pair x y) ))) (d→∋ B (proj2 (p2 (pair x y) )))
+ZFP⊆⊗ {A} {B} {px} ( ab-pair {a} {b} ax by ) = product→ (d→∋ A ax) (d→∋ B by)
 
--- axiom of choice required
--- ⊗⊆ZFP : {A B x : HOD} → ( A ⊗ B ) ∋ x → def ZFProduct (& x)
--- ⊗⊆ZFP {A} {B} {x} lt = subst (λ k → ord-pair (& k )) {!!} op-cons
+⊗⊆ZFPair : {A B x : HOD} → ( A ⊗ B ) ∋ x → def ZFPair (& x)
+⊗⊆ZFPair {A} {B} {x} record { owner = owner ; ao = record { z = a ; az = aa ; x=ψz = x=ψa } ; ox = ox } = zfp01 where
+       zfp02 : Replace A (λ z → < z , * a >) ≡ * owner
+       zfp02 = subst₂ ( λ j k → j ≡ k ) *iso refl (sym (cong (*) x=ψa ))
+       zfp01 : def ZFPair (& x)
+       zfp01 with subst (λ k → odef k (& x) ) (sym zfp02) ox
+       ... | record { z = b ; az = ab ; x=ψz = x=ψb } = subst (λ  k → def ZFPair  k) (cong (&) zfp00) (op-cons b a )  where
+           zfp00 : < * b , * a > ≡ x
+           zfp00 = sym ( subst₂ (λ j k → j ≡ k ) *iso *iso (cong (*) x=ψb) )
+
+⊗⊆ZFP : {A B x : HOD} → ( A ⊗ B ) ∋ x → odef (ZFP A B) (& x)
+⊗⊆ZFP {A} {B} {x} record { owner = owner ; ao = record { z = a ; az = ba ; x=ψz = x=ψa } ; ox = ox } = zfp01 where
+       zfp02 : Replace A (λ z → < z , * a >) ≡ * owner
+       zfp02 = subst₂ ( λ j k → j ≡ k ) *iso refl (sym (cong (*) x=ψa ))
+       zfp01 : odef (ZFP A B) (& x)
+       zfp01 with subst (λ k → odef k (& x) ) (sym zfp02) ox
+       ... | record { z = b ; az = ab ; x=ψz = x=ψb } = subst (λ k → ZFProduct A B k ) (sym x=ψb) (ab-pair ab ba) 
+
+
+
 

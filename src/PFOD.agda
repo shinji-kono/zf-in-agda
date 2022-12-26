@@ -107,10 +107,10 @@ Hω2→3 x = lemma where
 ω→2 : HOD
 ω→2 = Power infinite
 
-ω→2f : (x : HOD) → ω→2 ∋ x → Nat → Two
-ω→2f x lt n with ODC.∋-p O x (nat→ω n)
-ω→2f x lt n | yes p = i1
-ω→2f x lt n | no ¬p = i0
+ω2→f : (x : HOD) → ω→2 ∋ x → Nat → Two
+ω2→f x lt n with ODC.∋-p O x (nat→ω n)
+ω2→f x lt n | yes p = i1
+ω2→f x lt n | no ¬p = i0
 
 fω→2-sel : ( f : Nat → Two ) (x : HOD) → Set n
 fω→2-sel f x = (infinite ∋ x) ∧ ( (lt : odef infinite (&  x) ) → f (ω→nat x lt) ≡ i1 )
@@ -126,12 +126,45 @@ postulate f-extensionality : { n m : Level}  → Axiom.Extensionality.Propositio
 ω2∋f : (f : Nat → Two) → ω→2 ∋ fω→2 f
 ω2∋f f = power← infinite (fω→2 f) (λ {x} lt →  proj1 ((proj2 (selection {fω→2-sel f} {infinite} )) lt))
 
-ω→2f≡i1 : (X i : HOD) → (iω : infinite ∋ i) → (lt : ω→2 ∋ X ) → ω→2f X lt (ω→nat i iω)  ≡ i1 → X ∋ i
+ω→2f≡i1 : (X i : HOD) → (iω : infinite ∋ i) → (lt : ω→2 ∋ X ) → ω2→f X lt (ω→nat i iω)  ≡ i1 → X ∋ i
 ω→2f≡i1 X i iω lt eq with ODC.∋-p O X (nat→ω (ω→nat i iω))
 ω→2f≡i1 X i iω lt eq | yes p = subst (λ k → X ∋ k ) (nat→ω-iso iω) p
 
--- someday ...
--- postulate 
---    ω→2f-iso : (X : HOD) → ( lt : ω→2 ∋ X ) → fω→2 ( ω→2f X lt )  =h= X
---    fω→2-iso : (f : Nat → Two) → ω→2f ( fω→2 f ) (ω2∋f f) ≡ f
+ω2→f-iso : (X : HOD) → ( lt : ω→2 ∋ X ) → fω→2 ( ω2→f X lt )  =h= X
+eq→ (ω2→f-iso X lt) {x} ⟪ ωx , ⟪ ωx1 , iso ⟫ ⟫ = le00 where
+    le00 : odef X x
+    le00 = subst (λ k → odef X k) &iso ( ω→2f≡i1 _ _ ωx1 lt  (iso ωx1)  )
+eq← (ω2→f-iso X lt) {x} Xx = ⟪ subst (λ k → odef infinite k) &iso le02  , ⟪ le02 , le01 ⟫ ⟫ where
+    le02 : infinite ∋ * x
+    le02 = power→ infinite _ lt (subst (λ k → odef X k) (sym &iso) Xx) 
+    le01 : (wx : odef infinite (& (* x))) → ω2→f X lt (ω→nat (* x) wx) ≡ i1
+    le01 wx   with ODC.∋-p O X (nat→ω (ω→nat _ wx) )
+    ... | yes p  = refl
+    ... | no ¬p  = ⊥-elim ( ¬p (subst (λ k → odef X k ) le03 Xx )) where
+        le03 :  x ≡ & (nat→ω (ω→nato wx))
+        le03 = subst₂ (λ j k → j ≡ k ) &iso refl (cong (&) (sym ( nat→ω-iso wx ) ) )
+
+¬i0≡i1 : ¬ ( i0 ≡ i1 )
+¬i0≡i1 ()
+
+¬i0→i1 : {x : Two} → ¬ (x ≡ i0 ) → x ≡ i1 
+¬i0→i1 {i0} ne = ⊥-elim ( ne refl )
+¬i0→i1 {i1} ne = refl
+
+¬i1→i0 : {x : Two} → ¬ (x ≡ i1 ) → x ≡ i0 
+¬i1→i0 {i0} ne = refl
+¬i1→i0 {i1} ne = ⊥-elim ( ne refl )
+
+fω→2-iso : (f : Nat → Two) → ω2→f ( fω→2 f ) (ω2∋f f) ≡ f
+fω→2-iso f = f-extensionality (λ x → le01 x ) where
+    le01 : (x : Nat) → ω2→f (fω→2 f) (ω2∋f f) x ≡ f x
+    le01 x with  ODC.∋-p O (fω→2 f) (nat→ω x) 
+    le01 x | yes p = subst (λ k → i1 ≡ f k ) (ω→nat-iso0 x (proj1 (proj2 p)) (trans *iso *iso)) (sym ((proj2 (proj2 p)) le02)) where
+        le02 :  infinite-d (& (* (& (nat→ω x))))
+        le02 = proj1 (proj2 p )
+    le01 x | no ¬p = sym ( ¬i1→i0 le04 ) where
+        le04 : ¬ f x ≡ i1
+        le04 fx=1 = ¬p ⟪ ω∋nat→ω {x} , ⟪ subst (λ k → infinite-d k) (sym &iso) (ω∋nat→ω {x})  , le05 ⟫ ⟫ where
+            le05 : (lt : infinite-d (& (* (& (nat→ω x))))) → f (ω→nato lt) ≡ i1
+            le05 lt = trans (cong f (ω→nat-iso0 x lt (trans *iso *iso))) fx=1
 
