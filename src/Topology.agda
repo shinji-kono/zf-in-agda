@@ -30,7 +30,9 @@ open ODUtil O
 import ODC
 open ODC O
 
-open import filter
+open import filter O
+open import OPair O
+
 
 record Topology  ( L : HOD ) : Set (suc n) where
    field
@@ -38,8 +40,15 @@ record Topology  ( L : HOD ) : Set (suc n) where
        OS⊆PL :  OS ⊆ Power L 
        o∪ : { P : HOD }  →  P  ⊆ OS           → OS ∋ Union P
        o∩ : { p q : HOD } → OS ∋ p →  OS ∋ q  → OS ∋ (p ∩ q)
+-- closed Set
+   CS : HOD
+   CS = record { od = record { def = λ x → odef OS (& ( L ＼ (* x ))) } ; odmax = & L ; <odmax = tp02 } where
+       tp02 : {y : Ordinal } → odef OS (& (L ＼ * y)) → y o< & L
+       tp02 {y} nop = ?
+       -- ∈∅< ( proj1 nop )
 
 open Topology
+
 
 record _covers_ ( P q : HOD  ) : Set (suc n) where
    field
@@ -58,7 +67,7 @@ data genTop (P : HOD) : HOD → Set (suc n) where
 
 -- Limit point
 
-record LP ( L S x : HOD ) (top : Topology L) (S⊆PL :  S ⊆ Power L ) ( S∋x : S ∋ x ) : Set (suc n) where
+record LP { L : HOD}  (top : Topology L) ( S x : HOD ) (S⊆PL :  S ⊆ Power L ) ( S∋x : S ∋ x ) : Set (suc n) where
    field
       neip   : {y : HOD} → OS top ∋ y → y ∋ x → HOD
       isNeip : {y : HOD} → (o∋y : OS top ∋ y ) → (y∋x : y ∋ x ) → ¬ ( x ≡ neip o∋y y∋x) ∧ ( y ∋ neip o∋y y∋x )
@@ -66,44 +75,103 @@ record LP ( L S x : HOD ) (top : Topology L) (S⊆PL :  S ⊆ Power L ) ( S∋x 
 -- Finite Intersection Property
 
 data Finite-∩ (S : HOD) : HOD → Set (suc n) where
-   fin-∩e : {x : HOD} → S ∋ x → Finite-∩ S x
-   fin-∩  : {x y : HOD} → Finite-∩ S x → Finite-∩ S y → Finite-∩ S (x ∩ y)
+   fin-e : {x : HOD} → S ∋ x → Finite-∩ S x
+   fin-∩ : {x y : HOD} → Finite-∩ S x → Finite-∩ S y → Finite-∩ S (x ∩ y)
 
-record FIP  ( L P : HOD ) : Set (suc n) where
+record FIP {L : HOD} (top : Topology L) : Set (suc n) where
    field
-       fipS⊆PL :  P ⊆ Power L 
-       fip≠φ : { x : HOD } → Finite-∩ P x → ¬ ( x ≡ od∅ )
+       fipS⊆PL :  L ⊆ CS top
+       fip≠φ : { x : HOD } → Finite-∩ L x → ¬ ( x ≡ od∅ )
 
 -- Compact
 
 data Finite-∪ (S : HOD) : HOD → Set (suc n) where
-   fin-∪e : {x : HOD} → S ∋ x → Finite-∪ S x
+   fin-e : {x : HOD} → S ∋ x → Finite-∪ S x
    fin-∪  : {x y : HOD} → Finite-∪ S x → Finite-∪ S y → Finite-∪ S (x ∪ y)
 
-record Compact  ( L P : HOD ) : Set (suc n) where
+record Compact  {L : HOD} (top : Topology L)  : Set (suc n) where
    field
-       finCover        : {X y : HOD} → X covers P         → P ∋ y →  HOD
-       isFinCover      : {X y : HOD} → (xp : X covers P ) → (P∋y : P ∋ y ) → finCover xp P∋y ∋ y
-       isFininiteCover : {X y : HOD} → (xp : X covers P ) → (P∋y : P ∋ y ) → Finite-∪ X (finCover xp P∋y )
+       finCover  : {X : HOD} → X ⊆ OS top → X covers L → HOD
+       isCover   : {X : HOD} → (xo : X ⊆ OS top) → (xcp : X covers L ) → (finCover xo xcp ) covers L
+       isFinite  : {X : HOD} → (xo : X ⊆ OS top) → (xcp : X covers L ) → Finite-∪ X (finCover xo xcp  )
 
 -- FIP is Compact
 
-FIP→Compact : {L P : HOD} → Topology L → FIP L P → Compact L P
-FIP→Compact = {!!}
+FIP→Compact : {L : HOD} → (top : Topology L ) → FIP top  → Compact top 
+FIP→Compact {L} TL fip = record { finCover = ? ; isCover = ? ; isFinite = ? }
 
-Compact→FIP : {L P : HOD} → Topology L → Compact L P → FIP L P
+Compact→FIP : {L : HOD} → (top : Topology L ) → Compact top  → FIP top 
 Compact→FIP = {!!}
 
 -- Product Topology
 
-_Top⊗_ : {P Q : HOD} → Topology P → Topology Q → Topology {!!}
-_Top⊗_ = {!!}
+open ZFProduct 
+
+record BaseP {P : HOD} (TP : Topology P ) (Q : HOD) (x : Ordinal) : Set n where
+   field
+       p : Ordinal
+       q : Ordinal
+       op : odef (OS TP) p
+       qq : odef Q q
+       prod : x ≡ & < * p , * q >
+
+record BaseQ (P : HOD) {Q : HOD} (TQ : Topology Q ) (x : Ordinal) : Set n where
+   field
+       p : Ordinal
+       q : Ordinal
+       oq : odef (OS TQ) q
+       pp : odef P p
+       prod : x ≡ & < * p , * q >
+
+_Top⊗_ : {P Q : HOD} → Topology P → Topology Q → Topology (ZFP P Q)
+_Top⊗_ {P} {Q} TP TQ = record {
+       OS    = POS
+    ;  OS⊆PL = ?
+    ;  o∪ = ?
+    ;  o∩ = ?
+  } where
+        box : HOD
+        box = ZFP (OS TP) (OS TQ) 
+        --  B : (OS P ∋ x →  proj⁻¹ x ) ∨ (OS Q ∋ y  →  proj⁻¹ y )
+        --  U ⊂ ZFP P Q  ∧ ( U ∋ ∀ x → B ∋ ∃ b → b ∋ x ∧  b ⊂ U )
+        base : HOD
+        base = record { od = record { def = λ x → BaseP TP Q x ∨ BaseQ P TQ x } ; odmax = & (ZFP P Q) ; <odmax = ? }
+        POS : HOD
+        POS = record { od = record { def = λ x → {b : Ordinal } → odef (Power base) b ∧ odef (Union (* b)) x } 
+            ; odmax = & (ZFP P Q) ; <odmax = ? }
 
 -- existence of Ultra Filter 
 
+open Filter 
+
 -- Ultra Filter has limit point
+
+record UFLP {P : HOD} (TP : Topology P) {L : HOD} (LP : L ⊆ Power P ) (F : Filter LP )  (uf : ultra-filter {L} {P} {LP} F) : Set (suc (suc n)) where
+   field
+       limit : Ordinal
+       P∋limit : odef P limit
+       is-limit : {o : Ordinal} → odef (OS TP) o → odef (* o) limit → (* o) ⊆ filter F
 
 -- FIP is UFL
 
+FIP→UFLP : {P : HOD} (TP : Topology P) →  FIP TP 
+   →  {L : HOD} (LP : L ⊆ Power P ) (F : Filter LP )  (uf : ultra-filter {L} {P} {LP} F) → UFLP TP LP F uf 
+FIP→UFLP {P} TP fip {L} LP F uf = record { limit = ? ; P∋limit = ? ; is-limit = ? }
+
+UFLP→FIP : {P : HOD} (TP : Topology P) → 
+   ( {L : HOD} (LP : L ⊆ Power P ) (F : Filter LP )  (uf : ultra-filter {L} {P} {LP} F) → UFLP TP LP F uf ) → FIP TP 
+UFLP→FIP {P} TP uflp = record { fipS⊆PL = ? ; fip≠φ = ? }
+
 -- Product of UFL has limit point (Tychonoff)
+
+Tychonoff : {P Q : HOD } → (TP : Topology P) → (TQ : Topology Q)  → Compact TP → Compact TQ   → Compact (TP Top⊗ TQ)
+Tychonoff {P} {Q} TP TQ CP CQ = FIP→Compact (TP Top⊗ TQ) (UFLP→FIP (TP Top⊗ TQ) uflp ) where
+    uflp : {L : HOD} (LP : L ⊆ Power (ZFP P Q)) (F : Filter LP)
+            (uf : ultra-filter {L} {_} {LP} F) → UFLP (TP Top⊗ TQ) LP F uf
+    uflp {L} LP F uf = record { limit = ? ; P∋limit = ? ; is-limit = ? }
+
+
+
+
+
 

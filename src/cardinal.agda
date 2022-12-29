@@ -46,12 +46,12 @@ open HOD
 -- A ⊗ B  = Union ( Replace B (λ b → Replace A (λ a → < a , b > ) ))
 
 Func :  OD
-Func = record { def = λ x → def ZFProduct x
+Func = record { def = λ x → def ZFPair x
     ∧ ( (a b c : Ordinal) → odef (* x) (& < * a , * b >) ∧ odef (* x) (& < * a , * c >) →  b ≡  c ) }
 
 FuncP :  ( A B : HOD ) → HOD
 FuncP A B = record { od = record { def = λ x → odef (ZFP A B) x
-    ∧ ( (x : Ordinal ) (p q : odef (ZFP A B ) x ) → pi1 (proj1 p) ≡ pi1 (proj1 q) → pi2 (proj1 p) ≡ pi2 (proj1 q) ) }
+    ∧ ( (x : Ordinal ) (p q : odef (ZFP A B ) x ) → pi1 ? ≡ pi1 ? → pi2 ? ≡ pi2 ? ) }
        ; odmax = odmax (ZFP A B) ; <odmax = λ lt → <odmax (ZFP A B) (proj1 lt) }
 
 record Injection (A B : Ordinal ) : Set n where

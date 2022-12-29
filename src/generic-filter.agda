@@ -236,7 +236,9 @@ lemma232 : (P L p : HOD ) (C : CountableModel )
     →  (LP : L ⊆ Power P ) →  (Lp0 : L ∋ p  )
     →  ( {q : HOD} → (Lq : L ∋ q ) → NonAtomic L q Lq )
     →  ¬ ( (ctl-M C) ∋ filter ( genf ( P-GenericFilter P L p LP Lp0  C )) )
-lemma232 P L p C LP Lp0 NA MG = {!!}
+lemma232 P L p C LP Lp0 NA MG = {!!} where
+    D : HOD  -- P - G
+    D = ?
 
 --
 --   val x G = { val y G | ∃ p → G ∋ p → x ∋ < y , p > }

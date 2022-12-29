@@ -1109,6 +1109,7 @@ Zorn-lemma {A}  0<A supP = zorn00 where
      ... | tri< a ¬b ¬c = ⊥-elim ( ¬x<0 a )
      ... | tri≈ ¬a x=0 ¬c = record { supf = λ _ → MinSUP.sup (ysup f mf ay) ; asupf = MinSUP.as (ysup f mf ay) ; supf-mono = λ _ → o≤-refl 
           ; zo≤sz = zo≤sz ; is-minsup = is-minsup ; cfcs = λ a<b b≤0 → ⊥-elim ( ¬x<0 (subst (λ k → _ o< k ) x=0 (ordtrans<-≤ a<b b≤0)))    } where
+          -- initial case
 
           mf : ≤-monotonic-f A f
           mf x ax = ⟪ case2 mf00 , proj2 (mf< x ax ) ⟫ where
