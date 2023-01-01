@@ -296,6 +296,15 @@ infixr  220 _⊆_
      ε-induction-ord : (ox : Ordinal) { oy : Ordinal } → oy o< ox → ψ (* oy)
      ε-induction-ord ox {oy} lt = TransFinite {λ oy → ψ (* oy)} induction oy
 
+ε-induction0 : { ψ : HOD  → Set n}
+   → ( {x : HOD } → ({ y : HOD } →  x ∋ y → ψ y ) → ψ x )
+   → (x : HOD ) → ψ x
+ε-induction0 {ψ} ind x = subst (λ k → ψ k ) *iso (ε-induction-ord (osuc (& x)) <-osuc )  where
+     induction : (ox : Ordinal) → ((oy : Ordinal) → oy o< ox → ψ (* oy)) → ψ (* ox)
+     induction ox prev = ind  ( λ {y} lt → subst (λ k → ψ k ) *iso (prev (& y) (o<-subst (c<→o< lt) refl &iso )))
+     ε-induction-ord : (ox : Ordinal) { oy : Ordinal } → oy o< ox → ψ (* oy)
+     ε-induction-ord ox {oy} lt = inOrdinal.TransFinite0 O {λ oy → ψ (* oy)} induction oy
+
 -- Open supreme upper bound leads a contradition, so we use domain restriction on sup
 ¬open-sup : ( sup-o : (Ordinal →  Ordinal ) → Ordinal) → ((ψ : Ordinal →  Ordinal ) → (x : Ordinal) → ψ x  o<  sup-o ψ ) → ⊥
 ¬open-sup sup-o sup-o< = o<> <-osuc (sup-o< next-ord (sup-o next-ord)) where

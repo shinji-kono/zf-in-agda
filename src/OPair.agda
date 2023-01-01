@@ -194,7 +194,7 @@ data ZFProduct  (A B : HOD) : (p : Ordinal) → Set n where
 
 ZFP  : (A B : HOD) → HOD
 ZFP  A B = record { od = record { def = λ x → ZFProduct A B x  } 
-        ; odmax = omax (next (odmax A)) (next (odmax B)) ; <odmax = λ {y} px → lemma y px } 
+        ; odmax = omax (next (odmax A)) (next (odmax B)) ; <odmax = λ {y} px → lemma y px }  -- this is too large
    where
        lemma : (y : Ordinal) → ZFProduct A B y → y o< omax (next (odmax A)) (next (odmax B))
        lemma p ( ab-pair {x} {y} ax by ) with trio< (& A) (& B) 
@@ -211,6 +211,21 @@ ZFP  A B = record { od = record { def = λ x → ZFProduct A B x  }
 
 ZFP→ : {A B a b : HOD} → A ∋ a → B ∋ b  → ZFP A B ∋ < a , b >
 ZFP→ {A} {B} {a} {b} aa bb = subst (λ k → ZFProduct A B k ) (cong₂ (λ j k → & < j , k >) *iso *iso ) ( ab-pair aa bb ) 
+
+zπ1 : {A B : HOD} → {x : Ordinal } → odef (ZFP A B) x → Ordinal
+zπ1 {A} {B} {.(& < * _ , * _ >)} (ab-pair {a} {b} aa bb) = a
+
+zp1 : {A B : HOD} → {x : Ordinal } → (zx : odef (ZFP A B) x) → odef A (zπ1 zx)
+zp1 {A} {B} {.(& < * _ , * _ >)} (ab-pair {a} {b} aa bb ) = aa
+
+zπ2 : {A B : HOD} → {x : Ordinal } → odef (ZFP A B) x → Ordinal
+zπ2 (ab-pair {a} {b} aa bb) = b
+
+zp2 : {A B : HOD} → {x : Ordinal } → (zx : odef (ZFP A B) x) → odef B (zπ2 zx)
+zp2 {A} {B} {.(& < * _ , * _ >)} (ab-pair {a} {b} aa bb ) = bb
+
+zp-iso :  { A B : HOD } → {x : Ordinal } → (p : odef (ZFP A B) x ) → & < * (zπ1 p) , * (zπ2 p) > ≡ x
+zp-iso {A} {B} {_} (ab-pair {a} {b} aa bb)  = refl
 
 ZFP⊆⊗ :  {A B : HOD} {x : Ordinal} → odef (ZFP A B) x → odef (A ⊗ B) x
 ZFP⊆⊗ {A} {B} {px} ( ab-pair {a} {b} ax by ) = product→ (d→∋ A ax) (d→∋ B by)
@@ -232,6 +247,18 @@ ZFP⊆⊗ {A} {B} {px} ( ab-pair {a} {b} ax by ) = product→ (d→∋ A ax) (d�
        zfp01 : odef (ZFP A B) (& x)
        zfp01 with subst (λ k → odef k (& x) ) (sym zfp02) ox
        ... | record { z = b ; az = ab ; x=ψz = x=ψb } = subst (λ k → ZFProduct A B k ) (sym x=ψb) (ab-pair ab ba) 
+
+ZFPproj1 : {A B X : HOD} → X ⊆ ZFP A B  → HOD
+ZFPproj1 {A} {B} {X} X⊆P = Replace' X ( λ x px → * (zπ1 (X⊆P px) )) 
+
+ZFPproj2 : {A B X : HOD} → X ⊆ ZFP A B  → HOD
+ZFPproj2 {A} {B} {X} X⊆P = Replace' X ( λ x px → * (zπ2 (X⊆P px) )) 
+
+
+
+
+
+
 
 
 
