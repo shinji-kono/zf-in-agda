@@ -20,7 +20,7 @@ open import logic
 
 open import Relation.Nullary
 open import Data.Empty
-import BAlgbra
+import BAlgebra
 
 open import Data.Nat hiding ( _<_ ; _≤_ )
 open import Data.Nat.Properties

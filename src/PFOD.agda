@@ -15,9 +15,9 @@ open import Relation.Binary
 open import Relation.Binary.Core
 open import Relation.Binary.PropositionalEquality
 open import Data.Nat renaming ( zero to Zero ; suc to Suc ;  ℕ to Nat ; _⊔_ to _n⊔_ ) 
-import BAlgbra 
+import BAlgebra 
 
-open BAlgbra O
+open BAlgebra O
 
 open inOrdinal O
 open OD O

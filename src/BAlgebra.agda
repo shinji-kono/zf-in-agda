@@ -1,6 +1,6 @@
 open import Level
 open import Ordinals
-module BAlgbra {n : Level } (O : Ordinals {n})   where
+module BAlgebra {n : Level } (O : Ordinals {n})   where
 
 open import zf
 open import logic
@@ -52,6 +52,13 @@ A ＼ B = record { od = record { def = λ x → odef A x ∧ ( ¬ ( odef B x ) )
 
 ¬∅∋ : {x : HOD} → ¬ ( od∅ ∋ x )
 ¬∅∋ {x} = ¬x<0
+
+L＼L=0 : { L  : HOD  } → L ＼ L ≡ od∅ 
+L＼L=0 {L} = ==→o≡ ( record { eq→ = lem0 ; eq← =  lem1 } ) where
+    lem0 : {x : Ordinal} → odef (L ＼ L) x → odef od∅ x
+    lem0 {x} ⟪ lx , ¬lx ⟫ = ⊥-elim (¬lx lx)
+    lem1 : {x : Ordinal} → odef  od∅ x → odef (L ＼ L) x
+    lem1 {x} lt = ⊥-elim ( ¬∅∋ (subst (λ k → odef od∅ k) (sym &iso) lt ))
 
 [a-b]∩b=0 : { A B : HOD } → (A ＼ B) ∩ B ≡ od∅
 [a-b]∩b=0 {A} {B} = ==→o≡ record { eq← = λ lt → ⊥-elim ( ¬∅∋ (subst (λ k → odef od∅ k) (sym &iso) lt ))

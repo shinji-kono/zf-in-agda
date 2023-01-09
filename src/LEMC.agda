@@ -2,7 +2,7 @@ open import Level
 open import Ordinals
 open import logic
 open import Relation.Nullary
-module LEMC {n : Level } (O : Ordinals {n} ) (p∨¬p : ( p : Set n) → p ∨ ( ¬ p )) where
+module LEMC {n : Level } (O : Ordinals {n} )  where
 
 open import zf
 open import Data.Nat renaming ( zero to Zero ; suc to Suc ;  ℕ to Nat ; _⊔_ to _n⊔_ ) 
@@ -32,6 +32,9 @@ open import zfc
 
 open HOD
 
+postulate 
+   p∨¬p : ( p : Set n) → p ∨ ( ¬ p ) 
+
 decp : ( p : Set n ) → Dec p   -- assuming axiom of choice    
 decp  p with p∨¬p p
 decp  p | case1 x = yes x
@@ -42,10 +45,15 @@ decp  p | case2 x = no x
 ∋-p A x | case1 t  = yes t
 ∋-p A x | case2 t  = no (λ x → t x)
 
-double-neg-eilm : {A : Set n} → ¬ ¬ A → A      -- we don't have this in intutionistic logic
-double-neg-eilm  {A} notnot with decp  A                         -- assuming axiom of choice
+double-neg-elim : {A : Set n} → ¬ ¬ A → A      -- we don't have this in intutionistic logic
+double-neg-elim  {A} notnot with decp  A                         -- assuming axiom of choice
 ... | yes p = p
 ... | no ¬p = ⊥-elim ( notnot ¬p )
+
+-- by-contradiction : {A : Set n} {B : A → Set n}  → ¬ ( (a : A ) → ¬ B a ) → A    
+-- by-contradiction {A} {B} not with p∨¬p A         
+-- ... | case2 ¬a  = ⊥-elim (not (λ a → ⊥-elim (¬a a  )))          
+-- ... | case1 a = a            
 
 power→⊆ :  ( A t : HOD) → Power A ∋ t → t ⊆ A
 power→⊆ A t  PA∋t t∋x = subst (λ k → odef A k ) &iso ( t1 (subst (λ k → odef t k ) (sym &iso) t∋x))  where
