@@ -71,6 +71,9 @@ pair-ord< {x} ho< = subst (λ k → & (x , x) o< k ) lemmab0 lemmab1  where
 trans-⊆ :  { A B C : HOD} → A ⊆ B → B ⊆ C → A ⊆ C
 trans-⊆ A⊆B B⊆C ab = B⊆C (A⊆B ab)
 
+trans-⊂ :  { A B C : HOD} → A ⊂ B → B ⊂ C → A ⊂ C
+trans-⊂ ⟪ A<B , A⊆B ⟫ ⟪ B<C , B⊆C ⟫ = ⟪ ordtrans A<B B<C , (λ ab → B⊆C (A⊆B ab)) ⟫
+
 refl-⊆ : {A : HOD} → A ⊆ A
 refl-⊆ x = x
 

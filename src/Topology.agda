@@ -59,13 +59,13 @@ record Topology  ( L : HOD ) : Set (suc n) where
 open Topology
 
 Cl : {L : HOD} → (top : Topology L) → (A : HOD) → A ⊆ L → HOD
-Cl {L} top A A⊆L = record { od = record { def = λ x → (c : Ordinal) → odef (CS top) c → A ⊆ * c → odef (* c) x  } 
-  ; odmax = & L ; <odmax = {!!} }
+Cl {L} top A A⊆L = record { od = record { def = λ x → odef L x ∧ ( (c : Ordinal) → odef (CS top) c → A ⊆ * c → odef (* c) x ) } 
+  ; odmax = & L ; <odmax = odef∧< } 
 
 ClL : {L : HOD} → (top : Topology L) → {f : L ⊆ L } → Cl top L f ≡ L
 ClL {L} top {f} =  ==→o≡ ( record { eq→ = λ {x} ic 
-        → subst (λ k → odef k x) *iso (ic (& L) (CS∋L top) (subst (λ k → L ⊆ k) (sym *iso) ( λ x → x)))
-    ; eq← =  λ {x} lx c cs l⊆c → l⊆c lx } )
+        → subst (λ k → odef k x) *iso ((proj2 ic) (& L) (CS∋L top) (subst (λ k → L ⊆ k) (sym *iso) ( λ x → x)))
+    ; eq← =  λ {x} lx → ⟪ lx , ( λ c cs l⊆c → l⊆c lx) ⟫ } )
 
 -- Subbase P
 --   A set of countable intersection of P will be a base (x ix an element of the base)
@@ -159,6 +159,47 @@ GeneratedTopogy L P isb = record { OS = SO L P ; OS⊆PL = tp00
         tp06 : * b ⊆ Union q
         tp06 {z} bz = record { owner = y ; ao = qy ; ox = b⊆u bz  } 
 
+-- Product Topology
+
+open ZFProduct
+
+-- Product Topology is not 
+--     ZFP (OS TP) (OS TQ) (box)
+
+record BaseP {P : HOD} (TP : Topology P ) (Q : HOD) (x : Ordinal) : Set n where
+   field
+       p q : Ordinal
+       op : odef (OS TP) p
+       prod : x ≡ & (ZFP (* p) Q )
+
+record BaseQ (P : HOD) {Q : HOD} (TQ : Topology Q ) (x : Ordinal) : Set n where
+   field
+       p q  : Ordinal
+       oq : odef (OS TQ) q
+       prod : x ≡ & (ZFP P (* q ))
+
+pbase⊆PL : {P Q : HOD} → (TP : Topology P) → (TQ : Topology Q) → {x : Ordinal } → BaseP TP Q x ∨ BaseQ P TQ x → odef (Power (ZFP P Q)) x
+pbase⊆PL {P} {Q} TP TQ {z} (case1 record { p = p ; q = q ; op = op ; prod = prod }) = subst (λ k → odef (Power (ZFP P Q)) k ) (sym prod) tp01  where
+    tp01 : odef (Power (ZFP P Q)) (& (ZFP (* p) Q))
+    tp01 w wz with subst (λ k → odef k w ) *iso wz
+    ... | ab-pair {a} {b} pa qb = ZFP→ (subst (λ k → odef P k ) (sym &iso) tp03 ) (subst (λ k → odef Q k ) (sym &iso) qb ) where
+        tp03 : odef P a
+        tp03 =  os⊆L TP (subst (λ k → odef (OS TP) k) (sym &iso) op) pa
+pbase⊆PL {P} {Q} TP TQ {z} (case2 record { p = p ; q = q ; oq = oq ; prod = prod }) = subst (λ k → odef (Power (ZFP P Q)) k ) (sym prod) tp01  where
+    tp01 : odef (Power (ZFP P Q)) (& (ZFP P (* q) ))
+    tp01 w wz with subst (λ k → odef k w ) *iso wz
+    ... | ab-pair {a} {b} pa qb = ZFP→ (subst (λ k → odef P k ) (sym &iso) pa ) (subst (λ k → odef Q k ) (sym &iso) tp03 )  where
+        tp03 : odef Q b
+        tp03 =  os⊆L TQ (subst (λ k → odef (OS TQ) k) (sym &iso) oq) qb
+
+pbase : {P Q : HOD} → Topology P → Topology Q → HOD
+pbase {P} {Q} TP TQ = record { od = record { def = λ x → BaseP TP Q x ∨ BaseQ P TQ x } ; odmax = & (Power (ZFP P Q)) ; <odmax = tp00 } where
+    tp00 : {y : Ordinal} → BaseP TP Q y ∨ BaseQ P TQ y → y o< & (Power (ZFP P Q))
+    tp00 {y} bpq = odef< ( pbase⊆PL TP TQ bpq ) 
+
+ProductTopology : {P Q : HOD} → Topology P → Topology Q → Topology (ZFP P Q)
+ProductTopology {P} {Q} TP TQ =  GeneratedTopogy (ZFP P Q) (pbase TP TQ) record { P⊆PL = pbase⊆PL TP TQ }
+
 -- covers
 
 record _covers_ ( P q : HOD  ) : Set n where
@@ -228,7 +269,7 @@ FIP→Compact {L} top fip = record { finCover = finCover ; isCover = isCover1 ; 
    -- this defines finite cover
    finCover :  {X : Ordinal} → * X ⊆ OS top → * X covers L → Ordinal
    finCover {X} ox oc = & ( Replace' (* (cex ox oc)) (λ z xz → L ＼  z ))
-   -- create Finite-∪ from cex
+       -- create Finite-∪ from cex
    isFinite : {X : Ordinal} (xo : * X ⊆ OS top) (xcp : * X covers L) → Finite-∪ (* X) (finCover xo xcp)
    isFinite = {!!}
    -- is also a cover
@@ -239,55 +280,14 @@ FIP→Compact {L} top fip = record { finCover = finCover ; isCover = isCover1 ; 
 Compact→FIP : {L : HOD} → (top : Topology L ) → Compact top  → FIP top
 Compact→FIP = {!!}
 
--- Product Topology
-
-open ZFProduct
-
--- Product Topology is not 
---     ZFP (OS TP) (OS TQ) (box)
-
-record BaseP {P : HOD} (TP : Topology P ) (Q : HOD) (x : Ordinal) : Set n where
-   field
-       p q : Ordinal
-       op : odef (OS TP) p
-       prod : x ≡ & (ZFP (* p) Q )
-
-record BaseQ (P : HOD) {Q : HOD} (TQ : Topology Q ) (x : Ordinal) : Set n where
-   field
-       p q  : Ordinal
-       oq : odef (OS TQ) q
-       prod : x ≡ & (ZFP P (* q ))
-
-pbase⊆PL : {P Q : HOD} → (TP : Topology P) → (TQ : Topology Q) → {x : Ordinal } → BaseP TP Q x ∨ BaseQ P TQ x → odef (Power (ZFP P Q)) x
-pbase⊆PL {P} {Q} TP TQ {z} (case1 record { p = p ; q = q ; op = op ; prod = prod }) = subst (λ k → odef (Power (ZFP P Q)) k ) (sym prod) tp01  where
-    tp01 : odef (Power (ZFP P Q)) (& (ZFP (* p) Q))
-    tp01 w wz with subst (λ k → odef k w ) *iso wz
-    ... | ab-pair {a} {b} pa qb = ZFP→ (subst (λ k → odef P k ) (sym &iso) tp03 ) (subst (λ k → odef Q k ) (sym &iso) qb ) where
-        tp03 : odef P a
-        tp03 =  os⊆L TP (subst (λ k → odef (OS TP) k) (sym &iso) op) pa
-pbase⊆PL {P} {Q} TP TQ {z} (case2 record { p = p ; q = q ; oq = oq ; prod = prod }) = subst (λ k → odef (Power (ZFP P Q)) k ) (sym prod) tp01  where
-    tp01 : odef (Power (ZFP P Q)) (& (ZFP P (* q) ))
-    tp01 w wz with subst (λ k → odef k w ) *iso wz
-    ... | ab-pair {a} {b} pa qb = ZFP→ (subst (λ k → odef P k ) (sym &iso) pa ) (subst (λ k → odef Q k ) (sym &iso) tp03 )  where
-        tp03 : odef Q b
-        tp03 =  os⊆L TQ (subst (λ k → odef (OS TQ) k) (sym &iso) oq) qb
-
-pbase : {P Q : HOD} → Topology P → Topology Q → HOD
-pbase {P} {Q} TP TQ = record { od = record { def = λ x → BaseP TP Q x ∨ BaseQ P TQ x } ; odmax = & (Power (ZFP P Q)) ; <odmax = tp00 } where
-    tp00 : {y : Ordinal} → BaseP TP Q y ∨ BaseQ P TQ y → y o< & (Power (ZFP P Q))
-    tp00 {y} bpq = odef< ( pbase⊆PL TP TQ bpq ) 
-
-_Top⊗_ : {P Q : HOD} → Topology P → Topology Q → Topology (ZFP P Q)
-_Top⊗_ {P} {Q} TP TQ =  GeneratedTopogy (ZFP P Q) (pbase TP TQ) record { P⊆PL = pbase⊆PL TP TQ }
-
 -- existence of Ultra Filter
 
 open Filter
 
 -- Ultra Filter has limit point
 
-record UFLP {P : HOD} (TP : Topology P) {L : HOD} (LP : L ⊆ Power P ) (F : Filter LP )  
-      (FL : filter F ∋ P) : Set (suc (suc n)) where
+record UFLP {P : HOD} (TP : Topology P) {L : HOD} (LP : L ⊆ Power P ) (F : Filter {L} {P} LP )  
+       (FL : filter F ∋ P) (ultra : ultra-filter F ) : Set (suc (suc n)) where
    field
        limit : Ordinal
        P∋limit : odef P limit
@@ -295,67 +295,27 @@ record UFLP {P : HOD} (TP : Topology P) {L : HOD} (LP : L ⊆ Power P ) (F : Fil
 
 -- FIP is UFL
 
+UFLP→FIP : {P : HOD} (TP : Topology P) → {L : HOD} (LP : L ⊆ Power P ) → 
+   ( (F : Filter {L} {P} LP ) (FP : filter F ∋ P) (UF : ultra-filter F ) → UFLP TP LP F FP UF ) → FIP TP
+UFLP→FIP {P} TP {L} LP uflp = record { limit = uf00 ; is-limit = {!!} } where
+     fip : {X : Ordinal} → * X ⊆ CS TP → * X ∋ P → Set n
+     fip {X} CSX XP = {C x : Ordinal} → * C ⊆ * X → Subbase (* C) x → o∅ o< x
+     F : {X : Ordinal} → (CSX : * X ⊆ CS TP) → (XP : * X ∋ P ) → fip {X} CSX XP → Filter {L} {P} LP
+     F = ?
+     uf00 : {X : Ordinal} → (CSX : * X ⊆ CS TP) → (XP : * X ∋ P ) → fip {X} CSX XP → Ordinal
+     uf00 = ?
+
 FIP→UFLP : {P : HOD} (TP : Topology P) →  FIP TP
-   →  {L : HOD} (LP : L ⊆ Power P ) (F : Filter LP ) (FP : filter F ∋ P)  → UFLP TP LP F FP 
-FIP→UFLP {P} TP fip {L} LP F FP = record { limit = FIP.limit fip fip00 CFP fip01  ; P∋limit = FIP.L∋limit fip fip00 CFP fip01 ; is-limit = fip02 }
-    where
-      uf : ultra-filter {L} {P} {LP} F
-      uf = {!!}
-      fip03 : {z : HOD} → filter F ∋ z → z ⊆ P
-      fip03 {z} fz {x} zx = LP ( f⊆L F fz ) x (subst (λ k → odef k x) (sym *iso) zx  )
-      CF : Ordinal
-      CF = & ( Replace' (filter F) (λ z fz → Cl TP z (fip03 fz)) ) where
-      CFP : * CF ∋ P  -- filter F ∋ P and Cl P ≡ P
-      CFP = subst₂ (λ j k → odef j k) (sym *iso) refl record { z = & P ; az = FP ; x=ψz =  cong (&) fip04 }  where
-           fip04 : P ≡ (Cl TP (* (& P)) (fip03 (subst (odef (filter F)) (sym &iso) FP)))
-           fip04 =  ==→o≡ ( record { eq→ = {!!} ;  eq← =  {!!}  } )
-      fip00 : * CF ⊆ CS TP -- replaced
-      fip00 = {!!}
-      fip01 : {C x : Ordinal} → * C ⊆ * CF → Subbase (* C) x → o∅ o< x
-      fip01 {C} {x} CCF (gi Cx) = {!!} -- filter is proper .i.e it contains no od∅
-      fip01 {C} {.(& (* _ ∩ * _))} CCF (g∩ sb sb₁) = {!!}
-      fip02 : {o : Ordinal} → odef (OS TP) o → odef (* o) (FIP.limit fip fip00 CFP fip01) → * o ⊆ filter F
-      fip02 {p} oo ol {x} ox = fip06 where
-         fip04 : odef {!!} (FIP.limit fip fip00 CFP fip01) 
-         fip04 = FIP.is-limit fip fip00 CFP fip01 {!!}
-         fip05 : ( filter F ∋ (* x) ) ∨ (  filter F ∋ ( P ＼ (* x))  )
-         fip05  = ultra-filter.ultra uf {!!} {!!} 
-         fip06 : odef (filter F) x
-         fip06 with fip05
-         ... | case1 lt = subst (λ k → odef (filter F) k ) &iso lt
-         ... | case2 nlt = {!!}
-
-
-UFLP→FIP : {P : HOD} (TP : Topology P) →
-   ( {L : HOD} (LP : L ⊆ Power P ) (F : Filter LP ) (FP : filter F ∋ P) → UFLP TP LP F FP ) → FIP TP
-UFLP→FIP {P} TP uflp = record { limit = {!!} ; is-limit = {!!} }
+   →  {L : HOD} (LP : L ⊆ Power P ) (F : Filter LP ) (FP : filter F ∋ P) (UF : ultra-filter F ) → UFLP {P} TP {L} LP F FP UF
+FIP→UFLP {P} TP fip {L} LP F FP UF = ?
 
 -- product topology of compact topology is compact
 
-Tychonoff : {P Q : HOD } → (TP : Topology P) → (TQ : Topology Q)  → Compact TP → Compact TQ   → Compact (TP Top⊗ TQ)
-Tychonoff {P} {Q} TP TQ CP CQ = FIP→Compact (TP Top⊗ TQ) (UFLP→FIP (TP Top⊗ TQ) uflp ) where
+Tychonoff : {P Q : HOD } → (TP : Topology P) → (TQ : Topology Q)  → Compact TP → Compact TQ   → Compact (ProductTopology TP TQ)
+Tychonoff {P} {Q} TP TQ CP CQ = FIP→Compact (ProductTopology TP TQ) (UFLP→FIP (ProductTopology TP TQ) LPQ uflp ) where 
+    L = pbase TP TQ
+    LPQ = pbase⊆PL TP TQ
     -- Product of UFL has limit point 
-    uflp : {L : HOD} (LPQ : L ⊆ Power (ZFP P Q)) (F : Filter LPQ) (LF : filter F ∋ ZFP P Q)
-             → UFLP (TP Top⊗ TQ) LPQ F {!!} 
-    uflp {L} LPQ F LF = record { limit = & < * ( UFLP.limit uflpp) , {!!} >  ; P∋limit = {!!} ; is-limit = {!!} } where
-         LP : (L : HOD ) (LPQ : L ⊆ Power (ZFP P Q)) → HOD
-         LP L LPQ = Replace' L ( λ x lx → Replace' x ( λ z xz → * ( zπ1 (LPQ lx (& z) (subst (λ k → odef k (& z)) (sym *iso) xz )))) )
-         LPP : (L : HOD) (LPQ : L ⊆ Power (ZFP P Q)) → LP L LPQ ⊆ Power P
-         LPP L LPQ record { z = z ; az = az ; x=ψz = x=ψz } w xw = tp02 (subst (λ k → odef k w)
-           (subst₂ (λ j k → j ≡ k) refl *iso (cong (*) x=ψz) )  xw) where
-             tp02 : Replace' (* z) (λ z₁ xz → * (zπ1 (LPQ (subst (odef L) (sym &iso) az) (& z₁) (subst (λ k → odef k (& z₁)) (sym *iso) xz)))) ⊆ P
-             tp02 record { z = z1 ; az = az1 ; x=ψz = x=ψz1 } = subst (λ k → odef P k ) (trans (sym &iso) (sym x=ψz1)  )
-                  (zp1 (LPQ (subst (λ k → odef L k) (sym &iso) az) _ (tp03 az1 ))) where
-                    tp03 : odef (* z) z1 →  odef (* (& (* z))) (& (* z1))
-                    tp03 lt = subst (λ k → odef k (& (* z1))) (sym *iso) (subst (odef (* z)) (sym &iso) lt)
-         FP : Filter (LPP L LPQ)
-         FP = record { filter = LP (filter F) (λ x → LPQ (f⊆L F x )) ; f⊆L = tp04 ; filter1 = {!!} ; filter2 = {!!} } where
-             tp04 : LP (filter F) (λ x → LPQ (f⊆L F x )) ⊆ LP L LPQ
-             tp04 record { z = z ; az = az ; x=ψz = x=ψz } = record { z = z ; az = f⊆L F az ; x=ψz = {!!} }
-         uflpp : UFLP {P} TP {LP L LPQ} (LPP L LPQ) FP {!!} 
-         uflpp = FIP→UFLP TP (Compact→FIP TP CP) (LPP L LPQ) FP {!!} 
-         LQ : HOD
-         LQ = Replace' L ( λ x lx → Replace' x ( λ z xz → * ( zπ2 (LPQ lx (& z) (subst (λ k → odef k (& z)) (sym *iso) xz )))) )
-         LQQ : LQ ⊆ Power Q
-         LQQ = {!!}
--- S ⊆ ℕ 
+    uflp : (F : Filter {pbase TP TQ} LPQ) (LF : filter F ∋ ZFP P Q) (UF : ultra-filter F)
+             → UFLP (ProductTopology TP TQ) LPQ F LF UF
+    uflp F LF UF = record { limit = & < ? , {!!} >  ; P∋limit = {!!} ; is-limit = {!!} } 
