@@ -12,6 +12,7 @@ import OD
 open import Relation.Nullary
 open import Data.Empty
 open import Relation.Binary.Core
+open import Relation.Binary.Definitions
 open import Relation.Binary.PropositionalEquality
 import BAlgebra
 open BAlgebra O
@@ -205,8 +206,8 @@ ProductTopology {P} {Q} TP TQ =  GeneratedTopogy (ZFP P Q) (pbase TP TQ) record 
 record _covers_ ( P q : HOD  ) : Set n where
    field
        cover   : {x : Ordinal } → odef q x → Ordinal
-       P∋cover : {x : Ordinal } → {lt : odef q  x} → odef P (cover lt)
-       isCover : {x : Ordinal } → {lt : odef q  x} → odef (* (cover lt))  x
+       P∋cover : {x : Ordinal } → (lt : odef q  x) → odef P (cover lt)
+       isCover : {x : Ordinal } → (lt : odef q  x) → odef (* (cover lt))  x
 
 open _covers_
 
@@ -214,20 +215,21 @@ open _covers_
 
 record FIP {L : HOD} (top : Topology L) : Set n where
    field
-       limit : {X : Ordinal } → * X ⊆ CS top → * X ∋ L
+       limit : {X : Ordinal } → * X ⊆ CS top 
           →       ( { C : Ordinal  } { x : Ordinal } → * C ⊆ * X → Subbase (* C) x → o∅ o< x ) →  Ordinal
-       is-limit : {X : Ordinal } → (CX : * X ⊆ CS top ) → (XL : * X ∋ L )
+       is-limit : {X : Ordinal } → (CX : * X ⊆ CS top ) 
           → ( fip : { C : Ordinal  } { x : Ordinal } → * C ⊆ * X → Subbase (* C) x → o∅ o< x ) 
-          →  {x : Ordinal } → odef (* X) x → odef (* x) (limit CX XL fip)
-   L∋limit  : {X : Ordinal } → (CX : * X ⊆ CS top ) → (XL : * X ∋ L)
+          →  {x : Ordinal } → odef (* X) x → odef (* x) (limit CX fip)
+   L∋limit  : {X : Ordinal } → (CX : * X ⊆ CS top ) 
           → ( fip : { C : Ordinal  } { x : Ordinal } → * C ⊆ * X → Subbase (* C) x → o∅ o< x ) 
-          →  odef L (limit CX XL fip)
-   L∋limit {X} CX XL fip = cs⊆L top (subst (λ k → odef (CS top) k) (sym &iso) (CX XL)) (is-limit CX XL fip XL)
+          →  {x : Ordinal } → odef (* X) x 
+          →  odef L (limit CX fip)
+   L∋limit {X} CX fip {x} xx = cs⊆L top (subst (λ k → odef (CS top) k) (sym &iso) (CX xx)) (is-limit CX fip xx)
 
 -- Compact
 
 data Finite-∪ (S : HOD) : Ordinal → Set n where
-   fin-e : {x : Ordinal } → odef S x → Finite-∪ S x
+   fin-e : {x : Ordinal } → * x ⊆ S → Finite-∪ S x
    fin-∪  : {x y : Ordinal } → Finite-∪ S x → Finite-∪ S y → Finite-∪ S (& (* x ∪ * y))
 
 record Compact  {L : HOD} (top : Topology L)  : Set n where
@@ -239,39 +241,96 @@ record Compact  {L : HOD} (top : Topology L)  : Set n where
 -- FIP is Compact
 
 FIP→Compact : {L : HOD} → (top : Topology L ) → FIP top  → Compact top
-FIP→Compact {L} top fip = record { finCover = finCover ; isCover = isCover1 ; isFinite = isFinite } where
+FIP→Compact {L} top fip with trio< (& L) o∅ 
+... | tri< a ¬b ¬c = ⊥-elim ( ¬x<0 a )
+... | tri≈ ¬a b ¬c = record { finCover = λ _ _ → o∅ ; isCover = λ {X} _ xcp → fip01 xcp ; isFinite = fip00 }  where
+   -- L is empty
+   fip02 : {x : Ordinal } → ¬ odef L x
+   fip02 {x} Lx = ⊥-elim ( o<¬≡ (sym b) (∈∅< Lx) )
+   fip01 : {X : Ordinal } → (xcp : * X covers L) → (* o∅) covers L
+   fip01 xcp = record { cover = λ Lx → ⊥-elim (fip02 Lx)  ; P∋cover = λ Lx → ⊥-elim (fip02 Lx)  ; isCover =  λ Lx → ⊥-elim (fip02 Lx) }
+   fip00 : {X : Ordinal} (xo : * X ⊆ OS top) (xcp : * X covers L) → Finite-∪ (* X) o∅
+   fip00 {X} xo xcp = fin-e ( λ {x} 0x → ⊥-elim (¬x<0 (subst (λ k → odef k x) o∅≡od∅ 0x) ) )
+... | tri> ¬a ¬b 0<L = record { finCover = finCover ; isCover = isCover1 ; isFinite = isFinite } where
    -- set of coset of X
    CX : {X : Ordinal} → * X ⊆ OS top → Ordinal
    CX {X} ox = & ( Replace' (* X) (λ z xz → L ＼  z ))
    CCX : {X : Ordinal} → (os :  * X ⊆ OS top) → * (CX os) ⊆ CS top 
-   CCX {X} ox = {!!}
-   -- CX has finite intersection
-   CXfip : {X : Ordinal } → * X ⊆ OS top → Set n
-   CXfip {X} ox =  { x C : Ordinal } → * C ⊆ * (CX ox) → Subbase (* C) x → o∅ o< x 
-   Cex : {X : Ordinal } → * X ⊆ OS top → HOD
-   Cex {X} ox =  record { od = record { def = λ C → { x : Ordinal } → * C ⊆ * (CX ox) → Subbase (* C) o∅ } 
-       ; odmax = osuc ( & (Power L)) ; <odmax = {!!} }
-   -- a counter example of fip , some CX has no finite intersection
+   CCX {X} os {x} ox with subst (λ k → odef k x) *iso ox
+   ... | record { z = z ; az = az ; x=ψz = x=ψz } = ⟪ fip05 , fip06  ⟫ where --  x ≡ & (L ＼ * z)
+      fip07 : z ≡ & (L ＼ * x)
+      fip07 = subst₂ (λ j k → j ≡ k) &iso (cong (λ k → & ( L ＼ k )) (cong (*) (sym x=ψz))) ( cong (&) ( ==→o≡ record { eq→ = fip09 ; eq← = fip08 } )) where
+          fip08 : {x : Ordinal} → odef L x ∧ (¬ odef (* (& (L ＼ * z))) x) → odef (* z) x
+          fip08 {x} ⟪ Lx , not ⟫ with subst (λ k → (¬ odef k x)) *iso not -- ( odef L x ∧ odef (* z) x → ⊥) → ⊥ 
+          ... | Lx∧¬zx = ODC.double-neg-elim O ( λ nz → Lx∧¬zx ⟪ Lx , nz ⟫ )
+          fip09 : {x : Ordinal} → odef (* z) x → odef L x ∧ (¬ odef (* (& (L ＼ * z))) x)
+          fip09 {w} zw = ⟪ os⊆L top (os (subst (λ k → odef (* X) k) (sym &iso) az)) zw  , subst (λ k → ¬ odef k w) (sym *iso) fip10   ⟫ where
+             fip10 : ¬ (odef (L ＼ * z) w)
+             fip10 ⟪ Lw , nzw ⟫ = nzw zw
+      fip06 : odef (OS top) (& (L ＼ * x))
+      fip06 = os ( subst (λ k → odef (* X) k ) fip07 az )
+      fip05 : * x ⊆ L
+      fip05 {w} xw = proj1 ( subst (λ k → odef k w) (trans (cong (*) x=ψz) *iso ) xw )
+   --
+   --   X covres L means Intersection of (CX X) contains nothing
+   --     then some finite Intersection of (CX X) contains nothing ( contraposition of FIP )
+   --     it means there is a finite cover
+   --
+   record CFIP (x : Ordinal) : Set n where
+      field
+         is-CS : * x ⊆ CS top
+         sx :  Subbase (* x)  o∅ 
+   Cex : HOD
+   Cex = record { od = record { def = λ x → CFIP x } ; odmax = osuc (& (CS top)) ; <odmax = λ {x} lt → 
+        subst₂ (λ j k → j o≤ k ) &iso refl ( ⊆→o≤ (CFIP.is-CS lt )) }
+   fip00 : {X : Ordinal } → * X ⊆ OS top → * X covers L → ¬ ( Cex  =h= od∅ ) 
+   fip00 {X} ox oc cex=0 = ⊥-elim (fip09 fip25 fip20) where 
+       -- CX is finite intersection
+       fip02 : {C x : Ordinal} → * C ⊆ * (CX ox) → Subbase (* C) x → o∅ o< x
+       fip02 {C} {x} C<CX sc with trio< x o∅ 
+       ... | tri< a ¬b ¬c = ⊥-elim ( ¬x<0 a )
+       ... | tri> ¬a ¬b c = c
+       ... | tri≈ ¬a b ¬c  = ⊥-elim (¬x<0 ( _==_.eq→ cex=0 record { is-CS = fip10 ; sx = subst (λ k → Subbase (* C) k) b sc } )) where
+           fip10 : * C ⊆  CS top
+           fip10 {w} cw = CCX ox ( C<CX cw )
+       -- we have some intersection because L is not empty
+       fip26 : odef (* (CX ox))    (& (L ＼  * ( cover oc ( ODC.x∋minimal O L (0<P→ne 0<L) ) )))
+       fip26 = subst (λ k → odef k (& (L ＼  * ( cover oc ( ODC.x∋minimal O L (0<P→ne 0<L) ) )) )) (sym *iso)  
+          record { z = cover oc (x∋minimal L (0<P→ne 0<L)) ; az = P∋cover oc (x∋minimal L (0<P→ne 0<L))  ; x=ψz = refl } 
+       fip25 : odef L( FIP.limit fip (CCX ox) fip02 )
+       fip25 = FIP.L∋limit fip (CCX ox) fip02 fip26
+       fip20 : {y : Ordinal } → (Xy : odef (* X) y)  → ¬ ( odef (* y) ( FIP.limit fip (CCX ox) fip02 ))
+       fip20 {y} Xy yl = proj2 fip21 yl where
+           fip22 : odef (* (CX ox)) (& ( L ＼ * y ))
+           fip22 = subst (λ k → odef k (& ( L ＼ * y ))) (sym *iso) record { z = y ; az = Xy ; x=ψz = refl } 
+           fip21 : odef (L ＼ * y) ( FIP.limit fip (CCX ox) fip02 )
+           fip21 = subst (λ k → odef k ( FIP.limit fip (CCX ox) fip02 ) ) *iso ( FIP.is-limit fip (CCX ox) fip02 fip22 )
+       fip09 : {z : Ordinal } →  odef L z → ¬ ( {y : Ordinal } → (Xy : odef (* X) y)  → ¬ ( odef (* y) z )) 
+       fip09 {z} Lz nc  =  nc ( P∋cover oc Lz  ) (subst (λ k → odef (* (cover oc Lz)) k) refl (isCover oc _ ))
    cex : {X : Ordinal } → * X ⊆ OS top → * X covers L → Ordinal
-   cex {X} ox oc = & ( ODC.minimal O (Cex ox) fip00)  where
-      fip00 : ¬ ( Cex ox =h= od∅ ) 
-      fip00 cex=0 = fip03 {!!} {!!} where 
-          fip03 : {x z : Ordinal } → odef (* x) z →  (¬ odef (* x) z) → ⊥
-          fip03 {x} {z} xz nxz = nxz xz
-          fip02 : {C x : Ordinal} → * C ⊆ * (CX ox) → Subbase (* C) x → o∅ o< x
-          fip02 = {!!}
-          fip01 : Ordinal
-          fip01 = FIP.limit fip (CCX ox) {!!} fip02
-   ¬CXfip : {X : Ordinal } → (ox : * X ⊆ OS top) → (oc : * X covers L) → * (cex ox oc) ⊆ * (CX ox) → Subbase (* (cex ox oc)) o∅ 
-   ¬CXfip {X} ox oc = {!!} where
-      fip04 : odef (Cex ox) (cex ox oc)
-      fip04 = {!!}
+   cex {X} ox oc = & ( ODC.minimal O Cex  (fip00 ox oc))  
+   CXfip : {X : Ordinal } → (ox : * X ⊆ OS top) → (oc : * X covers L) → CFIP (cex ox oc)
+   CXfip {X} ox oc  = ODC.x∋minimal O Cex (fip00 ox oc)
    -- this defines finite cover
    finCover :  {X : Ordinal} → * X ⊆ OS top → * X covers L → Ordinal
    finCover {X} ox oc = & ( Replace' (* (cex ox oc)) (λ z xz → L ＼  z ))
        -- create Finite-∪ from cex
    isFinite : {X : Ordinal} (xo : * X ⊆ OS top) (xcp : * X covers L) → Finite-∪ (* X) (finCover xo xcp)
-   isFinite = {!!}
+   isFinite {X} xo xcp = fip30 (CFIP.sx (CXfip xo xcp )) refl  where
+        --  
+        -- 
+        fip30 : {y z : Ordinal } →  Subbase (* y) z → z ≡ o∅ → Finite-∪ (* X) (finCover xo xcp)
+        fip30 {y} (gi y0) eq = fin-e fip32 where
+            fip32 : * (finCover xo xcp) ⊆ * X
+            fip32 {w} fw = ?
+        fip30 {y} (g∩ {a} {b} ya yb) a∩b=0 = subst (λ k →  Finite-∪ (* X) k) 
+          (subst₂ (λ j k → j ≡ k ) refl &iso (cong (&) (==→o≡ fip31) )) (fin-∪ fa fb)  where
+            fa : Finite-∪ (* X) (& (Replace' (* (cex xo xcp)) (λ z xz → L ＼ z)))
+            fa = fip30 ya ?
+            fb : Finite-∪ (* X) (& (Replace' (* (cex xo xcp)) (λ z xz → L ＼ z)))
+            fb = fip30 yb ?
+            fip31 : ( * (finCover xo xcp) ∪ * (finCover xo xcp) ) =h= * (finCover xo xcp )
+            fip31 = ?
    -- is also a cover
    isCover1 : {X : Ordinal} (xo : * X ⊆ OS top) (xcp : * X covers L) → * (finCover xo xcp) covers L
    isCover1 = {!!}
@@ -298,12 +357,13 @@ record UFLP {P : HOD} (TP : Topology P) {L : HOD} (LP : L ⊆ Power P ) (F : Fil
 UFLP→FIP : {P : HOD} (TP : Topology P) → {L : HOD} (LP : L ⊆ Power P ) → 
    ( (F : Filter {L} {P} LP ) (FP : filter F ∋ P) (UF : ultra-filter F ) → UFLP TP LP F FP UF ) → FIP TP
 UFLP→FIP {P} TP {L} LP uflp = record { limit = uf00 ; is-limit = {!!} } where
-     fip : {X : Ordinal} → * X ⊆ CS TP → * X ∋ P → Set n
-     fip {X} CSX XP = {C x : Ordinal} → * C ⊆ * X → Subbase (* C) x → o∅ o< x
-     F : {X : Ordinal} → (CSX : * X ⊆ CS TP) → (XP : * X ∋ P ) → fip {X} CSX XP → Filter {L} {P} LP
+     fip : {X : Ordinal} → * X ⊆ CS TP → Set n
+     fip {X} CSX = {C x : Ordinal} → * C ⊆ * X → Subbase (* C) x → o∅ o< x
+     F : Filter {L} {P} LP
      F = ?
-     uf00 : {X : Ordinal} → (CSX : * X ⊆ CS TP) → (XP : * X ∋ P ) → fip {X} CSX XP → Ordinal
-     uf00 = ?
+     uf00 : {X : Ordinal} → (CSX : * X ⊆ CS TP) → fip {X} CSX → Ordinal
+     uf00 {X} CSX fip = UFLP.limit ( uflp F ? (F→ultra LP ? ? F ? ? ? ) )
+
 
 FIP→UFLP : {P : HOD} (TP : Topology P) →  FIP TP
    →  {L : HOD} (LP : L ⊆ Power P ) (F : Filter LP ) (FP : filter F ∋ P) (UF : ultra-filter F ) → UFLP {P} TP {L} LP F FP UF

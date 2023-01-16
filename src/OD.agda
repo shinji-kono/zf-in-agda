@@ -217,6 +217,9 @@ eq← ∅0 {w} lt = lift (¬x<0 lt)
 ∅<  {x} {y} d eq with eq→ (==-trans eq (==-sym ∅0) ) d
 ∅<  {x} {y} d eq | lift ()
 
+0<P→ne  : { x : HOD  } → o∅ o< & x → ¬ (  od x  == od od∅  )
+0<P→ne {x} 0<x eq = ⊥-elim ( o<¬≡ (sym (=od∅→≡o∅ eq)) 0<x )
+
 ∈∅< : { x : HOD  } {y : Ordinal } → odef x y → o∅  o< (& x)
 ∈∅<  {x} {y} d with trio< o∅ (& x)
 ... | tri< a ¬b ¬c = a
