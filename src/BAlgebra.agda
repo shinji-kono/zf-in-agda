@@ -33,32 +33,31 @@ open _∧_
 open _∨_
 open Bool
 
---_∩_ : ( A B : HOD  ) → HOD
---A ∩ B = record { od = record { def = λ x → odef A x ∧ odef B x } ;
---    odmax = omin (odmax A) (odmax B) ; <odmax = λ y → min1 (<odmax A (proj1 y)) (<odmax B (proj2 y)) }
-
-∩-comm : { A B : HOD } → (A ∩ B) ≡ (B ∩ A)
-∩-comm {A} {B} = ==→o≡ record { eq← = λ {x} lt → ⟪ proj2 lt , proj1 lt ⟫ ; eq→ =  λ {x} lt → ⟪ proj2 lt , proj1 lt ⟫ }
-
-_∪_ : ( A B : HOD  ) → HOD
-A ∪ B = record { od = record { def = λ x → odef A x ∨ odef B x } ;
-    odmax = omax (odmax A) (odmax B) ; <odmax = lemma } where
-      lemma :  {y : Ordinal} → odef A y ∨ odef B y → y o< omax (odmax A) (odmax B)
-      lemma {y} (case1 a) = ordtrans (<odmax A a) (omax-x _ _)
-      lemma {y} (case2 b) = ordtrans (<odmax B b) (omax-y _ _)
-
-_＼_ : ( A B : HOD  ) → HOD
-A ＼ B = record { od = record { def = λ x → odef A x ∧ ( ¬ ( odef B x ) ) }; odmax = odmax A ; <odmax = λ y → <odmax A (proj1 y) }
-
-¬∅∋ : {x : HOD} → ¬ ( od∅ ∋ x )
-¬∅∋ {x} = ¬x<0
-
 L＼L=0 : { L  : HOD  } → L ＼ L ≡ od∅ 
 L＼L=0 {L} = ==→o≡ ( record { eq→ = lem0 ; eq← =  lem1 } ) where
     lem0 : {x : Ordinal} → odef (L ＼ L) x → odef od∅ x
     lem0 {x} ⟪ lx , ¬lx ⟫ = ⊥-elim (¬lx lx)
     lem1 : {x : Ordinal} → odef  od∅ x → odef (L ＼ L) x
     lem1 {x} lt = ⊥-elim ( ¬∅∋ (subst (λ k → odef od∅ k) (sym &iso) lt ))
+
+L＼Lx=x : { L x : HOD  } → x ⊆ L   → L ＼ ( L ＼ x ) ≡ x
+L＼Lx=x {L} {x} x⊆L = ==→o≡ ( record { eq→ = lem03 ; eq← = lem04 } ) where
+    lem03 :  {z : Ordinal} → odef (L ＼ (L ＼ x)) z → odef x z 
+    lem03 {z} ⟪ Lz , Lxz ⟫ with ODC.∋-p O x (* z)
+    ... | yes y = subst (λ k → odef x k ) &iso y 
+    ... | no n = ⊥-elim ( Lxz ⟪ Lz , ( subst (λ k → ¬ odef x k ) &iso n ) ⟫ )
+    lem04 :  {z : Ordinal} → odef x z → odef (L ＼ (L ＼ x)) z 
+    lem04 {z} xz with ODC.∋-p O L (* z)
+    ... | yes y = ⟪ subst (λ k → odef L k ) &iso y  , ( λ p → proj2 p xz )  ⟫
+    ... | no  n = ⊥-elim ( n (subst (λ k → odef L k ) (sym &iso) ( x⊆L xz) ))
+     
+L＼0=L : { L  : HOD  } → L ＼ od∅ ≡ L 
+L＼0=L {L} = ==→o≡ ( record { eq→ = lem05 ; eq← = lem06 } ) where
+    lem05 : {x : Ordinal} → odef (L ＼ od∅) x → odef L x
+    lem05 {x} ⟪ Lx , _ ⟫ = Lx
+    lem06 : {x : Ordinal} → odef L x → odef (L ＼ od∅) x
+    lem06 {x} Lx = ⟪ Lx , (λ lt → ¬x<0 lt)  ⟫
+
 
 [a-b]∩b=0 : { A B : HOD } → (A ＼ B) ∩ B ≡ od∅
 [a-b]∩b=0 {A} {B} = ==→o≡ record { eq← = λ lt → ⊥-elim ( ¬∅∋ (subst (λ k → odef od∅ k) (sym &iso) lt ))

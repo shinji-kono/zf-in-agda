@@ -46,6 +46,28 @@ cseq x = record { od = record { def = λ y → odef x (osuc y) } ; odmax = osuc 
     lemma : {y : Ordinal} → def (od x) (osuc y) → y o< osuc (odmax x)
     lemma {y} lt = ordtrans <-osuc (ordtrans (<odmax x lt) <-osuc )
 
+∩-comm : { A B : HOD } → (A ∩ B) ≡ (B ∩ A)
+∩-comm {A} {B} = ==→o≡ record { eq← = λ {x} lt → ⟪ proj2 lt , proj1 lt ⟫ ; eq→ =  λ {x} lt → ⟪ proj2 lt , proj1 lt ⟫ }
+
+_∪_ : ( A B : HOD  ) → HOD
+A ∪ B = record { od = record { def = λ x → odef A x ∨ odef B x } ;
+    odmax = omax (odmax A) (odmax B) ; <odmax = lemma } where
+      lemma :  {y : Ordinal} → odef A y ∨ odef B y → y o< omax (odmax A) (odmax B)
+      lemma {y} (case1 a) = ordtrans (<odmax A a) (omax-x _ _)
+      lemma {y} (case2 b) = ordtrans (<odmax B b) (omax-y _ _)
+
+x∪x≡x : { A  : HOD  } → (A ∪ A) ≡ A 
+x∪x≡x {A} = ==→o≡ record { eq← = λ {x} lt → case1 lt ; eq→ =  lem00 } where
+    lem00 : {x : Ordinal} → odef A x ∨ odef A x → odef A x
+    lem00 {x} (case1 ax) = ax
+    lem00 {x} (case2 ax) = ax
+
+_＼_ : ( A B : HOD  ) → HOD
+A ＼ B = record { od = record { def = λ x → odef A x ∧ ( ¬ ( odef B x ) ) }; odmax = odmax A ; <odmax = λ y → <odmax A (proj1 y) }
+
+¬∅∋ : {x : HOD} → ¬ ( od∅ ∋ x )
+¬∅∋ {x} = ¬x<0
+
 
 pair-xx<xy : {x y : HOD} → & (x , x) o< osuc (& (x , y) )
 pair-xx<xy {x} {y} = ⊆→o≤  lemma where
@@ -231,3 +253,17 @@ UPower∩ {P} each {p} {q} record { owner = x ; ao = ppx ; ox = xz } record { ow
    =  record { owner = & P ; ao = PPP ; ox = lem03 }  where
     lem03 :   odef (* (& P)) (& (p ∩ q))
     lem03 = subst (λ k → odef k (& (p ∩ q))) (sym *iso) ( each (ppx _ xz) (ppy _ yz) )
+
+-- ∋-irr : {X x : HOD} → (a b : X ∋ x ) → a ≡ b
+-- ∋-irr {X} {x} _ _ = refl
+--    is requed in
+Replace∩ : {X P Q : HOD}  → {ψ : (x : HOD) → X ∋ x → HOD} → (P⊆X : P ⊆ X) → (Q⊆X : Q ⊆ X )
+    → ( {x : HOD} → (a b : X ∋ x ) → ψ x a ≡ ψ x b )
+    → (Replace' (P ∩ Q) (λ _ pq → ψ _ (P⊆X (proj1 pq ))))   ⊆ ( Replace' P (λ _ p → ψ _ (P⊆X p)) ∩ Replace' Q (λ _ q → ψ _ (Q⊆X q)))
+Replace∩ {X} {P} {Q} {ψ} P⊆X Q⊆X ψ-irr = lem04 where
+    lem04 : {x : Ordinal} → OD.def (od (Replace' (P ∩ Q) (λ z pq → ψ z (P⊆X (proj1 pq)) ))) x
+       → OD.def (od (Replace' P (λ z p → ψ z (P⊆X p)) ∩ Replace' Q (λ z q → ψ z (Q⊆X q)))) x
+    lem04 {x} record { z = z ; az = az ; x=ψz = x=ψz } = ⟪
+         record { z = _ ; az = proj1 az ; x=ψz = trans  x=ψz (cong (&)(ψ-irr _ _)) }  ,
+         record { z = _ ; az = proj2 az ; x=ψz = trans  x=ψz (cong (&)(ψ-irr _ _)) } ⟫
+
