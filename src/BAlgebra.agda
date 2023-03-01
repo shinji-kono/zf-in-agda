@@ -58,6 +58,11 @@ L＼0=L {L} = ==→o≡ ( record { eq→ = lem05 ; eq← = lem06 } ) where
     lem06 : {x : Ordinal} → odef L x → odef (L ＼ od∅) x
     lem06 {x} Lx = ⟪ Lx , (λ lt → ¬x<0 lt)  ⟫
 
+∨L＼X : { L X : HOD } → {x : Ordinal } → odef L x → odef X x ∨ odef (L ＼ X) x
+∨L＼X {L} {X} {x} Lx with ODC.∋-p O X (* x)
+... | yes y = case1 ( subst (λ k → odef X k ) &iso y  )
+... | no  n = case2 ⟪ Lx , subst (λ k → ¬ odef X k) &iso n ⟫
+
 
 [a-b]∩b=0 : { A B : HOD } → (A ＼ B) ∩ B ≡ od∅
 [a-b]∩b=0 {A} {B} = ==→o≡ record { eq← = λ lt → ⊥-elim ( ¬∅∋ (subst (λ k → odef od∅ k) (sym &iso) lt ))

@@ -8,6 +8,7 @@ open import Data.Nat renaming ( zero to Zero ; suc to Suc ;  ℕ to Nat ; _⊔_ 
 open import  Relation.Binary.PropositionalEquality hiding ( [_] )
 open import Data.Nat.Properties
 open import Data.Empty
+open import Data.Unit
 open import Relation.Nullary
 open import Relation.Binary  hiding (_⇔_)
 open import Relation.Binary.Core hiding (_⇔_)
@@ -79,7 +80,7 @@ eq← ( ⇔→==  {x} {y}  eq ) {z} m = proj2 eq m
 
 -- Ordinals in OD , the maximum
 Ords : OD
-Ords = record { def = λ x → One }
+Ords = record { def = λ x → Lift n ⊤ }
 
 record HOD : Set (suc n) where
   field
@@ -120,7 +121,7 @@ odmaxmin = (y : HOD) (z : Ordinal) → ((x : Ordinal)→ def (od y) x → x o< z
 
 -- OD ⇔ Ordinal leads a contradiction, so we need bounded HOD
 ¬OD-order : ( & : OD  → Ordinal ) → ( * : Ordinal  → OD ) → ( { x y : OD  }  → def y ( & x ) → & x o< & y) → ⊥
-¬OD-order & * c<→o< = o≤> <-osuc (c<→o< {Ords} OneObj )
+¬OD-order & * c<→o< = o≤> <-osuc (c<→o< {Ords} (lift tt) )
 
 -- Ordinal in OD ( and ZFSet ) Transitive Set
 Ord : ( a : Ordinal  ) → HOD
@@ -398,6 +399,10 @@ power→ A t P∋t {x} t∋x = P∋t (& x) (subst (λ k → odef k (& x) ) (sym 
 
 power← :  (A t : HOD) → ({x : HOD} → (t ∋ x → A ∋ x)) → Power A ∋ t
 power← A t t⊆A z xz = subst (λ k → odef A k ) &iso ( t⊆A  (subst₂ (λ j k → odef j k) *iso (sym &iso) xz ))
+
+Intersection : (X : HOD ) → HOD   -- ∩ X
+Intersection X = record { od = record { def = λ x → (x o≤ & X ) ∧ ( {y : Ordinal} → odef X y → odef (* y) x )} ; odmax = osuc (& X) ; <odmax = λ lt → proj1 lt } 
+
 
 -- ｛_｝ : ZFSet → ZFSet
 -- ｛ x ｝ = ( x ,  x )     -- better to use (x , x) directly

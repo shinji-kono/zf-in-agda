@@ -146,25 +146,6 @@ p-pi1 {x} {y} p = proj1 ( prod-eq ( ord→== (op-iso p) ))
 p-pi2 :  { x y : HOD } → (p : def ZFPair (&  < x , y >) ) →  π2 p ≡ y
 p-pi2 {x} {y} p = proj2 ( prod-eq ( ord→== (op-iso p)))
 
-ω-pair :  {x y : HOD} → {m : Ordinal} → & x o< next m → & y o< next m → & (x , y) o< next m
-ω-pair lx ly = next< (omax<nx lx ly ) ho<
-
-ω-opair : {x y : HOD} → {m : Ordinal} → & x o< next m → & y o< next m → & < x , y > o< next m
-ω-opair {x} {y} {m} lx ly = lemma0 where
-    lemma0 : & < x , y > o< next m
-    lemma0 = osucprev (begin
-         osuc (& < x , y >)
-       <⟨ osuc<nx ho< ⟩
-         next (omax (& (x , x)) (& (x , y)))
-       ≡⟨ cong (λ k → next k) (sym ( omax≤ _ _ pair-xx<xy )) ⟩
-         next (osuc (& (x , y)))
-       ≡⟨ sym (nexto≡) ⟩
-         next (& (x , y))
-       ≤⟨ x<ny→≤next (ω-pair lx ly) ⟩
-         next m
-       ∎ ) where
-          open o≤-Reasoning O
-
 _⊗_ : (A B : HOD) → HOD
 A ⊗ B  = Union ( Replace B (λ b → Replace A (λ a → < a , b > ) ))
 
@@ -194,20 +175,10 @@ data ZFProduct  (A B : HOD) : (p : Ordinal) → Set n where
 
 ZFP  : (A B : HOD) → HOD
 ZFP  A B = record { od = record { def = λ x → ZFProduct A B x  } 
-        ; odmax = omax (next (odmax A)) (next (odmax B)) ; <odmax = λ {y} px → lemma y px }  -- this is too large
+        ; odmax = odmax ( A ⊗ B ) ; <odmax = λ {y} px → <odmax ( A ⊗ B ) (lemma0 px) }  
    where
-       lemma : (y : Ordinal) → ZFProduct A B y → y o< omax (next (odmax A)) (next (odmax B))
-       lemma p ( ab-pair {x} {y} ax by ) with trio< (& A) (& B) 
-       lemma p ( ab-pair {x} {y} ax by ) | tri< a ¬b ¬c = ordtrans (ω-opair (A<Bnext a (subst (λ k → odef A k ) (sym &iso)
-            ax ))  (lemma1 by )) (omax-y _ _ ) where
-               lemma1 : odef B y → & (* y) o< next (HOD.odmax B)
-               lemma1 lt = x<nextA {B} (d→∋ B lt)
-       lemma p ( ab-pair {x} {y} ax by ) | tri≈ ¬a b ¬c = ordtrans (ω-opair (x<nextA {A} 
-          (d→∋ A ax)) lemma2 ) (omax-x _ _ ) where
-                lemma2 :  & (* y) o< next (HOD.odmax A)
-                lemma2 = ordtrans ( subst (λ k → & (* y) o< k ) (sym b) (c<→o< (d→∋ B by))) ho<
-       lemma p ( ab-pair {x} {y} ax by ) | tri> ¬a ¬b c = ordtrans (ω-opair  (x<nextA {A} (d→∋ A ax ))
-           (A<Bnext c (subst (λ k → odef B k ) (sym &iso) by))) (omax-x _ _ ) 
+        lemma0 :  {A B : HOD} {x : Ordinal} → ZFProduct A B x → odef (A ⊗ B) x
+        lemma0 {A} {B} {px} ( ab-pair {a} {b} ax by ) = product→ (d→∋ A ax) (d→∋ B by)
 
 ZFP→ : {A B a b : HOD} → A ∋ a → B ∋ b  → ZFP A B ∋ < a , b >
 ZFP→ {A} {B} {a} {b} aa bb = subst (λ k → ZFProduct A B k ) (cong₂ (λ j k → & < j , k >) *iso *iso ) ( ab-pair aa bb ) 
@@ -254,12 +225,27 @@ ZFPproj1 {A} {B} {X} X⊆P = Replace' X ( λ x px → * (zπ1 (X⊆P px) ))
 ZFPproj2 : {A B X : HOD} → X ⊆ ZFP A B  → HOD
 ZFPproj2 {A} {B} {X} X⊆P = Replace' X ( λ x px → * (zπ2 (X⊆P px) )) 
 
+-- simple version 
 
+record ZProj1 (L : HOD) (x : Ordinal) : Set n where 
+    field
+        pq : Ordinal
+        opq : ord-pair pq
+        Lpq : odef L pq    
+        x=pi1 : x ≡ pi1 opq
 
+-- LP' = Replace' L ( λ p lp → ZFPproj1 {P} {Q} {p} (λ {x} px → (LPQ lp _ (subst (λ k → odef k x) (sym *iso) px  ) )))           
 
+Proj1 : (L P Q : HOD) → HOD
+Proj1 L P Q = record { od = record { def = λ x → odef P x ∧ ZProj1 L x } ; odmax = & P ; <odmax = odef∧< }
+   
+record ZProj2 (L : HOD) (x : Ordinal) : Set n where 
+    field
+        pq : Ordinal
+        opq : ord-pair pq
+        Lpq : odef L pq    
+        x=pi2 : x ≡ pi2 opq
 
-
-
-
-
-
+Proj2 : (L P Q : HOD) → HOD
+Proj2 L P Q = record { od = record { def = λ x → odef Q x ∧ ZProj2 L x } ; odmax = & Q ; <odmax = odef∧< }
+   

@@ -144,17 +144,6 @@ eq← (ω2→f-iso X lt) {x} Xx = ⟪ subst (λ k → odef infinite k) &iso le02
         le03 :  x ≡ & (nat→ω (ω→nato wx))
         le03 = subst₂ (λ j k → j ≡ k ) &iso refl (cong (&) (sym ( nat→ω-iso wx ) ) )
 
-¬i0≡i1 : ¬ ( i0 ≡ i1 )
-¬i0≡i1 ()
-
-¬i0→i1 : {x : Two} → ¬ (x ≡ i0 ) → x ≡ i1 
-¬i0→i1 {i0} ne = ⊥-elim ( ne refl )
-¬i0→i1 {i1} ne = refl
-
-¬i1→i0 : {x : Two} → ¬ (x ≡ i1 ) → x ≡ i0 
-¬i1→i0 {i0} ne = refl
-¬i1→i0 {i1} ne = ⊥-elim ( ne refl )
-
 fω→2-iso : (f : Nat → Two) → ω2→f ( fω→2 f ) (ω2∋f f) ≡ f
 fω→2-iso f = f-extensionality (λ x → le01 x ) where
     le01 : (x : Nat) → ω2→f (fω→2 f) (ω2∋f f) x ≡ f x

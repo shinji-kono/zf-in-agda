@@ -8,6 +8,7 @@ module partfunc {n : Level } where -- (O : Ordinals {n})  where
 open import logic
 open import Relation.Binary 
 open import Data.Empty 
+open import Data.Unit using ( ⊤ ; tt )
 open import Data.List hiding (filter)
 open import Data.Maybe  
 open import Relation.Binary
@@ -218,10 +219,10 @@ record F-Dense {n : Level} (L : Set n) (PL : (L → Set n) → Set n) ( _⊆_ : 
        dense-p :  { p : L} → PL (λ x → p ⊆ x ) → p ⊆ (dense-f p) 
 
 
-Dense-3 : F-Dense (List (Maybe Two) ) (λ x → One) _3⊆_ _3∩_
+Dense-3 : F-Dense (List (Maybe Two) ) (λ x → ⊤ ) _3⊆_ _3∩_
 Dense-3 = record {
        dense =  λ x → Finite3b x ≡ true
-    ;  d⊆P = OneObj
+    ;  d⊆P = tt
     ;  dense-f = λ x → finite3cov x
     ;  dense-d = λ {p} d → lemma1 p
     ;  dense-p = λ {p} d → lemma2 p

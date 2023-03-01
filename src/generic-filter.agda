@@ -61,7 +61,8 @@ record CountableModel : Set (suc (suc n)) where
        ctl<M : (x : Nat) → odef (ctl-M) (ctl→ x) 
        ctl← : (x : Ordinal )→  odef (ctl-M ) x → Nat
        ctl-iso→ : { x : Ordinal } → (lt : odef (ctl-M) x )  → ctl→ (ctl← x lt ) ≡ x 
-       ctl-iso← : { x : Nat }  →  ctl← (ctl→ x ) (ctl<M x)  ≡ x
+       -- we have no otherway round
+       -- ctl-iso← : { x : Nat }  →  ctl← (ctl→ x ) (ctl<M x)  ≡ x
 --
 -- almmost universe
 -- find-p contains ∃ x : Ordinal → x o< & M → ∀ r ∈ M → ∈ Ord x
@@ -239,6 +240,14 @@ lemma232 : (P L p : HOD ) (C : CountableModel )
 lemma232 P L p C LP Lp0 NA MG = {!!} where
     D : HOD  -- P - G
     D = ?
+
+--
+-- P-Generic Filter defines a countable model D ⊂ C from P
+--
+
+--
+-- in D, we have V ≠ L
+--
 
 --
 --   val x G = { val y G | ∃ p → G ∋ p → x ∋ < y , p > }

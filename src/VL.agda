@@ -57,7 +57,7 @@ V β = TransFinite  V1 β where
 --
 -- Definition for Power Set
 --
-record Definitions  : Set (suc n) where
+record Definitions  : Set (suc n) where 
    field
       Definition : HOD → HOD   
 

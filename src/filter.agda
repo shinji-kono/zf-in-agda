@@ -55,7 +55,7 @@ open Filter
 record prime-filter { L P : HOD } {LP : L ⊆ Power P} (F : Filter {L} {P} LP) : Set (suc (suc n)) where
    field
        proper  : ¬ (filter F ∋ od∅)
-       prime   : {p q : HOD } → L ∋ p → L ∋ q  → L ∋ (p ∪ q) →  filter F ∋ (p ∪ q) → ( filter F ∋ p ) ∨ ( filter F ∋ q )
+       prime   : {p q : HOD } → L ∋ p → L ∋ q → filter F ∋ (p ∪ q) → ( filter F ∋ p ) ∨ ( filter F ∋ q )
 
 record ultra-filter { L P : HOD } {LP : L ⊆ Power P} (F : Filter {L} {P} LP) : Set (suc (suc n)) where
    field
@@ -102,12 +102,12 @@ filter-lemma1 :  {P L : HOD} → (LP : L ⊆ Power P)
      → ({p : HOD} → L ∋ p → L ∋ (P ＼ p))
      → ({p q : HOD} → L ∋ p → L ∋ q → L ∋ (p ∩ q ))
      → (F : Filter {L} {P} LP) → ultra-filter F  → prime-filter F 
-filter-lemma1 {P} {L} LP NG IN F u = record {
+filter-lemma1 {P} {L} LNEG NEG CAP F u = record {
          proper = ultra-filter.proper u
        ; prime = lemma3
     } where
-  lemma3 : {p q : HOD} → L ∋ p → L ∋ q  → L ∋ (p ∪ q) → filter F ∋ (p ∪ q) → ( filter F ∋ p ) ∨ ( filter F ∋ q )
-  lemma3 {p} {q} Lp Lq _ lt with ultra-filter.ultra u Lp (NG Lp)
+  lemma3 : {p q : HOD} → L ∋ p → L ∋ q  → filter F ∋ (p ∪ q) → ( filter F ∋ p ) ∨ ( filter F ∋ q )
+  lemma3 {p} {q} Lp Lq lt with ultra-filter.ultra u Lp (NEG Lp)
   ... | case1 p∈P  = case1 p∈P 
   ... | case2 ¬p∈P = case2 (filter1 F {q ∩ (P ＼ p)} Lq lemma7 lemma8) where
     lemma5 : ((p ∪ q ) ∩ (P ＼ p)) =h=  (q ∩ (P ＼ p))
@@ -119,7 +119,7 @@ filter-lemma1 {P} {L} LP NG IN F u = record {
          lemma4 x lt | case1 px = ⊥-elim ( proj2 (proj2 lt) px )
          lemma4 x lt | case2 qx = qx
     lemma9 : L ∋ ((p ∪ q ) ∩ (P ＼ p))
-    lemma9 = subst (λ k → L ∋ k ) (sym (==→o≡ lemma5)) (IN Lq (NG Lp))
+    lemma9 = subst (λ k → L ∋ k ) (sym (==→o≡ lemma5)) (CAP Lq (NEG Lp))
     lemma6 : filter F ∋ ((p ∪ q ) ∩ (P ＼ p))
     lemma6 = filter2 F lt ¬p∈P  lemma9
     lemma7 : filter F ∋ (q ∩ (P ＼ p))
@@ -135,9 +135,9 @@ filter-lemma1 {P} {L} LP NG IN F u = record {
 filter-lemma2 :  {P L : HOD} → (LP : L ⊆ Power P)
        → ({p : HOD} → L ∋ p → L ∋ ( P ＼ p))
        → (F : Filter {L} {P} LP)  → filter F ∋ P → prime-filter F → ultra-filter F
-filter-lemma2 {P} {L} LP Lm F f∋P prime = record {
+filter-lemma2 {P} {L} LP NEG F f∋P prime = record {
          proper = prime-filter.proper prime
-       ; ultra = λ {p}  L∋p _ → prime-filter.prime prime L∋p (Lm  L∋p) (lemma10 L∋p ((f⊆L F) f∋P) ) (lemma p (p⊆L  L∋p ))  
+       ; ultra = λ {p}  L∋p _ → prime-filter.prime prime L∋p (NEG  L∋p) (lemma p (p⊆L  L∋p ))  
    } where
         open _==_
         p⊆L : {p : HOD} → L ∋ p  → p ⊆ P
@@ -150,8 +150,6 @@ filter-lemma2 {P} {L} LP Lm F f∋P prime = record {
         eq← (p+1-p=1 {p} p⊆P) {x} ( case2 ¬p  ) = proj1 ¬p
         lemma : (p : HOD) → p ⊆ P   →  filter F ∋ (p ∪ (P ＼ p))
         lemma p p⊆P = subst (λ k → filter F ∋ k ) (==→o≡ (p+1-p=1 {p} p⊆P)) f∋P 
-        lemma10 : {p : HOD} → L ∋ p → L ∋ P → L ∋ (p ∪ (P ＼ p))
-        lemma10 {p} L∋p lt = subst (λ k → L ∋ k ) (==→o≡ (p+1-p=1 {p} (p⊆L L∋p))) lt
 
 record Dense  {L P : HOD } (LP : L ⊆ Power P)  : Set (suc n) where
    field
@@ -267,7 +265,7 @@ ultra→max : {L P : HOD} (LP : L ⊆ Power P) → ({p : HOD}
        → L ∋ p → L ∋ ( P ＼ p)) 
        → ({p q : HOD} → L ∋ p → L ∋ q → L ∋ (p ∩ q))
        → (U : Filter {L} {P} LP) → ultra-filter U → MaximumFilter LP U
-ultra→max {L} {P} LP NG CAP U u  = record { mf = U ; F⊆mf = λ x → x ; proper = ultra-filter.proper u ; is-maximum = is-maximum } where 
+ultra→max {L} {P} LP NEG CAP U u  = record { mf = U ; F⊆mf = λ x → x ; proper = ultra-filter.proper u ; is-maximum = is-maximum } where 
   is-maximum : (F : Filter {L} {P} LP) → (¬ (filter F ∋ od∅)) → filter U ⊆ filter F  → (U⊂F : filter U  ⊂ filter F ) → ⊥
   is-maximum F Prop F⊆U ⟪ U<F , U⊆F ⟫   = Prop f0 where
      GT : HOD
@@ -289,7 +287,7 @@ ultra→max {L} {P} LP NG CAP U u  = record { mf = U ; F⊆mf = λ x → x ; pro
      um00 : ¬ odef (filter U) (& p)
      um00 = proj2 (ODC.x∋minimal O GT GT≠∅)
      L∋-p : L ∋  ( P ＼ p )
-     L∋-p = NG L∋p
+     L∋-p = NEG L∋p
      U∋-p : filter U ∋  ( P ＼ p )
      U∋-p with ultra-filter.ultra u {p} L∋p L∋-p
      ... | case1 ux = ⊥-elim ( ¬U∋p ux )
@@ -303,21 +301,6 @@ ultra→max {L} {P} LP NG CAP U u  = record { mf = U ; F⊆mf = λ x → x ; pro
 
 --  if there is a filter , there is a ultra filter under the axiom of choise
 --        Zorn Lemma
-
-import zorn 
-
-open import Relation.Binary
-
-PO : IsStrictPartialOrder _≡_ _⊂_ 
-PO = record { isEquivalence = record { refl = refl ; sym = sym ; trans = trans }
-   ; trans = λ {a} {b} {c} → trans-⊂ {a} {b} {c}
-   ; irrefl = λ x=y x<y → o<¬≡ (cong (&) x=y) (proj1 x<y)
-   ; <-resp-≈ =  record { fst = ( λ {x} {y} {y1} y=y1 xy1 → subst (λ k → x ⊂ k) y=y1 xy1  )
-                        ; snd = (λ {x} {x1} {y} x=x1 x1y → subst (λ k → k ⊂ x) x=x1 x1y ) } }
-
-open zorn O _⊂_ PO
-
-open import  Relation.Binary.Structures
 
 record IsFilter { L P : HOD  } (LP : L ⊆ Power P) (filter : Ordinal ) : Set n where
    field
@@ -335,118 +318,3 @@ Filter-is-Filter {L} {P} LP F proper = record {
          (subst₂ (λ j k → odef j k ) *iso (sym &iso) Fq) Lpq )
      ; proper  = subst₂ (λ j k → ¬ odef j k ) (sym *iso) ord-od∅ proper 
    }
-
--- all filter contains F
-F⊆X : { L P : HOD  } (LP : L ⊆ Power P) → Filter {L} {P} LP  → HOD
-F⊆X {L} {P} LP F = record { od = record { def = λ x → IsFilter {L} {P} LP x ∧ ( filter F ⊆ * x)  } ; odmax = osuc (& L)
-      ; <odmax = λ {x} lt → fx00 lt } where
-      fx00 : {x : Ordinal } → IsFilter LP x ∧ filter F ⊆ * x → x o< osuc (& L)
-      fx00 {x} lt = subst (λ k → k o< osuc (& L)) &iso ( ⊆→o≤ (IsFilter.f⊆L (proj1 lt ))  )
-
-F→Maximum : {L P : HOD} (LP : L ⊆ Power P) → ({p : HOD} → L ∋ p → L ∋ ( P ＼ p)) → ({p q : HOD} → L ∋ p → L ∋ q → L ∋ (p ∩ q))
-      → (F : Filter {L} {P} LP) → o∅ o< & L →  {y : Ordinal } → odef (filter F) y →  (¬ (filter F ∋ od∅)) → MaximumFilter {L} {P} LP F
-F→Maximum {L} {P} LP NEG CAP F 0<L {y} 0<F Fprop = record { mf = mf ; F⊆mf = subst (λ k → filter F ⊆ k ) (sym *iso) mf52  
-         ; proper = subst (λ k → ¬ ( odef (filter mf ) k)) (sym ord-od∅) ( IsFilter.proper imf)  ; is-maximum = mf50 }  where
-      FX : HOD
-      FX = F⊆X {L} {P} LP F
-      oF = & (filter F)
-      mf11 : { p q : Ordinal } → odef L q → odef (* oF) p →  (* p) ⊆ (* q)  → odef (* oF) q
-      mf11 {p} {q} Lq Fp p⊆q = subst₂ (λ j k → odef j k ) (sym *iso) &iso ( filter1 F (subst (λ k → odef L k) (sym &iso) Lq) 
-             (subst₂ (λ j k → odef j k ) *iso (sym &iso)  Fp) p⊆q )
-      mf12 : { p q : Ordinal } → odef (* oF)  p →  odef (* oF) q  → odef L (& ((* p) ∩ (* q))) → odef (* oF) (& ((* p) ∩ (* q)))
-      mf12 {p} {q} Fp Fq Lpq = subst (λ k → odef k (& ((* p) ∩ (* q))) ) (sym *iso) 
-        ( filter2 F (subst₂ (λ j k → odef j k ) *iso (sym &iso)  Fp) (subst₂ (λ j k → odef j k ) *iso (sym &iso)  Fq) Lpq)
-      FX∋F : odef FX (& (filter F))
-      FX∋F = ⟪ record { f⊆L = subst (λ k → k ⊆ L) (sym *iso) (f⊆L F) ; filter1 = mf11 ; filter2 = mf12 
-        ; proper = subst₂ (λ j k →  ¬ (odef j k) ) (sym *iso) ord-od∅ Fprop  }  
-          , subst (λ k → filter F ⊆ k ) (sym *iso) ( λ x → x ) ⟫ 
-      -- 
-      -- if filter B (which contains F) is transitive, Union B is also a filter which contains F
-      --   and this is a SUP
-      -- 
-      SUP⊆ : (B : HOD) → B ⊆ FX → IsTotalOrderSet B → SUP FX B
-      SUP⊆ B B⊆FX OB with trio< (& B) o∅ 
-      ... | tri< a ¬b ¬c = ⊥-elim (¬x<0 a )
-      ... | tri≈ ¬a b ¬c = record { sup = filter F ; isSUP = record { ax = FX∋F ; x≤sup = λ {y} zy → ⊥-elim (o<¬≡ (sym b) (∈∅< zy))  } } 
-      ... | tri> ¬a ¬b 0<B = record { sup = Union B ; isSUP = record { ax = mf13 ; x≤sup = mf40 } } where
-          mf20 : HOD
-          mf20 = ODC.minimal O B (λ eq → (o<¬≡ (cong (&) (sym (==→o≡ eq))) (subst (λ k → k o< & B) (sym ord-od∅) 0<B )))
-          mf18 : odef B (& mf20 )
-          mf18 = ODC.x∋minimal O B (λ eq → (o<¬≡ (cong (&) (sym (==→o≡ eq))) (subst (λ k → k o< & B) (sym ord-od∅) 0<B )))
-          mf16 : Union B ⊆ L
-          mf16 record { owner = b ; ao = Bb ; ox = bx } = IsFilter.f⊆L ( proj1 ( B⊆FX Bb )) bx
-          mf17 : {p q : Ordinal} → odef L q → odef (* (& (Union B))) p → * p ⊆ * q → odef (* (& (Union B))) q
-          mf17 {p} {q} Lq bp p⊆q with subst (λ k → odef k p ) *iso bp
-          ... | record { owner = owner ; ao = ao ; ox = ox } = subst (λ k → odef k q) (sym *iso) 
-                record { owner = owner ; ao = ao ; ox = IsFilter.filter1 mf30 Lq ox p⊆q } where
-              mf30 : IsFilter {L} {P} LP owner
-              mf30 = proj1 ( B⊆FX ao ) 
-          mf31 : {p q : Ordinal} → odef (* (& (Union B))) p → odef (* (& (Union B))) q → odef L (& ((* p) ∩ (* q))) → odef (* (& (Union B))) (& ((* p) ∩ (* q)))
-          mf31 {p} {q} bp bq Lpq with subst (λ k → odef k p ) *iso bp | subst (λ k → odef k q ) *iso bq
-          ... | record { owner = bp ; ao = Bbp ; ox = bbp } | record { owner = bq ; ao = Bbq ; ox = bbq } 
-             with OB (subst (λ k → odef B k) (sym &iso) Bbp) (subst (λ k → odef B k) (sym &iso) Bbq)
-          ... | tri< bp⊂bq ¬b ¬c = subst₂ (λ j k → odef j k ) (sym  *iso) refl record { owner = bq ; ao = Bbq ; ox = mf36 } where
-              mf36 : odef (* bq) (& ((* p) ∩ (* q)))
-              mf36 = IsFilter.filter2 mf30 (proj2 bp⊂bq bbp) bbq Lpq where
-                  mf30 : IsFilter {L} {P} LP bq
-                  mf30 = proj1 ( B⊆FX Bbq ) 
-          ... | tri≈ ¬a bq=bp ¬c = subst₂ (λ j k → odef j k ) (sym  *iso) refl record { owner = bp ; ao = Bbp ; ox = mf36 } where
-              mf36 : odef (* bp) (& ((* p) ∩ (* q)))
-              mf36 = IsFilter.filter2 mf30 bbp (subst (λ k → odef k q) (sym bq=bp) bbq) Lpq where
-                  mf30 : IsFilter {L} {P} LP bp
-                  mf30 = proj1 ( B⊆FX Bbp ) 
-          ... | tri> ¬a ¬b bq⊂bp = subst₂ (λ j k → odef j k ) (sym  *iso) refl record { owner = bp ; ao = Bbp ; ox = mf36 } where
-              mf36 : odef (* bp) (& ((* p) ∩ (* q)))
-              mf36 = IsFilter.filter2 mf30 bbp (proj2 bq⊂bp bbq) Lpq where
-                  mf30 : IsFilter {L} {P} LP bp
-                  mf30 = proj1 ( B⊆FX Bbp ) 
-          mf32 : ¬ odef (Union B) o∅
-          mf32 record { owner = owner ; ao = bo ; ox = o0 } with proj1 ( B⊆FX bo ) 
-          ... | record { f⊆L = f⊆L ; filter1 = filter1 ; filter2 = filter2 ; proper = proper } = ⊥-elim ( proper o0 )
-          mf14 : IsFilter LP (& (Union B)) 
-          mf14 = record { f⊆L = subst (λ k → k ⊆ L) (sym *iso) mf16 ; filter1 = mf17 ; filter2 = mf31 ; proper = subst (λ k → ¬ odef k o∅) (sym *iso) mf32 } 
-          mf15 :  filter F ⊆ Union B
-          mf15 {x} Fx = record { owner = & mf20 ; ao = mf18 ; ox = subst (λ k → odef k x) (sym *iso) (mf22 Fx) } where
-               mf22 : odef (filter F) x → odef mf20 x
-               mf22 Fx = subst (λ k → odef k x) *iso ( proj2 (B⊆FX mf18) Fx )
-          mf13 : odef FX (& (Union B))
-          mf13 = ⟪ mf14  , subst (λ k → filter F ⊆ k ) (sym *iso) mf15  ⟫
-          mf42 : {z : Ordinal} → odef B z → * z ⊆  Union B
-          mf42 {z} Bz {x} zx = record { owner  = _ ; ao = Bz ; ox = zx }
-          mf40 : {z : Ordinal} → odef B z → (z ≡ & (Union B)) ∨ ( * z ⊂ * (& (Union B)) )
-          mf40 {z} Bz with B⊆FX Bz
-          ... | ⟪ filterz , F⊆z ⟫ with osuc-≡< ( ⊆→o≤ {* z} {Union B} (mf42 Bz) )
-          ... | case1 eq = case1 (trans (sym &iso) eq )
-          ... | case2 lt = case2 ⟪ subst₂ (λ j k → j o< & k ) refl (sym *iso) lt  , subst (λ  k → * z ⊆ k) (sym *iso)  (mf42 Bz)  ⟫
-      mx : Maximal  FX
-      mx = Zorn-lemma (∈∅< FX∋F) SUP⊆  
-      imf : IsFilter {L} {P} LP (& (Maximal.maximal mx))
-      imf = proj1 (Maximal.as mx)
-      mf00 : (* (& (Maximal.maximal mx))) ⊆ L
-      mf00 = IsFilter.f⊆L imf   
-      mf01 : { p q : HOD } →  L ∋ q → (* (& (Maximal.maximal mx))) ∋ p →  p ⊆ q  → (* (& (Maximal.maximal mx))) ∋ q
-      mf01 {p} {q} Lq Fq p⊆q = IsFilter.filter1 imf Lq Fq 
-              (λ {x} lt → subst (λ k → odef k x) (sym *iso) ( p⊆q (subst (λ k → odef k x) *iso lt ) ))
-      mf02 : { p q : HOD } → (* (& (Maximal.maximal mx))) ∋ p → (* (& (Maximal.maximal mx)))  ∋ q  → L ∋ (p ∩ q) 
-          → (* (& (Maximal.maximal mx))) ∋ (p ∩ q)
-      mf02 {p} {q} Fp Fq Lpq = subst₂ (λ j k → odef (* (& (Maximal.maximal mx))) (& (j ∩ k ))) *iso *iso (
-          IsFilter.filter2 imf Fp Fq (subst₂ (λ j k → odef L (& (j ∩ k ))) (sym *iso) (sym *iso) Lpq ))
-      mf : Filter {L} {P} LP
-      mf = record { filter = * (& (Maximal.maximal mx)) ; f⊆L = mf00  
-         ; filter1 = mf01  
-         ; filter2 = mf02 }
-      mf52 : filter F ⊆ Maximal.maximal mx
-      mf52 = subst (λ k → filter F ⊆ k ) *iso (proj2 mf53) where
-         mf53 : FX ∋ Maximal.maximal mx 
-         mf53 = Maximal.as mx 
-      mf50 : (f : Filter LP) → ¬ (filter f ∋ od∅) → filter F ⊆ filter f → ¬ (* (& (zorn.Maximal.maximal mx)) ⊂ filter f)
-      mf50 f proper F⊆f = subst (λ k → ¬ ( k ⊂ filter f )) (sym *iso) (Maximal.¬maximal<x mx ⟪ Filter-is-Filter {L} {P} LP f proper  , mf51 ⟫ ) where
-         mf51 : filter F ⊆ * (& (filter f))
-         mf51 = subst (λ k → filter F ⊆ k ) (sym *iso) F⊆f 
-
-F→ultra : {L P : HOD} (LP : L ⊆ Power P) → (NEG : {p : HOD} → L ∋ p → L ∋ ( P ＼ p)) → (CAP : {p q : HOD} → L ∋ p → L ∋ q → L ∋ (p ∩ q))
-      → (F : Filter {L} {P} LP) → (0<L : o∅ o< & L) →  {y : Ordinal} →  (0<F : odef (filter F) y) →  (proper : ¬ (filter F ∋ od∅)) 
-      → ultra-filter ( MaximumFilter.mf (F→Maximum {L} {P} LP NEG CAP F 0<L 0<F proper ))
-F→ultra {L} {P} LP NEG CAP F 0<L 0<F proper = max→ultra {L} {P} LP CAP F 0<F (F→Maximum {L} {P} LP NEG CAP F 0<L 0<F proper ) 
-
-
