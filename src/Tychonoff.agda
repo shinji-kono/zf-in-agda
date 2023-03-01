@@ -66,7 +66,7 @@ UFLP→FIP {P} TP uflp with trio< (& P) o∅
    -- P is empty
    fip02 : {x : Ordinal } → ¬ odef P x
    fip02 {x} Px = ⊥-elim ( o<¬≡ (sym b) (∈∅< Px) )
-... | tri> ¬a ¬b 0<P = record { limit = limit ; is-limit = uf01 } where
+... | tri> ¬a ¬b 0<P = record { limit = ? ; is-limit = uf01 } where
      fip : {X : Ordinal} → * X ⊆ CS TP → Set n
      fip {X} CSX = {x : Ordinal} → Subbase (* X) x → o∅ o< x
      N : {X : Ordinal} → (CSX : * X ⊆ CS TP) → fip CSX → HOD

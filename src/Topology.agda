@@ -332,10 +332,10 @@ FIP→Compact {L} top fip with trio< (& L) o∅
    finCoverBase : {X : Ordinal } → * X ⊆ OS top → * X covers L →  Subbase (Replace (* X) (λ z → L ＼ z)) o∅
    finCoverBase {X} ox oc with ODC.p∨¬p O (Subbase (Replace (* X) (λ z → L ＼ z)) o∅)
    ... | case1 sb = sb
-   ... | case2 ¬sb = ⊥-elim (fip09 fip25 fip20) where
-       fip09 : {z : Ordinal } →  odef L z → ¬ ( {y : Ordinal } → (Xy : odef (* X) y)  → ¬ ( odef (* y) z ))
-       fip09 {z} Lz nc  =  nc ( P∋cover oc Lz  ) (subst (λ k → odef (* (cover oc Lz)) k) refl (isCover oc _ ))
-       -- CX is finite intersection
+   ... | case2 ¬sb = ⊥-elim (¬¬cover fip25 fip20) where
+       ¬¬cover : {z : Ordinal } →  odef L z → ¬ ( {y : Ordinal } → (Xy : odef (* X) y)  → ¬ ( odef (* y) z ))
+       ¬¬cover {z} Lz nc  =  nc ( P∋cover oc Lz  ) (isCover oc _ )
+       -- ¬sb → we have finite intersection
        fip02 : {x : Ordinal} → Subbase (* (CX ox)) x → o∅ o< x
        fip02 {x} sc with trio< x o∅
        ... | tri< a ¬b ¬c = ⊥-elim ( ¬x<0 a )
@@ -353,6 +353,7 @@ FIP→Compact {L} top fip with trio< (& L) o∅
            fip22 = subst (λ k → odef k (& ( L ＼ * y ))) (sym *iso) record { z = y ; az = Xy ; x=ψz = refl }
            fip21 : odef (L ＼ * y) ( FIP.limit fip (CCX ox) fip02 )
            fip21 = subst (λ k → odef k ( FIP.limit fip (CCX ox) fip02 ) ) *iso ( FIP.is-limit fip (CCX ox) fip02 fip22 )
+   -- create HOD from Subbase ( finite intersection )
    finCoverSet : {X : Ordinal } → (x : Ordinal) →  Subbase (Replace (* X) (λ z → L ＼ z)) x → HOD
    finCoverSet {X} x (gi rx) =  ( L ＼ * x ) , ( L ＼ * x  )
    finCoverSet {X} x∩y (g∩ {x} {y} sx sy) = finCoverSet {X} x sx ∪ finCoverSet {X} y sy 
@@ -360,7 +361,7 @@ FIP→Compact {L} top fip with trio< (& L) o∅
    -- this defines finite cover
    finCover :  {X : Ordinal} → * X ⊆ OS top → * X covers L → Ordinal
    finCover {X} ox oc = & ( finCoverSet o∅ (finCoverBase ox oc))
-   -- create Finite-∪ from cex
+   -- create Finite-∪ from finCoverSet
    isFinite : {X : Ordinal} (xo : * X ⊆ OS top) (xcp : * X covers L) → Finite-∪ (* X) (finCover xo xcp)
    isFinite {X} xo xcp = fip60 o∅ (finCoverBase xo xcp) where
         fip60 : (x : Ordinal) → (sb : Subbase (Replace (* X) (λ z → L ＼ z)) x ) → Finite-∪ (* X) (& (finCoverSet {X} x sb))
@@ -388,7 +389,10 @@ FIP→Compact {L} top fip with trio< (& L) o∅
    isCover1 {X} xo xcp = subst₂ (λ j k → j covers k ) (sym *iso) (subst (λ k → L ＼ k ≡ L) (sym o∅≡od∅) L＼0=L) 
      (fip70 o∅ (finCoverBase xo xcp)) where
         fip70 : (x : Ordinal) → (sb : Subbase (Replace (* X) (λ z → L ＼ z)) x ) → (finCoverSet {X} x sb) covers (L ＼ * x)
-        fip70 x (gi rx) = record { cover = λ _ → & (L ＼ * x) ; P∋cover = λ _ → case1 refl ; isCover = λ {x} lt → subst (λ k → odef k x) (sym *iso) lt } 
+        fip70 x (gi rx) = fip73 where
+            fip73 : ((L ＼ * x) , (L ＼ * x)) covers (L ＼ * x)   -- obvious
+            fip73 = record { cover = λ _ → & (L ＼ * x) ; P∋cover = λ _ → case1 refl 
+                ; isCover = λ {x} lt → subst (λ k → odef k x) (sym *iso) lt } 
         fip70 x∩y (g∩ {x} {y} sx sy) = subst (λ k → finCoverSet (& (* x ∩ * y)) (g∩ sx sy) covers
               (L ＼ k)) (sym *iso) ( fip43 {_} {L} {* x} {* y} (fip71 (fip70 x sx)) (fip72 (fip70 y sy)) ) where
             fip71 : {a b c : HOD} → a covers c →  (a ∪ b) covers c
@@ -440,7 +444,6 @@ Compact→FIP {L} top compact with trio< (& L) o∅
            * o∅ ≡⟨  o∅≡od∅ ⟩ 
            od∅ ∎ ) (sym &iso) xx ) ) where open ≡-Reasoning
    ... | tri> ¬a ¬b c = ⊥-elim ( ¬x<0 c )
-   -- (subst (λ k → odef (CS top) k) (sym &iso) ( CX xx ) ) ))
 ... | tri> ¬a ¬b 0<L = record { limit = limit ; is-limit = fip00 } where
    -- set of coset of X
    OX : {X : Ordinal} → * X ⊆ CS top → Ordinal
@@ -453,9 +456,13 @@ Compact→FIP {L} top compact with trio< (& L) o∅
    --   if all finite intersection of X contains something, 
    --   there is no finite cover. From Compactness, (OX X) is not a cover of L ( contraposition of Compact)
    --     it means there is a limit
+   record NC {X : Ordinal} (CX : * X ⊆ CS top) (fip : {x : Ordinal} → Subbase (* X) x → o∅ o< x) (0<X : o∅ o< X) : Set n where
+      field         -- find an element x, which is not covered (which is a limit point)
+          x : Ordinal
+          yx : {y : Ordinal} (Xy : odef (* X) y) →  odef (* y) x 
    has-intersection : {X : Ordinal} (CX : * X ⊆ CS top) (fip : {x : Ordinal} → Subbase (* X) x → o∅ o< x) 
-      → o∅ o< X  →  ¬ (  Intersection (* X) =h= od∅ )
-   has-intersection {X} CX fip 0<X i=0 =  ⊥-elim ( ¬x<0 {NC.x not-covered} ( eq→ i=0 ⟪ fp06 , fp05  ⟫ )) where
+      → (0<X : o∅ o< X ) →  NC CX fip 0<X
+   has-intersection {X} CX fip 0<X =  intersection where
       e : HOD  -- we have an element of X
       e = ODC.minimal O (* X) (0<P→ne (subst (λ k → o∅ o< k) (sym &iso) 0<X) )
       Xe : odef (* X) (& e)
@@ -502,7 +509,8 @@ Compact→FIP {L} top compact with trio< (& L) o∅
               fp35 : (L ＼ * (& (* (SB.i (fp02 tx ux)) ∪ * (SB.i (fp02 ty uy))))) ⊆ (L ＼ Union (* (& (* tx ∪ * ty))))
               fp35 = subst₂ (λ j k →  (L ＼ j ) ⊆ (L ＼ Union k)) (sym *iso) (sym *iso) fp36  where
                   fp40 : {z tz : Ordinal } → Finite-∪ (* (OX CX)) tz → odef (Union (* tz )) z → odef L z 
-                  fp40 {z} {.(Ordinals.o∅ O)} fin-e record { owner = owner ; ao = ao ; ox = ox } = ⊥-elim ( ¬∅∋ (subst₂ (λ j k → odef j k ) o∅≡od∅  (sym &iso) ao ))
+                  fp40 {z} {.(Ordinals.o∅ O)} fin-e record { owner = owner ; ao = ao ; ox = ox } 
+                      = ⊥-elim ( ¬∅∋ (subst₂ (λ j k → odef j k ) o∅≡od∅  (sym &iso) ao ))
                   fp40 {z} {.(& (* _ , * _))} (fin-i {w} x) uz = fp41 x (subst (λ k → odef (Union k) z) *iso uz)  where
                        fp41 : (x : odef (* (OX CX)) w) → (uz : odef (Union (* w , * w)) z ) → odef L z
                        fp41 x record { owner = .(& (* w)) ; ao = (case1 refl) ; ox = ox } = 
@@ -564,13 +572,9 @@ Compact→FIP {L} top compact with trio< (& L) o∅
                f25 = ordtrans<-≤ (subst (λ k → k o< & (L ＼ * (SB.i sb))) (sym ord-od∅) (0<sb (SB.sb sb) ) )  ( begin
                   & (L ＼ * (SB.i sb))  ≤⟨ ⊆→o≤ f23 ⟩ 
                   & (L ＼  Union (* (Compact.finCover compact (OOX CX) cov)))  ∎  ) where open o≤-Reasoning O
-
-      record  NC : Set n where   -- find an element xi, which is not covered (which is a limit point)
-        field
-           x : Ordinal
-           yx : {y : Ordinal} (Xy : odef (* X) y) →  odef (* y) x 
-      not-covered : NC 
-      not-covered with ODC.p∨¬p O NC 
+      -- if we have no cover, we can consruct NC
+      intersection : NC CX fip 0<X
+      intersection with ODC.p∨¬p O (NC CX fip 0<X)
       ... | case1 nc = nc 
       ... | case2 ¬nc = ⊥-elim ( no-cover record { cover = λ Lx → & (L ＼ coverf Lx) ; P∋cover = fp22 ; isCover = fp23 } ) where
           coverSet : {x : Ordinal} → odef L x → HOD
@@ -596,29 +600,18 @@ Compact→FIP {L} top compact with trio< (& L) o∅
           fp23 {x} Lx = subst (λ k → odef k x) (sym *iso) ⟪ Lx , fp26 ⟫  where
              fp26 : ¬ odef (coverf Lx) x
              fp26 = subst (λ k → ¬ odef k x ) *iso (proj2 (proj2 ( ODC.x∋minimal O (coverSet Lx) (fp17 Lx) ))  )
-      fp05 : {y : Ordinal } → (Xy : odef (* X) y ) → odef ( * y) (NC.x not-covered )
-      fp05 {y} Xy = NC.yx not-covered Xy
-      fp06 : NC.x not-covered o≤ & (* X)
-      fp06 = begin
-         NC.x not-covered ≡⟨ sym &iso ⟩
-         & (* (NC.x not-covered)) <⟨ c<→o< (subst₂ (λ j k → odef j k ) *iso (sym &iso) (NC.yx not-covered Xe)) ⟩
-         & e  <⟨ c<→o< Xe ⟩
-         & (* X) ∎ where open o≤-Reasoning O
-   limit : {X : Ordinal} (CX : * X ⊆ CS top) (fip : {x : Ordinal} → Subbase (* X) x → o∅ o< x) 
-      → Ordinal
+   limit : {X : Ordinal} (CX : * X ⊆ CS top) (fip : {x : Ordinal} → Subbase (* X) x → o∅ o< x) → Ordinal
    limit {X} CX fip with trio< X o∅ 
    ... | tri< a ¬b ¬c = ⊥-elim ( ¬x<0 a )
    ... | tri≈ ¬a b ¬c = o∅
-   ... | tri> ¬a ¬b c = & (ODC.minimal O (Intersection (* X)) ( has-intersection CX fip c))
+   ... | tri> ¬a ¬b c = NC.x ( has-intersection CX fip c)
    fip00 : {X : Ordinal} (CX : * X ⊆ CS top)
             (fip : {x : Ordinal} → Subbase (* X) x → o∅ o< x)
             {x : Ordinal} → odef (* X) x → odef (* x) (limit CX fip )
    fip00 {X} CX fip {x} Xx with trio< X o∅
    ... | tri< a ¬b ¬c = ⊥-elim ( ¬x<0 a )
    ... | tri≈ ¬a b ¬c = ⊥-elim (  o<¬≡ (sym b) (subst (λ k → o∅ o< k) &iso (∈∅< Xx) ) )
-   ... | tri> ¬a ¬b c with ODC.x∋minimal O (Intersection (* X)) ( has-intersection CX fip c )
-   ... | ⟪ 0<m , intersect ⟫ = intersect Xx 
-
+   ... | tri> ¬a ¬b c = NC.yx ( has-intersection CX fip c ) Xx
 
 open Filter
 

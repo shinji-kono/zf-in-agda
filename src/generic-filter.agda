@@ -1,3 +1,4 @@
+{-# OPTIONS --allow-unsolved-metas #-}
 open import Level
 open import Ordinals
 module generic-filter {n : Level } (O : Ordinals {n})   where
