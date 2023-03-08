@@ -10,7 +10,6 @@ open import logic
 import OD hiding ( _⊆_ )
 
 import ODC
-import OPair
 open import Data.Nat renaming ( zero to Zero ; suc to Suc ;  ℕ to Nat ; _⊔_ to _n⊔_ )
 open import Relation.Binary.PropositionalEquality
 open import Data.Nat.Properties
@@ -22,8 +21,8 @@ open import Relation.Binary.Core
 open inOrdinal O
 open OD O
 open OD.OD
-open OPair O
 open ODAxiom odAxiom
+open import ZProduct O
 
 import OrdUtil
 import ODUtil

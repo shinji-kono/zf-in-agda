@@ -34,7 +34,7 @@ import ODC
 open ODC O
 
 open import filter O
-open import OPair O
+open import ZProduct O
 
 record Topology  ( L : HOD ) : Set (suc n) where
    field
@@ -42,7 +42,7 @@ record Topology  ( L : HOD ) : Set (suc n) where
        OS⊆PL :  OS ⊆ Power L
        o∩ : { p q : HOD } → OS ∋ p →  OS ∋ q      → OS ∋ (p ∩ q)
        o∪ : { P : HOD }  →  P ⊆ OS                → OS ∋ Union P
-       OS∋od∅ : OS ∋ od∅
+       OS∋od∅ : OS ∋ od∅ -- OS ∋ Union od∅ 
 --- we may add
 --     OS∋L   :  OS ∋ L
 -- closed Set
@@ -114,6 +114,12 @@ CS∋Cl {L} top A = subst (λ k → CS top ∋ k) (==→o≡ cc00) (P＼OS=CS to
                 cc05 : odef (* (& (L ＼ * o))) x
                 cc05 = ccx (& (L ＼ * o)) (P＼OS=CS top (subst (λ k → odef (OS top) k) (sym &iso) oo)) (subst (λ k → A ⊆ k) (sym *iso) A⊆L-o) 
 
+CS∋x→Clx=x : {L x : HOD} → (top : Topology L) → CS top ∋ x → Cl top x ≡ x 
+CS∋x→Clx=x {L} {x} top cx = ==→o≡ record { eq→ = cc10 ; eq← = cc11 } where
+    cc10 : {y : Ordinal} → odef L y ∧ ((c : Ordinal) → odef (CS top) c → x ⊆ * c → odef (* c) y) → odef x y
+    cc10 {y} ⟪ Ly , cc ⟫ = subst (λ k → odef k y) *iso ( cc (& x) cx (λ {z} xz → subst (λ k → odef k z) (sym *iso) xz  ) )
+    cc11 : {y : Ordinal} → odef x y → odef L y ∧ ((c : Ordinal) → odef (CS top) c → x ⊆ * c → odef (* c) y) 
+    cc11 {y} xy = ⟪ cs⊆L top cx xy , (λ c oc x⊆c → x⊆c xy ) ⟫
 
 -- Subbase P
 --   A set of countable intersection of P will be a base (x ix an element of the base)
@@ -218,12 +224,14 @@ open ZFProduct
 -- Product Topology is not
 --     ZFP (OS TP) (OS TQ) (box)
 
+-- Rectangle subset (zπ1 ⁻¹ p)
 record BaseP {P : HOD} (TP : Topology P ) (Q : HOD) (x : Ordinal) : Set n where
    field
        p : Ordinal
        op : odef (OS TP) p
        prod : x ≡ & (ZFP (* p) Q )
 
+-- Rectangle subset (zπ12⁻¹ q )
 record BaseQ (P : HOD) {Q : HOD} (TQ : Topology Q ) (x : Ordinal) : Set n where
    field
        q  : Ordinal
@@ -281,7 +289,7 @@ record FIP {L : HOD} (top : Topology L) : Set n where
 
 data Finite-∪ (S : HOD) : Ordinal → Set n where
    fin-e : Finite-∪ S o∅
-   fin-i : {x : Ordinal } → odef S x  → Finite-∪ S (& ( * x , * x ))
+   fin-i : {x : Ordinal } → odef S x  → Finite-∪ S (& ( * x , * x ))   -- an element of S
    fin-∪ : {x y : Ordinal } → Finite-∪ S x → Finite-∪ S y → Finite-∪ S (& (* x ∪ * y))
    --  Finite-∪ S y → Union y ⊆ S
 
@@ -615,8 +623,9 @@ Compact→FIP {L} top compact with trio< (& L) o∅
 
 open Filter
 
--- Ultra Filter has limit point
-
+--
+-- {v | Neighbor lim v}  set of u ⊆ v ⊆ P where u is an open set u ∋ x
+--
 record Neighbor {P : HOD} (TP : Topology P) (x v : Ordinal) : Set n where
    field
        u : Ordinal

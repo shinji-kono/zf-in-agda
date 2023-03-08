@@ -2,7 +2,7 @@
 
 open import Level
 open import Ordinals
-module OPair {n : Level } (O : Ordinals {n})   where
+module ZProduct {n : Level } (O : Ordinals {n})   where
 
 open import zf
 open import logic
@@ -156,20 +156,6 @@ product→ {A} {B} {a} {b} A∋a B∋b = record { owner = _ ; ao = lemma1 ; ox =
     lemma2 : odef (Replace A (λ a₁ → < a₁ , b >)) (& < a , b >)
     lemma2 = replacement← A a A∋a
 
-x<nextA : {A x : HOD} → A ∋ x →  & x o< next (odmax A)
-x<nextA {A} {x} A∋x = ordtrans (c<→o< {x} {A} A∋x) ho<
-
-A<Bnext : {A B x : HOD} → & A o< & B → A ∋ x → & x o< next (odmax B)
-A<Bnext {A} {B} {x} lt A∋x = osucprev (begin
-          osuc (& x)  
-       <⟨ osucc (c<→o< A∋x) ⟩
-          osuc (& A)
-       <⟨ osucc lt ⟩
-          osuc (& B)
-       <⟨ osuc<nx ho<  ⟩
-          next (odmax B)
-       ∎ ) where open o≤-Reasoning O
-
 data ZFProduct  (A B : HOD) : (p : Ordinal) → Set n where
     ab-pair : {a b : Ordinal } → odef A a → odef B b → ZFProduct A B ( & ( < * a , * b > ) )
 
@@ -198,6 +184,15 @@ zp2 {A} {B} {.(& < * _ , * _ >)} (ab-pair {a} {b} aa bb ) = bb
 zp-iso :  { A B : HOD } → {x : Ordinal } → (p : odef (ZFP A B) x ) → & < * (zπ1 p) , * (zπ2 p) > ≡ x
 zp-iso {A} {B} {_} (ab-pair {a} {b} aa bb)  = refl
 
+zp-iso1 :  { A B : HOD } → {a b : Ordinal } → (p : odef (ZFP A B) (& < * a , * b > )) → (* (zπ1 p) ≡ (* a)) ∧ (* (zπ2 p) ≡ (* b))
+zp-iso1 {A} {B} {a} {b} pab = prod-≡ (subst₂ (λ j k → j ≡ k ) *iso *iso (cong (*) zz11) ) where
+      zz11 : & < * (zπ1 pab) , * (zπ2 pab) > ≡ & < * a , * b >
+      zz11 = zp-iso pab
+
+zp-iso0 :  { A B : HOD } → {a b : Ordinal } → (p : odef (ZFP A B) (& < * a , * b > )) → (zπ1 p ≡ a) ∧ (zπ2 p ≡ b)
+zp-iso0 {A} {B} {a} {b} pab = ⟪ subst₂ (λ j k → j ≡ k ) &iso &iso (cong (&) (proj1 (zp-iso1 pab) ))  
+                              , subst₂ (λ j k → j ≡ k ) &iso &iso (cong (&) (proj2 (zp-iso1 pab) ) )  ⟫
+
 ZFP⊆⊗ :  {A B : HOD} {x : Ordinal} → odef (ZFP A B) x → odef (A ⊗ B) x
 ZFP⊆⊗ {A} {B} {px} ( ab-pair {a} {b} ax by ) = product→ (d→∋ A ax) (d→∋ B by)
 
@@ -225,27 +220,76 @@ ZFPproj1 {A} {B} {X} X⊆P = Replace' X ( λ x px → * (zπ1 (X⊆P px) ))
 ZFPproj2 : {A B X : HOD} → X ⊆ ZFP A B  → HOD
 ZFPproj2 {A} {B} {X} X⊆P = Replace' X ( λ x px → * (zπ2 (X⊆P px) )) 
 
--- simple version 
+ZFProj1-iso : {P Q : HOD} {a b x : Ordinal } ( p : ZFProduct P Q x ) → x ≡ & < * a , * b > → zπ1 p ≡ a
+ZFProj1-iso {P} {Q} {a} {b} (ab-pair {c} {d} zp zq) eq with prod-≡ (subst₂ (λ j k → j ≡ k) *iso *iso (cong (*) eq))
+... | ⟪ a=c , b=d ⟫ = subst₂ (λ j k → j ≡ k) &iso &iso (cong (&) a=c)
 
-record ZProj1 (L : HOD) (x : Ordinal) : Set n where 
-    field
-        pq : Ordinal
-        opq : ord-pair pq
-        Lpq : odef L pq    
-        x=pi1 : x ≡ pi1 opq
+ZFProj2-iso : {P Q : HOD} {a b x : Ordinal } ( p : ZFProduct P Q x ) → x ≡ & < * a , * b > → zπ2 p ≡ b
+ZFProj2-iso {P} {Q} {a} {b} (ab-pair {c} {d} zp zq) eq with prod-≡ (subst₂ (λ j k → j ≡ k) *iso *iso (cong (*) eq))
+... | ⟪ a=c , b=d ⟫ = subst₂ (λ j k → j ≡ k) &iso &iso (cong (&) b=d)
 
--- LP' = Replace' L ( λ p lp → ZFPproj1 {P} {Q} {p} (λ {x} px → (LPQ lp _ (subst (λ k → odef k x) (sym *iso) px  ) )))           
+ZFP∩  : {A B C : HOD} → ( ZFP (A ∩ B) C ≡ ZFP A C ∩ ZFP B C ) ∧ ( ZFP C (A ∩ B) ≡ ZFP C A  ∩ ZFP C B )
+proj1 (ZFP∩ {A} {B} {C} ) = ==→o≡ record { eq→ = zfp00  ; eq← = zfp01 } where
+   zfp00 : {x : Ordinal} → ZFProduct (A ∩ B) C x → odef (ZFP A C ∩ ZFP B C) x
+   zfp00  (ab-pair ⟪ pa , pb ⟫ qx) = ⟪ ab-pair pa qx  , ab-pair pb qx  ⟫
+   zfp01 : {x : Ordinal} → odef (ZFP A C ∩ ZFP B C) x → ZFProduct (A ∩ B) C x
+   zfp01 {x} ⟪ p , q ⟫  = subst (λ k → ZFProduct (A ∩ B) C k) zfp07 ( ab-pair (zfp02 ⟪ p , q ⟫ ) (zfp04 q) ) where
+       zfp05 : & < * (zπ1 p) , * (zπ2 p) > ≡ x
+       zfp05 = zp-iso p
+       zfp06 : & < * (zπ1 q) , * (zπ2 q) > ≡ x
+       zfp06 = zp-iso q
+       zfp07 : & < * (zπ1 p) , * (zπ2 q) > ≡ x
+       zfp07 = trans (cong (λ k → & < k , * (zπ2 q)  >  ) 
+           (proj1 (prod-≡ (subst₂ _≡_  *iso *iso (cong (*) (trans  zfp05 (sym (zfp06)))))))) zfp06
+       zfp02 : {x  : Ordinal  } → (acx : odef (ZFP A C ∩ ZFP B C) x)   → odef (A ∩ B) (zπ1 (proj1 acx))
+       zfp02 {.(& < * _ , * _ >)} ⟪ ab-pair {a} {b} ax bx , bcx ⟫ = ⟪ ax , zfp03 bcx refl ⟫ where
+           zfp03 : {x : Ordinal } →  (bc : odef (ZFP B C) x) → x ≡ (& < * a , * b >)  → odef B (zπ1 (ab-pair {A} {C} ax bx))
+           zfp03 (ab-pair {a1} {b1} x x₁) eq = subst (λ k → odef B k ) zfp08 x  where
+              zfp08 : a1 ≡ a
+              zfp08 = subst₂ _≡_ &iso &iso (cong (&) (proj1 (prod-≡ (subst₂  _≡_  *iso *iso (cong (*) eq)))))
+       zfp04 : {x : Ordinal } (acx : odef (ZFP B C) x )→ odef C (zπ2 acx)
+       zfp04 (ab-pair x x₁) = x₁ 
+proj2 (ZFP∩ {A} {B} {C} ) = ==→o≡ record { eq→ = zfp00 ; eq← = zfp01  } where
+   zfp00 : {x : Ordinal} → ZFProduct C (A ∩ B) x → odef (ZFP C A ∩ ZFP C B) x
+   zfp00  (ab-pair qx ⟪ pa , pb ⟫ ) = ⟪ ab-pair qx pa  , ab-pair qx pb   ⟫
+   zfp01 : {x : Ordinal} → odef (ZFP C A ∩ ZFP C B ) x → ZFProduct C (A ∩ B)  x
+   zfp01 {x} ⟪ p , q ⟫  = subst (λ k → ZFProduct C (A ∩ B)  k) zfp07 ( ab-pair (zfp04 p) (zfp02 ⟪ p , q ⟫ )  ) where
+       zfp05 : & < * (zπ1 p) , * (zπ2 p) > ≡ x
+       zfp05 = zp-iso p
+       zfp06 : & < * (zπ1 q) , * (zπ2 q) > ≡ x
+       zfp06 = zp-iso q
+       zfp07 : & < * (zπ1 p) , * (zπ2 q) > ≡ x
+       zfp07 = trans (cong (λ k → & < * (zπ1 p) , k  >  ) 
+           (sym (proj2 (prod-≡ (subst₂ _≡_  *iso *iso (cong (*) (trans  zfp05 (sym (zfp06))))))))) zfp05
+       zfp02 : {x  : Ordinal  } → (acx : odef (ZFP C A ∩ ZFP C B ) x)   → odef (A ∩ B) (zπ2 (proj2 acx))
+       zfp02 {.(& < * _ , * _ >)} ⟪ bcx , ab-pair {b} {a} ax bx  ⟫ = ⟪ zfp03 bcx refl , bx ⟫ where
+           zfp03 : {x : Ordinal } →  (bc : odef (ZFP C A ) x) → x ≡ (& < * b , * a >)  → odef A (zπ2 (ab-pair {C} {B} ax bx ))
+           zfp03 (ab-pair {b1} {a1} x x₁) eq = subst (λ k → odef A k ) zfp08 x₁ where
+              zfp08 : a1 ≡ a
+              zfp08 = subst₂ _≡_ &iso &iso (cong (&) (proj2 (prod-≡ (subst₂  _≡_  *iso *iso (cong (*) eq)))))
+       zfp04 : {x : Ordinal } (acx : odef (ZFP C A ) x )→ odef C (zπ1 acx)
+       zfp04 (ab-pair x x₁) = x 
 
-Proj1 : (L P Q : HOD) → HOD
-Proj1 L P Q = record { od = record { def = λ x → odef P x ∧ ZProj1 L x } ; odmax = & P ; <odmax = odef∧< }
-   
-record ZProj2 (L : HOD) (x : Ordinal) : Set n where 
-    field
-        pq : Ordinal
-        opq : ord-pair pq
-        Lpq : odef L pq    
-        x=pi2 : x ≡ pi2 opq
+open import BAlgebra O
 
-Proj2 : (L P Q : HOD) → HOD
-Proj2 L P Q = record { od = record { def = λ x → odef Q x ∧ ZProj2 L x } ; odmax = & Q ; <odmax = odef∧< }
-   
+ZFP\Q : {P Q p : HOD} → (( ZFP P Q ＼ ZFP p Q ) ≡ ZFP (P ＼ p) Q ) ∧ (( ZFP P Q ＼ ZFP P p ) ≡ ZFP P (Q ＼ p) )
+ZFP\Q {P} {Q} {p} = ⟪ ==→o≡ record { eq→ = ty70 ; eq← = ty71 } , ==→o≡ record { eq→ = ty73 ; eq← = ty75 } ⟫ where
+    ty70 : {x : Ordinal } → odef ( ZFP P Q ＼ ZFP p Q ) x →  odef (ZFP (P ＼ p) Q) x
+    ty70 ⟪ ab-pair {a} {b} Pa pb  , npq ⟫ = ab-pair ty72 pb  where
+       ty72 : odef (P ＼ p ) a
+       ty72 = ⟪ Pa , (λ pa → npq (ab-pair pa pb ) ) ⟫
+    ty71 : {x : Ordinal } → odef (ZFP (P ＼ p) Q) x → odef ( ZFP P Q ＼ ZFP p Q ) x 
+    ty71 (ab-pair {a} {b} ⟪ Pa , npa ⟫ Qb) = ⟪ ab-pair Pa Qb 
+        , (λ pab → npa (subst (λ k → odef p k) (proj1 (zp-iso0 pab)) (zp1 pab)) ) ⟫ 
+    ty73 : {x : Ordinal } → odef ( ZFP P Q ＼ ZFP P p ) x →  odef (ZFP P (Q ＼ p) ) x
+    ty73 ⟪ ab-pair {a} {b} pa Qb  , npq ⟫ = ab-pair pa ty72  where
+       ty72 : odef (Q ＼ p ) b
+       ty72 = ⟪ Qb , (λ qb → npq (ab-pair pa qb ) ) ⟫
+    ty75 : {x : Ordinal } → odef (ZFP P (Q ＼ p) ) x → odef ( ZFP P Q ＼ ZFP P p ) x 
+    ty75 (ab-pair {a} {b} Pa ⟪ Qb , nqb ⟫ ) = ⟪ ab-pair Pa Qb 
+        , (λ pab → nqb (subst (λ k → odef p k) (proj2 (zp-iso0 pab)) (zp2 pab)) ) ⟫ 
+
+
+
+
+

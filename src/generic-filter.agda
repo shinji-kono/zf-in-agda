@@ -52,8 +52,7 @@ open HOD
 open import Data.List hiding (filter)
 open import Data.Maybe 
 
-import OPair
-open OPair O
+open import ZProduct O
 
 record CountableModel : Set (suc (suc n)) where
    field

@@ -90,6 +90,8 @@ record HOD : Set (suc n) where
 
 open HOD
 
+open import Relation.Binary.HeterogeneousEquality as HE using (_≅_ )
+
 record ODAxiom : Set (suc n) where
  field
   -- HOD is isomorphic to Ordinal (by means of Goedel number)
@@ -102,9 +104,9 @@ record ODAxiom : Set (suc n) where
   ==→o≡  :  {x y : HOD  }   → (od x == od y) → x ≡ y
   sup-o  :  (A : HOD) → (     ( x : Ordinal ) → def (od A) x →  Ordinal ) →  Ordinal -- required in Replace
   sup-o≤ :  (A : HOD) → { ψ : ( x : Ordinal ) → def (od A) x →  Ordinal } → ∀ {x : Ordinal } → (lt : def (od A) x ) → ψ x lt o≤  sup-o A ψ
+  ∋-irr : {X : HOD} {x : Ordinal } → (a b : def (od X) x) → a ≅ b
 -- possible order restriction (required in the axiom of infinite )
   ho< : {x : HOD} → & x o< next (odmax x)
-
 
 postulate  odAxiom : ODAxiom
 open ODAxiom odAxiom
@@ -217,6 +219,9 @@ eq← ∅0 {w} lt = lift (¬x<0 lt)
 ∅< : { x y : HOD  } → odef x (& y ) → ¬ (  od x  == od od∅  )
 ∅<  {x} {y} d eq with eq→ (==-trans eq (==-sym ∅0) ) d
 ∅<  {x} {y} d eq | lift ()
+
+¬x∋y→x≡od∅  : { x : HOD  } → ({y : Ordinal } → ¬ odef x y ) → x ≡ od∅ 
+¬x∋y→x≡od∅ {x} nxy = ==→o≡ record { eq→ = λ {y} lt → ⊥-elim (nxy lt) ; eq← = λ {y} lt → ⊥-elim (¬x<0 lt)  }
 
 0<P→ne  : { x : HOD  } → o∅ o< & x → ¬ (  od x  == od od∅  )
 0<P→ne {x} 0<x eq = ⊥-elim ( o<¬≡ (sym (=od∅→≡o∅ eq)) 0<x )
@@ -369,7 +374,7 @@ record Replaced1 (A : HOD) (ψ : (x : Ordinal ) → odef A x → Ordinal ) (x : 
       az : odef A z
       x=ψz  : x ≡ ψ z az
 
-Replace' : (X : HOD)  → ((x : HOD) → X ∋ x → HOD) → HOD
+Replace' : (X : HOD) → ((x : HOD) → X ∋ x → HOD) → HOD
 Replace' X ψ = record { od = record { def = λ x → Replaced1 X (λ z xz → & (ψ (* z) (subst (λ k → odef X k) (sym &iso) xz) )) x  } ; odmax = rmax ; <odmax = rmax< } where
         rmax : Ordinal
         rmax = osuc ( sup-o X (λ y X∋y → & (ψ (* y) (d→∋ X X∋y) )) )
@@ -377,6 +382,26 @@ Replace' X ψ = record { od = record { def = λ x → Replaced1 X (λ z xz → &
         rmax< {y} lt = subst (λ k → k o< rmax) r01 ( sup-o≤ X (Replaced1.az lt) ) where
             r01 : & (ψ ( * (Replaced1.z lt ) ) (subst (λ k → odef X k) (sym &iso) (Replaced1.az lt) )) ≡ y
             r01 = sym (Replaced1.x=ψz lt )
+
+
+Replace'-iso : (X : HOD) → (ψ : (x : HOD) → X ∋ x → HOD) → 
+      Replace' (* (& X)) (λ y xy → ψ y (subst (λ k → k ∋ y ) *iso xy) ) ≡ Replace' X ( λ y xy → ψ y xy ) 
+Replace'-iso X ψ = ==→o≡ record { eq→ = ri0 ; eq← = ri1 } where
+    ri2 : {z : Ordinal } (a b : X ∋ (* z)) → & (ψ (* z) a) ≡ & (ψ (* z) b)
+    ri2 {z} a b = cong (λ k → & (ψ (* z) k)) ( HE.≅-to-≡ ( ∋-irr {X} {& (* z)} a b ) )
+    ri0 : {x : Ordinal} 
+        → Replaced1 (* (& X)) (λ z xz → & (ψ (* z) (subst (λ k → k ∋ * z) *iso (subst (odef (* (& X))) (sym &iso) xz)))) x 
+        → Replaced1 X (λ z xz → & (ψ (* z) (subst (odef X) (sym &iso) xz))) x
+    ri0 {x} record { z = z ; az = az ; x=ψz = refl } = record { z = z ; az = subst (λ k → odef k z) *iso az 
+       ; x=ψz = ri2 (subst (λ k → k ∋ * z) *iso (subst (odef (* (& X))) (sym &iso) az))  
+                    (subst (odef X) (sym &iso) (subst (λ k → odef k z) *iso az) ) }  
+    ri1 : {x : Ordinal} 
+        → Replaced1 X (λ z xz → & (ψ (* z) (subst (odef X) (sym &iso) xz))) x
+        → Replaced1 (* (& X)) (λ z xz → & (ψ (* z) (subst (λ k → k ∋ * z) *iso (subst (odef (* (& X))) (sym &iso) xz)))) x 
+    ri1 {x} record { z = z ; az = az ; x=ψz = refl } = record { z = z ; az = subst (λ k → odef k z) (sym *iso) az 
+       ; x=ψz = ri2 (subst (λ k → odef X k) (sym &iso) az  )   -- brain damaged below
+           (subst (λ k → k ∋ * z) *iso (subst (odef (* (& X))) (sym &iso) (subst (λ k → odef k z) (sym *iso) az))) } 
+
 
 -- replacement←1 : {ψ : HOD → HOD} (X x : HOD) →  X ∋ x → Replace1 X ψ ∋ ψ x
 -- replacement←1 {ψ} X x lt = record { z = & x ; az = lt  ; x=ψz = cong (λ k → & (ψ k)) (sym *iso) }
