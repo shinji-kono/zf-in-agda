@@ -40,6 +40,28 @@ open import maximum-filter O
 open Filter
 open Topology
 
+--
+-- Tychonoff : {P Q : HOD } → (TP : Topology P) → (TQ : Topology Q)  
+--      → Compact TP → Compact TQ   → Compact (ProductTopology TP TQ)
+--
+-- ULFP : Compact <=> Every ultra filter F have a limit i.e. open sets which contains the limit (Neighbor limit)  is in F
+--
+-- Tychonoff {P} {Q} TP TQ CP CQ = FIP→Compact (ProductTopology TP TQ) (UFLP→FIP (ProductTopology TP TQ) uflPQ ) where
+--
+--     FP FQ : create projections of a filter F, so it is ULFP
+--
+--         Pf : odef (ZFP P Q) (& < * (UFLP.limit uflp) , * (UFLP.limit uflq) >)
+--    
+--     the product of each limits must be a limit of ultra filter F
+--
+--     its neighbor is in F, because we can decompose Neighbors nei into subbase of Product Topology which is a open set of P ∋ p or Q ∋ q
+--     so (P x q) ∋ limit ∨ (q x P) ∋ limit. P x q ⊆ nei , so nei ∋ limit
+--
+--     uflPQ :  (F : Filter {Power (ZFP P Q)} {ZFP P Q} (λ x → x))  (UF : ultra-filter F)
+--             → UFLP (ProductTopology TP TQ) F UF
+--
+--     QED.
+
 -- FIP is UFL
 
 -- filter Base
@@ -63,7 +85,7 @@ UFLP→FIP : {P : HOD} (TP : Topology P) →
 UFLP→FIP {P} TP uflp with trio< (& P) o∅
 ... | tri< a ¬b ¬c = ⊥-elim ( ¬x<0 a )
 ... | tri≈ ¬a P=0 ¬c = record { limit = λ CX fip → o∅ ; is-limit = fip03 } where
-   -- P is empty
+   -- P is empty ( this case cannot happen because ulfp → 0 < P )
    fip02 : {x : Ordinal } → ¬ odef P x
    fip02 {x} Px = ⊥-elim ( o<¬≡ (sym P=0) (∈∅< Px) )
    fip03 : {X : Ordinal} (CX : * X ⊆ CS TP) (fip : {x : Ordinal} → Subbase (* X) x → o∅ o< x) {x : Ordinal} →
@@ -93,7 +115,7 @@ UFLP→FIP {P} TP uflp with trio< (& P) o∅
         ; <odmax = λ {x} lt → subst₂ (λ j k → j o< osuc k) &iso refl (⊆→o≤ (FBase.u⊆P lt))  }
      N⊆PP : {X : Ordinal } → (CSX : * X ⊆ CS TP) → (fp : fip CSX) → N CSX fp ⊆ Power P
      N⊆PP CSX fp nx b xb  = FBase.u⊆P nx xb
-     -- filter base is not empty necessary for generating ultra filter
+     -- filter base is not empty,  it is necessary to maximize fip filter 
      nc : {X : Ordinal} → o∅ o< X → (CSX : * X ⊆ CS TP) → (fip : fip CSX) → HOD
      nc {X} 0<X CSX fip = ODC.minimal O (* X) (0<P→ne (subst (λ k → o∅ o< k) (sym &iso) 0<X) ) -- an element of X
      N∋nc :{X : Ordinal} → (0<X : o∅ o< X) → (CSX : * X ⊆ CS TP)
@@ -107,7 +129,7 @@ UFLP→FIP {P} TP uflp with trio< (& P) o∅
           nn02 : * (& (nc 0<X CSX fip)) ⊆ P
           nn02 = subst (λ k → k ⊆ P ) (sym *iso) (cs⊆L TP (CSX Xe ) )
 
-     0<PP : o∅ o< & (Power P)
+     0<PP : o∅ o< & (Power P)     -- Power P contaisn od∅, so it is not empty
      0<PP = subst (λ k → k o< & (Power P)) &iso ( c<→o< (subst (λ k → odef (Power P) k) (sym &iso) nn00 )) where
           nn00 : odef (Power P) o∅
           nn00 x lt with subst (λ k → odef k x) o∅≡od∅ lt
@@ -149,7 +171,9 @@ UFLP→FIP {P} TP uflp with trio< (& P) o∅
           fp00 b y b<X (gi by ) = gi ( b<X by )
           fp00 b _ b<X (g∩ {y} {z} sy sz ) = g∩ (fp00 _ _ b<X sy) (fp00 _ _ b<X sz)
      --
-     -- then we have maximum ultra filter
+     -- then we have maximum ultra filter ( Zorn lemma )
+     --    to debug this file, commet out to include maaximum filter
+     --    otherwise the check requires a minute
      --
      maxf : {X : Ordinal} → o∅ o< X → (CSX : * X ⊆ CS TP) → (fp : fip {X} CSX) → MaximumFilter (λ x → x) (F CSX fp)
      maxf {X} 0<X CSX fp = F→Maximum {Power P} {P} (λ x → x) (CAP P)  (F CSX fp) 0<PP (N∋nc 0<X CSX fp) (proper CSX fp)
@@ -158,7 +182,7 @@ UFLP→FIP {P} TP uflp with trio< (& P) o∅
      ultraf : {X : Ordinal} → (0<X : o∅ o< X ) → (CSX : * X ⊆ CS TP) → (fp : fip {X} CSX) → ultra-filter ( mf 0<X CSX fp)
      ultraf {X} 0<X CSX fp = F→ultra {Power P} {P} (λ x → x) (CAP P) (F CSX fp)  0<PP (N∋nc 0<X CSX fp) (proper CSX fp)
      --
-     -- so i has a limit as a limit of UIP
+     -- so it has a limit as a limit of UIP
      --
      limit : {X : Ordinal} → (CSX : * X ⊆ CS TP) → fip {X} CSX → Ordinal
      limit {X} CSX fp with trio< o∅ X
@@ -172,10 +196,15 @@ UFLP→FIP {P} TP uflp with trio< (& P) o∅
      uf01 {X} CSX fp {x} xx with trio< o∅ X
      ... | tri> ¬a ¬b c = ⊥-elim ( ¬x<0 c )
      ... | tri≈ ¬a 0=X ¬c = ⊥-elim ( ¬a (subst (λ k → o∅ o< k) &iso ( ∈∅< xx )))
+     --  0<X  limit is in * x or P ＼ * x
      ... | tri< 0<X ¬b ¬c with ∨L＼X {P} {* x} {UFLP.limit ( uflp  ( mf 0<X CSX fp ) (ultraf 0<X CSX fp))}
          (UFLP.P∋limit ( uflp  ( mf 0<X CSX fp ) (ultraf 0<X CSX fp)))
      ... | case1 lt = lt -- odef (* x) y
      ... | case2 nlxy = ⊥-elim (MaximumFilter.proper (maxf 0<X CSX fp) uf11 ) where
+        --
+        -- if (* x) do not conatins a limit, P ＼ * x contains it, (P ＼ * x) is open so it is the maxf ( UFLP.is-limit )
+        --    UFLP contains (* x) and P ＼ * x, it contains od∅, contradicts the proper
+        --
         y = UFLP.limit ( uflp  ( mf 0<X CSX fp ) (ultraf 0<X CSX fp))
         x⊆P : * x ⊆ P
         x⊆P = cs⊆L TP (CSX (subst (λ k → odef (* X) k) (sym &iso) xx))
