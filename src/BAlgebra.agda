@@ -63,6 +63,12 @@ L＼0=L {L} = ==→o≡ ( record { eq→ = lem05 ; eq← = lem06 } ) where
 ... | yes y = case1 ( subst (λ k → odef X k ) &iso y  )
 ... | no  n = case2 ⟪ Lx , subst (λ k → ¬ odef X k) &iso n ⟫
 
+＼-⊆ : { P A B : HOD } →  A ⊆ P → ( A ⊆ B → ( P ＼ B ) ⊆ ( P ＼ A )) ∧ (( P ＼ B ) ⊆ ( P ＼ A ) → A ⊆ B ) 
+＼-⊆ {P} {A} {B} A⊆P = ⟪ ( λ a<b {x} pbx → ⟪ proj1 pbx  , (λ ax → proj2 pbx (a<b ax))   ⟫ )  , lem07 ⟫ where
+    lem07 : (P ＼ B) ⊆ (P ＼ A) → A ⊆ B
+    lem07 pba {x} ax with ODC.p∨¬p O (odef B x)
+    ... | case1 bx = bx
+    ... | case2 ¬bx = ⊥-elim ( proj2 ( pba ⟪ A⊆P ax  , ¬bx ⟫ ) ax )
 
 [a-b]∩b=0 : { A B : HOD } → (A ＼ B) ∩ B ≡ od∅
 [a-b]∩b=0 {A} {B} = ==→o≡ record { eq← = λ lt → ⊥-elim ( ¬∅∋ (subst (λ k → odef od∅ k) (sym &iso) lt ))

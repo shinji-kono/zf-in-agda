@@ -151,22 +151,15 @@ filter-lemma2 {P} {L} LP NEG F f∋P prime = record {
         lemma : (p : HOD) → p ⊆ P   →  filter F ∋ (p ∪ (P ＼ p))
         lemma p p⊆P = subst (λ k → filter F ∋ k ) (==→o≡ (p+1-p=1 {p} p⊆P)) f∋P 
 
-record Dense  {L P : HOD } (LP : L ⊆ Power P)  : Set (suc n) where
-   field
-       dense : HOD
-       d⊆P :  dense ⊆ L
-       dense-f : {p : HOD} → L ∋ p  → HOD
-       dense-d :  { p : HOD} → (lt : L ∋ p) → dense ∋ dense-f lt
-       dense-p :  { p : HOD} → (lt : L ∋ p) → (dense-f lt) ⊆ p  
-
 record Ideal   {L P : HOD } (LP : L ⊆ Power P) : Set (suc n) where
    field
        ideal : HOD   
        i⊆L :  ideal ⊆ L 
        ideal1 : { p q : HOD } →  L ∋ q  → ideal ∋ p →  q ⊆ p  → ideal ∋ q
-       ideal2 : { p q : HOD } → ideal ∋ p →  ideal ∋ q  → ideal ∋ (p ∪ q)
+       ideal2 : { p q : HOD } → ideal ∋ p →  ideal ∋ q  → L ∋ (p ∪ q) → ideal ∋ (p ∪ q)
 
 open Ideal
+
 
 proper-ideal : {L P : HOD} → (LP : L ⊆ Power P) → (P : Ideal {L} {P} LP ) → {p : HOD} → Set n
 proper-ideal {L} {P} LP I = ideal I ∋ od∅
@@ -175,11 +168,6 @@ prime-ideal : {L P : HOD} → (LP : L ⊆ Power P) → Ideal {L} {P} LP → ∀ 
 prime-ideal {L} {P} LP I {p} {q} =  ideal I ∋ ( p ∩ q) → ( ideal I ∋ p ) ∨ ( ideal I ∋ q )
 
 open import Relation.Binary.Definitions
-
-record GenericFilter {L P : HOD} (LP : L ⊆ Power P) (M : HOD) : Set (suc n) where
-    field
-       genf : Filter {L} {P} LP
-       generic : (D : Dense {L} {P} LP ) → M ∋ Dense.dense D → ¬ ( (Dense.dense D ∩ Filter.filter genf ) ≡ od∅ )
 
 record MaximumFilter {L P : HOD} (LP : L ⊆ Power P) (F : Filter {L} {P} LP) : Set (suc n) where
     field

@@ -172,7 +172,7 @@ UFLP→FIP {P} TP uflp with trio< (& P) o∅
           fp00 b _ b<X (g∩ {y} {z} sy sz ) = g∩ (fp00 _ _ b<X sy) (fp00 _ _ b<X sz)
      --
      -- then we have maximum ultra filter ( Zorn lemma )
-     --    to debug this file, commet out to include maaximum filter
+     --    to debug this file, commet out the maximum filter and open import
      --    otherwise the check requires a minute
      --
      maxf : {X : Ordinal} → o∅ o< X → (CSX : * X ⊆ CS TP) → (fp : fip {X} CSX) → MaximumFilter (λ x → x) (F CSX fp)
