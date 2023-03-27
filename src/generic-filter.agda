@@ -112,13 +112,6 @@ PDHOD L p C  = record { od = record { def = λ x →  PDN L p C x }
 
 open PDN
 
-----
---  Generic Filter on Power P for HOD's Countable Ordinal (G ⊆ Power P ≡ G i.e. ℕ → P → Set )
---
---  p 0 ≡ ∅
---  p (suc n) = if ∃ q ∈ M ∧ p n ⊆ q → q  (by axiom of choice) ( q =  * ( ctl→ n ) )
----             else p n
-
 P∅ : {P : HOD} → odef (Power P) o∅
 P∅ {P} =  subst (λ k → odef (Power P) k ) ord-od∅ (lemma o∅  o∅≡od∅) where
     lemma : (x : Ordinal ) → * x ≡ od∅ → odef (Power P) (& od∅)
@@ -131,7 +124,7 @@ gf05 {a} {b} {x} (case1 ax) nax nbx = nax ax
 gf05 {a} {b} {x} (case2 bx) nax nbx = nbx bx
 
 open import Data.Nat.Properties
-open import nat
+open import nat hiding ( exp )
 
 p-monotonic1 :  (L p : HOD ) (C : CountableModel  ) → {n : ℕ} → (* (find-p L C n (& p))) ⊆ (* (find-p L C (suc n) (& p)))
 p-monotonic1 L p C {n} {x} with is-o∅ (& (PGHOD n L C (find-p L C n (& p))))
@@ -181,6 +174,13 @@ record GenericFilter {L P : HOD} (LP : L ⊆ Power P) (M : HOD) : Set (Level.suc
        genf : ⊆-Ideal {L} {P} LP
        generic : (D : Dense L ) → M ∋ Dense.dense D → ¬ ( (Dense.dense D ∩ ⊆-Ideal.ideal genf ) ≡ od∅ )
 
+----
+--  Generic Filter on L ⊆ Power P from HOD's Countable Ordinal (G ⊆ Power P ≡ G i.e. ℕ → P → Set )
+--
+--  p 0 ≡ p0
+--  p (suc n) = if ∃ q ∈ M ∧ p n ⊆ q → q  (by axiom of choice) ( q =  * ( ctl→ n ) )
+---             else p n
+
 P-GenericFilter : (P L p0 : HOD ) → (LP : L ⊆ Power P) → L ∋ p0
       → (C : CountableModel ) → GenericFilter {L} {P} LP ( ctl-M C )
 P-GenericFilter P L p0 L⊆PP Lp0 C = record {
@@ -192,10 +192,10 @@ P-GenericFilter P L p0 L⊆PP Lp0 C = record {
                  record { gr = gr ; pn<gr = λ y qy → pn<gr y (gf00 qy) ; x∈PP = Lq }  where
             gf00 : {y : Ordinal } →  odef (* (& q)) y → odef (* (& p)) y
             gf00 {y} qy = subst (λ k → odef k y ) (sym *iso) (q⊆p (subst (λ k → odef k y) *iso qy ))
-       Lfp : (i : ℕ ) →  odef L (find-p L C i (& p0))
-       Lfp zero = Lp0
-       Lfp (suc i) with is-o∅ ( & ( PGHOD i L C (find-p L C i (& p0))) )
-       ... | yes y  = Lfp i
+       Lan : (i : ℕ ) →  odef L (find-p L C i (& p0))
+       Lan zero = Lp0
+       Lan (suc i) with is-o∅ ( & ( PGHOD i L C (find-p L C i (& p0))) )
+       ... | yes y  = Lan i
        ... | no not  = proj1 ( ODC.x∋minimal O ( PGHOD i L C (find-p L C i (& p0))) (λ eq → not (=od∅→≡o∅ eq)))
        exp1 : {p q : HOD} → (ip : PDHOD L p0 C ∋ p) → (ip : PDHOD L p0 C ∋ q) → Exp2 (PDHOD L p0 C) p q
        exp1 {p} {q} record { gr = pgr ; pn<gr = ppn ; x∈PP = PPp }
@@ -204,7 +204,7 @@ P-GenericFilter P L p0 L⊆PP Lp0 C = record {
             Pq = record { gr = qgr ; pn<gr = qpn ; x∈PP = PPq }
             gf17 : {q : HOD} → (Pq : PDHOD L p0 C ∋ q ) → PDHOD L p0 C ∋ * (find-p L C (gr Pq) (& p0))
             gf17 {q} Pq = record { gr = PDN.gr Pq  ; pn<gr = λ y qq → subst (λ k → odef (* k) y) &iso qq
-                 ; x∈PP = subst (λ k → odef L k ) (sym &iso) (Lfp (PDN.gr Pq))  }
+                 ; x∈PP = subst (λ k → odef L k ) (sym &iso) (Lan (PDN.gr Pq))  }
             gf01 : Exp2 (PDHOD L p0 C) p q
             gf01 with <-cmp pgr qgr
             ... | tri< a ¬b ¬c = record { exp = * (find-p L C (gr Pq) (& p0))  ; I∋exp = gf17 Pq ; p⊆exp = λ px → gf15 _ px
@@ -226,16 +226,6 @@ P-GenericFilter P L p0 L⊆PP Lp0 C = record {
        fdense D MD eq0  = ⊥-elim (  ∅< {Dense.dense D ∩ PDHOD L p0 C} fd01 (≡od∅→=od∅ eq0 )) where
            open Dense
            open Expansion
-           fd09 : (i : ℕ ) → odef L (find-p L C i (& p0))
-           fd09 zero = Lp0
-           fd09 (suc i) with is-o∅ ( & ( PGHOD i L C (find-p L C i (& p0))) )
-           ... | yes _ = fd09 i
-           ... | no not = fd17 where
-              fd19 =  ODC.minimal O ( PGHOD i L C (find-p L C i (& p0))) (λ eq → not (=od∅→≡o∅ eq))
-              fd18 : PGHOD i L C (find-p L C i (& p0)) ∋ fd19
-              fd18 = ODC.x∋minimal O (PGHOD i L C (find-p L C i (& p0))) (λ eq → not (=od∅→≡o∅ eq))
-              fd17 :  odef L ( & (ODC.minimal O ( PGHOD i L C (find-p L C i (& p0))) (λ eq → not (=od∅→≡o∅ eq)))  )
-              fd17 = proj1 fd18
            an : ℕ
            an = ctl← C (& (dense D)) MD
            pn : Ordinal
@@ -250,7 +240,7 @@ P-GenericFilter P L p0 L⊆PP Lp0 C = record {
            fd07 with is-o∅ ( & ( PGHOD an L C (find-p L C an (& p0))) )
            ... | yes y = ⊥-elim ( ¬x<0 ( _==_.eq→ fd10 fd21 ) ) where
               L∋pn : L ∋ * (find-p L C an (& p0))
-              L∋pn = subst (λ k → odef L k) (sym &iso) (fd09 an )
+              L∋pn = subst (λ k → odef L k) (sym &iso) (Lan an )
               ex = has-exp D L∋pn
               L∋df : L ∋ ( exp ex )
               L∋df = (d⊆P D) (D∋exp ex)
@@ -269,14 +259,14 @@ P-GenericFilter P L p0 L⊆PP Lp0 C = record {
               fd27 :  odef (dense D) (& fd29)
               fd27 = subst (λ k → odef k (& fd29)) (sym d=an) (proj1 (proj2 fd28))
            fd03 : odef (PDHOD L p0 C) pn+1
-           fd03 = record { gr = suc an ; pn<gr = λ y lt → lt ; x∈PP = fd09 (suc an)}
+           fd03 = record { gr = suc an ; pn<gr = λ y lt → lt ; x∈PP = Lan (suc an)}
            fd01 : (dense D ∩ PDHOD L p0 C) ∋ (* pn+1)
            fd01 = ⟪ subst (λ k → odef (dense D)  k ) (sym &iso) fd07 , subst (λ k → odef  (PDHOD L p0 C) k) (sym &iso) fd03 ⟫
 
 open GenericFilter
 -- open Filter
 
-record NotCompatible  (L p : HOD ) (L∋a : L ∋ p ) : Set (Level.suc (Level.suc n)) where
+record Incompatible  (L p : HOD ) (L∋a : L ∋ p ) : Set (Level.suc (Level.suc n)) where
    field
       q r : HOD
       Lq : L ∋ q
@@ -285,24 +275,23 @@ record NotCompatible  (L p : HOD ) (L∋a : L ∋ p ) : Set (Level.suc (Level.su
       p⊆r : p ⊆ r
       ¬compat : (s : HOD) → L ∋ s → ¬ ( (q ⊆ s) ∧ (r ⊆ s) )
 
-lemma232 : (P L p0 : HOD ) → (LPP : L ⊆ Power P) → (Lp0 : L ∋ p0 )
+Incompatible→¬M∋G : (P L p0 : HOD ) → (LPP : L ⊆ Power P) → (Lp0 : L ∋ p0 )
       → (C : CountableModel )
       → ctl-M C ∋ L
-      → ( {p : HOD} → (Lp : L ∋ p ) → NotCompatible L p Lp )
+      → ( {p : HOD} → (Lp : L ∋ p ) → Incompatible L p Lp )
       →  ¬ ( ctl-M C ∋  ⊆-Ideal.ideal (genf ( P-GenericFilter P L p0 LPP Lp0 C )))
-lemma232 P L p0 LPP Lp0 C ML NC MF = ¬rgf∩D=0 record { eq→ = λ {x} rgf∩D → ⊥-elim( proj2 (proj1 rgf∩D) (proj2 rgf∩D))
-        ; eq← = λ lt → ⊥-elim (¬x<0 lt) } where
+Incompatible→¬M∋G P L p0 LPP Lp0 C ML NC MF = ¬G∩D=0 D∩G=0 where
     PG = P-GenericFilter P L p0 LPP Lp0 C
     GF =  genf PG
-    rgf =  ⊆-Ideal.ideal (genf PG)
+    G =  ⊆-Ideal.ideal (genf PG)
     M = ctl-M C
     D : HOD
-    D = L ＼ rgf
+    D = L ＼ G
     D<M : & D o< & (ctl-M C)
     D<M = ordtrans≤-<  (⊆→o≤ proj1 ) (odef< ML)
     M∋DM : M ∋ (D ∩ M )
     M∋DM = is-model C D D<M
-    -- G⊆M : rgf ⊆ M
+    -- G⊆M : G ⊆ M
     -- G⊆M {x} rx = TC C ML (subst (λ k → odef k x) (sym *iso) (⊆-Ideal.i⊆L GF rx))
     -- D⊆M : D ⊆ M
     -- D⊆M {x} dx = TC C ML (subst (λ k → odef k x) (sym *iso) (proj1 dx))
@@ -319,37 +308,37 @@ lemma232 P L p0 LPP Lp0 C ML NC MF = ¬rgf∩D=0 record { eq→ = λ {x} rgf∩D
         exp : {p : HOD} → (Lp : L ∋ p) → Expansion p D
         exp {p} Lp = exp1 where
             q : HOD
-            q = NotCompatible.q (NC Lp)
+            q = Incompatible.q (NC Lp)
             r : HOD
-            r = NotCompatible.r (NC Lp)
+            r = Incompatible.r (NC Lp)
             Lq : L ∋ q
-            Lq = NotCompatible.Lq (NC Lp)
+            Lq = Incompatible.Lq (NC Lp)
             Lr : L ∋ r
-            Lr = NotCompatible.Lr (NC Lp)
+            Lr = Incompatible.Lr (NC Lp)
             exp1 : Expansion p D
-            exp1  with ODC.p∨¬p O (rgf ∋ q)
-            ... | case2 ngq = record { exp = q  ; D∋exp = ⟪ Lq , ngq ⟫ ; p⊆exp = NotCompatible.p⊆q (NC Lp)}
-            ... | case1 gq with ODC.p∨¬p O (rgf ∋ r)
-            ... | case2 ngr = record { exp = r  ; D∋exp = ⟪ Lr , ngr ⟫ ; p⊆exp = NotCompatible.p⊆r (NC Lp)}
-            ... | case1 gr = ⊥-elim ( NotCompatible.¬compat (NC Lp) ex2 Le ⟪  q⊆ex2 , r⊆ex2 ⟫ ) where
+            exp1  with ODC.p∨¬p O (G ∋ q)
+            ... | case2 ngq = record { exp = q  ; D∋exp = ⟪ Lq , ngq ⟫ ; p⊆exp = Incompatible.p⊆q (NC Lp)}
+            ... | case1 gq with ODC.p∨¬p O (G ∋ r)
+            ... | case2 ngr = record { exp = r  ; D∋exp = ⟪ Lr , ngr ⟫ ; p⊆exp = Incompatible.p⊆r (NC Lp)}
+            ... | case1 gr = ⊥-elim ( Incompatible.¬compat (NC Lp) ex2 Le ⟪  q⊆ex2 , r⊆ex2 ⟫ ) where
                 ex2 = Exp2.exp (⊆-Ideal.exp GF gq gr)
                 Le =  ⊆-Ideal.i⊆L GF (Exp2.I∋exp (⊆-Ideal.exp GF gq gr))
                 q⊆ex2 = Exp2.p⊆exp (⊆-Ideal.exp GF gq gr)
                 r⊆ex2 = Exp2.q⊆exp (⊆-Ideal.exp GF gq gr)
-    ¬rgf∩D=0 : ¬ ( (D ∩ rgf ) =h= od∅ )
-    ¬rgf∩D=0 eq =  generic PG DD M∋D (==→o≡ eq)
+    ¬G∩D=0 : ¬ ( (D ∩ G ) =h= od∅ )
+    ¬G∩D=0 eq =  generic PG DD M∋D (==→o≡ eq)
+    D∩G=0 : (D ∩ G ) =h= od∅  -- because D = L ＼ G
+    D∩G=0 = record { eq→ = λ {x} G∩D → ⊥-elim( proj2 (proj1 G∩D) (proj2 G∩D))
+        ; eq← = λ lt → ⊥-elim (¬x<0 lt) } 
 
 --
 -- P-Generic Filter defines a countable model D ⊂ C from P
 --
 
 --
--- in D, we have V ≠ L
+-- val x G = { val y G | ∃ p → G ∋ p → x ∋ < y , p > }
 --
-
---
---   val x G = { val y G | ∃ p → G ∋ p → x ∋ < y , p > }
---
+--  We can define the valuation, but to use this, we need V=L, which makes things complicated.
 
 val< : {x y p : Ordinal} → odef (* x) ( & < * y , * p >  ) → y o< x
 val< {x} {y} {p} xyp = osucprev ( begin
@@ -372,11 +361,61 @@ record valS (G : HOD) (x z : Ordinal) (val : (y : Ordinal) → y o< x → HOD): 
      z=valy : z ≡ & (val y (val< is-val))
      z<x : z o< x
 
-val : (x : HOD) {P L M : HOD } {LP : L ⊆ Power P}
-    →  (G : GenericFilter {L} {P} LP M )
-    →  HOD
+val : (x : HOD) →  (G : HOD) →  HOD
 val x G = TransFinite {λ x → HOD } ind (& x) where
-  ind : (x : Ordinal) → ((y : Ordinal) → y o< x → HOD) → HOD
-  ind x valy = record { od = record { def = λ z → valS (⊆-Ideal.ideal (genf G)) x z  valy  } ; odmax = x ; <odmax = v02 } where
-      v02 : {z : Ordinal} → valS (⊆-Ideal.ideal (genf G)) x z valy → z o< x
-      v02 {z} lt = valS.z<x lt
+  ind : (x : Ordinal) → (valy : (y : Ordinal) → y o< x → HOD) → HOD
+  ind x valy = record { od = record { def = λ z → valS G x z  valy  } ; odmax = x ; <odmax = v02 } where
+       v02 : {z : Ordinal} → valS G x z valy → z o< x
+       v02 {z} lt = valS.z<x lt
+
+--
+-- What we nedd
+--   M[G] : HOD
+--     M ⊆ M[G]
+--     M[G] ∋ G
+--     M[G] ∋ ∪G
+--
+--     assume countable L as M
+--     L is a countable subset of Power ω i.e. Power ω ∩ M
+--     it defines countable Ordinal
+--
+--  Generic Filter is a countable sequence of element of M
+--    Mg is set of all elementns of M which contains an element of G
+--
+--  Mg : HOD
+--  Mg 
+
+record Mg {L P : HOD} (LP : L ⊆ Power P) (M : HOD) (G : GenericFilter {L} {P} LP M) (x : Ordinal) : Set n where
+    field
+       gi : Ordinal
+       G∋gi : odef (⊆-Ideal.ideal (genf G)) gi
+       x∋gi : odef (* x) gi
+
+MgH : {L P : HOD} (LP : L ⊆ Power P) (M : HOD) (G : GenericFilter {L} {P} LP M) → HOD
+MgH {L} {P} LP M G = record { od = record { def = λ x → odef M x ∧ Mg LP M G x } ; odmax = & M ; <odmax = odef∧<  }
+
+MG1 : {L P : HOD} (LP : L ⊆ Power P) (M : HOD) (G : GenericFilter {L} {P} LP M) → HOD
+MG1 {L} {P} LP M G = M ∪ Union (MgH LP M G)
+
+TCS : (G : HOD) → Set (Level.suc n)
+TCS G = {x y : HOD} → G ∋ x → x ∋ y → G ∋ y
+
+GH : (P L p0 : HOD ) → (LPP : L ⊆ Power P) → (Lp0 : L ∋ p0 )
+      → (C : CountableModel ) → HOD
+GH P L p0 LPP Lp0 C = ⊆-Ideal.ideal (genf ( P-GenericFilter P L p0 LPP Lp0 C ))
+
+module _ {L P : HOD} (LP : L ⊆ Power P) (M : HOD) (GF : GenericFilter {L} {P} LP M) where
+
+    MG = MG1 {L} {P} LP M GF 
+    G = ⊆-Ideal.ideal (genf GF)
+
+    M⊆MG : M ⊆ MG 
+    M⊆MG = case1
+
+    MG∋G : MG ∋ G
+    MG∋G = ?
+
+    MG∋UG : MG ∋ Union G
+    MG∋UG = ?
+
+

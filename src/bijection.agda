@@ -57,7 +57,7 @@ diagonal {S} b = diagn1 (fun→ b (λ n → diag b n) ) refl where
     diagn1 n dn = ¬t=f (diag b n ) ( begin
            not (diag b n)
         ≡⟨⟩
-           not (not fun← b n n)
+           not (not (fun← b n n))
         ≡⟨ cong (λ k → not (k  n) ) (sym (fiso← b _)) ⟩
            not (fun← b (fun→ b (diag b))  n)
         ≡⟨ cong (λ k → not (fun← b k n) ) dn ⟩
