@@ -3,7 +3,6 @@ open import Level
 open import Ordinals
 module OD {n : Level } (O : Ordinals {n} ) where
 
-open import zf
 open import Data.Nat renaming ( zero to Zero ; suc to Suc ;  ℕ to Nat ; _⊔_ to _n⊔_ )
 open import  Relation.Binary.PropositionalEquality hiding ( [_] )
 open import Data.Nat.Properties
@@ -74,7 +73,7 @@ eq← ( ⇔→==  {x} {y}  eq ) {z} m = proj2 eq m
 --  bound on each HOD.
 --
 --  In classical Set Theory, sup is defined by Uion, since we are working on constructive logic,
---  we need explict assumption on sup.
+--  we need explict assumption on sup for unrestricted Replacement.
 --
 --  ==→o≡ is necessary to prove axiom of extensionality.
 
@@ -102,14 +101,15 @@ record ODAxiom : Set (suc n) where
   *iso   :  {x : HOD }      → * ( & x ) ≡ x
   &iso   :  {x : Ordinal }  → & ( * x ) ≡ x
   ==→o≡  :  {x y : HOD  }   → (od x == od y) → x ≡ y
-  sup-o  :  (A : HOD) → (     ( x : Ordinal ) → def (od A) x →  Ordinal ) →  Ordinal -- required in Replace
-  sup-o≤ :  (A : HOD) → { ψ : ( x : Ordinal ) → def (od A) x →  Ordinal } → ∀ {x : Ordinal } → (lt : def (od A) x ) → ψ x lt o≤  sup-o A ψ
   ∋-irr : {X : HOD} {x : Ordinal } → (a b : def (od X) x) → a ≅ b
--- possible order restriction (required in the axiom of infinite )
-  ho< : {x : HOD} → & x o< next (odmax x)
 
 postulate  odAxiom : ODAxiom
 open ODAxiom odAxiom
+
+-- possible order restriction (required in the axiom of infinite )
+
+-- postulate  odAxiom-ho< : ODAxiom-ho<
+-- open ODAxiom-ho< odAxiom-ho<
 
 -- odmax minimality
 --
@@ -344,29 +344,37 @@ union→ X z u xx =  record { owner = & u ; ao = proj1 xx ; ox = subst (λ k →
 union← :  (X z : HOD) (X∋z : Union X ∋ z) →  ¬  ( (u : HOD ) → ¬ ((X ∋  u) ∧ (u ∋ z )))
 union← X z UX∋z not = ⊥-elim ( not (* (Own.owner UX∋z)) ⟪ subst (λ k → odef X k) (sym &iso) ( Own.ao UX∋z) , Own.ox UX∋z ⟫  )
 
+record RCod (COD : HOD) (ψ : HOD → HOD)  : Set (suc n) where
+ field
+     ≤COD : ∀ {x : HOD } → ψ x ⊆ COD 
+
 record Replaced (A : HOD) (ψ : Ordinal → Ordinal ) (x : Ordinal ) : Set n where
    field
       z : Ordinal
       az : odef A z
       x=ψz  : x ≡ ψ z 
 
-Replace : HOD  → (HOD  → HOD) → HOD
-Replace X ψ = record { od = record { def = λ x → Replaced X (λ z → & (ψ (* z))) x  } ; odmax = rmax ; <odmax = rmax< } where
-        rmax : Ordinal
-        rmax = osuc ( sup-o X (λ y X∋y → & (ψ (* y) )) )
-        rmax< :  {y : Ordinal} → Replaced X (λ z → & (ψ (* z))) y  → y o< rmax
-        rmax< {y} lt = subst (λ k → k o< rmax) r01 ( sup-o≤ X (Replaced.az lt) ) where
+Replace : (D : HOD) → (ψ : HOD  → HOD) → {C : HOD} → RCod C ψ  → HOD
+Replace X ψ {C} rc = record { od = record { def = λ x → Replaced X (λ z → & (ψ (* z))) x  } ; odmax = osuc (& C)
+   ; <odmax = rmax< } where
+        rmax< :  {y : Ordinal} → Replaced X (λ z → & (ψ (* z))) y  → y o< osuc (& C)
+        rmax< {y} lt = subst (λ k → k o< osuc (& C)) r01 ( ⊆→o≤ (RCod.≤COD rc) ) where 
             r01 : & (ψ ( * (Replaced.z lt ) )) ≡ y
             r01 = sym (Replaced.x=ψz lt )
 
-replacement← : {ψ : HOD → HOD} (X x : HOD) →  X ∋ x → Replace X ψ ∋ ψ x
-replacement← {ψ} X x lt = record { z = & x ; az = lt  ; x=ψz = cong (λ k → & (ψ k)) (sym *iso) }
-replacement→ : {ψ : HOD → HOD} (X x : HOD) → (lt : Replace X ψ ∋ x) → ¬ ( (y : HOD) → ¬ (x =h= ψ y))
-replacement→ {ψ} X x lt eq = eq (* (Replaced.z lt)) (ord→== (Replaced.x=ψz lt)) 
+replacement← : {ψ : HOD → HOD} (X x : HOD) →  X ∋ x → {C : HOD} → (rc : RCod C ψ) → Replace X ψ rc ∋ ψ x
+replacement← {ψ} X x lt {C} rc = record { z = & x ; az = lt  ; x=ψz = cong (λ k → & (ψ k)) (sym *iso) }
+replacement→ : {ψ : HOD → HOD} (X x : HOD) → {C : HOD} → (rc : RCod C ψ ) → (lt : Replace X ψ rc ∋ x) 
+   →  ¬ ( (y : HOD) → ¬ (x =h= ψ y))
+replacement→ {ψ} X x {C} rc lt eq = eq (* (Replaced.z lt)) (ord→== (Replaced.x=ψz lt)) 
 
 --
 -- If we have LEM, Replace' is equivalent to Replace
 --
+
+record RXCod (X COD : HOD) (ψ : (x : HOD) → X ∋ x → HOD)  : Set (suc n) where
+ field
+     ≤COD : ∀ {x : HOD } → (lt : X ∋ x) → ψ x lt ⊆ COD 
 
 record Replaced1 (A : HOD) (ψ : (x : Ordinal ) → odef A x → Ordinal ) (x : Ordinal ) : Set n where
    field
@@ -374,34 +382,41 @@ record Replaced1 (A : HOD) (ψ : (x : Ordinal ) → odef A x → Ordinal ) (x : 
       az : odef A z
       x=ψz  : x ≡ ψ z az
 
-Replace' : (X : HOD) → ((x : HOD) → X ∋ x → HOD) → HOD
-Replace' X ψ = record { od = record { def = λ x → Replaced1 X (λ z xz → & (ψ (* z) (subst (λ k → odef X k) (sym &iso) xz) )) x  } ; odmax = rmax ; <odmax = rmax< } where
-        rmax : Ordinal
-        rmax = osuc ( sup-o X (λ y X∋y → & (ψ (* y) (d→∋ X X∋y) )) )
-        rmax< :  {y : Ordinal} → Replaced1 X (λ z xz → & (ψ (* z) (subst (λ k → odef X k) (sym &iso) xz) )) y  → y o< rmax
-        rmax< {y} lt = subst (λ k → k o< rmax) r01 ( sup-o≤ X (Replaced1.az lt) ) where
+Replace' : (X : HOD) → (ψ : (x : HOD) → X ∋ x → HOD) → {C : HOD} → RXCod X C ψ  → HOD
+Replace' X ψ {C} rc = record { od = record { def = λ x → Replaced1 X (λ z xz → & (ψ (* z) (subst (λ k → odef X k) (sym &iso) xz) )) x  } ; odmax = osuc (& C) ; <odmax = rmax< } where
+        rmax< :  {y : Ordinal} → Replaced1 X (λ z xz → & (ψ (* z) (subst (λ k → odef X k) (sym &iso) xz) )) y  → y o< osuc (& C)
+        rmax< {y} lt = subst (λ k → k o< osuc (& C)) r01 ( ⊆→o≤ (RXCod.≤COD rc (subst (λ k → odef X k) (sym &iso) (Replaced1.az lt) )))  where 
             r01 : & (ψ ( * (Replaced1.z lt ) ) (subst (λ k → odef X k) (sym &iso) (Replaced1.az lt) )) ≡ y
             r01 = sym (Replaced1.x=ψz lt )
 
+cod-conv : (X : HOD) → (ψ : (x : HOD) → X ∋ x → HOD) → {C : HOD} → (rc : RXCod X C ψ   )
+      → RXCod (* (& X)) C (λ y xy → ψ y (subst (λ k → k ∋ y) *iso xy))
+cod-conv X ψ {C} rc = record { ≤COD = λ {x} lt → RXCod.≤COD rc (subst (λ k → odef k (& x)) *iso lt) }
 
-Replace'-iso : (X : HOD) → (ψ : (x : HOD) → X ∋ x → HOD) → 
-      Replace' (* (& X)) (λ y xy → ψ y (subst (λ k → k ∋ y ) *iso xy) ) ≡ Replace' X ( λ y xy → ψ y xy ) 
-Replace'-iso X ψ = ==→o≡ record { eq→ = ri0 ; eq← = ri1 } where
-    ri2 : {z : Ordinal } (a b : X ∋ (* z)) → & (ψ (* z) a) ≡ & (ψ (* z) b)
-    ri2 {z} a b = cong (λ k → & (ψ (* z) k)) ( HE.≅-to-≡ ( ∋-irr {X} {& (* z)} a b ) )
-    ri0 : {x : Ordinal} 
-        → Replaced1 (* (& X)) (λ z xz → & (ψ (* z) (subst (λ k → k ∋ * z) *iso (subst (odef (* (& X))) (sym &iso) xz)))) x 
-        → Replaced1 X (λ z xz → & (ψ (* z) (subst (odef X) (sym &iso) xz))) x
-    ri0 {x} record { z = z ; az = az ; x=ψz = refl } = record { z = z ; az = subst (λ k → odef k z) *iso az 
-       ; x=ψz = ri2 (subst (λ k → k ∋ * z) *iso (subst (odef (* (& X))) (sym &iso) az))  
-                    (subst (odef X) (sym &iso) (subst (λ k → odef k z) *iso az) ) }  
-    ri1 : {x : Ordinal} 
-        → Replaced1 X (λ z xz → & (ψ (* z) (subst (odef X) (sym &iso) xz))) x
-        → Replaced1 (* (& X)) (λ z xz → & (ψ (* z) (subst (λ k → k ∋ * z) *iso (subst (odef (* (& X))) (sym &iso) xz)))) x 
-    ri1 {x} record { z = z ; az = az ; x=ψz = refl } = record { z = z ; az = subst (λ k → odef k z) (sym *iso) az 
-       ; x=ψz = ri2 (subst (λ k → odef X k) (sym &iso) az  )   -- brain damaged below
-           (subst (λ k → k ∋ * z) *iso (subst (odef (* (& X))) (sym &iso) (subst (λ k → odef k z) (sym *iso) az))) } 
+Replace'-iso : {X Y : HOD} → {fx : (x : HOD) → X ∋ x → HOD} {fy : (x : HOD) → Y ∋ x → HOD}
+    → {CX : HOD} → (rcx : RXCod X CX fx  ) → {CY : HOD} → (rcy : RXCod Y CY fy   )
+      → X ≡ Y →  ( (x :  HOD) → (xx : X ∋ x ) → (yy : Y ∋ x ) → fx _ xx ≡ fy _ yy )
+      → Replace' X fx rcx ≡ Replace' Y fy rcy
+Replace'-iso {X} {X} {fx} {fy} _ _ refl eq  = ==→o≡ record { eq→ = ri0 ; eq← = ri1 } where
+     ri0 : {x : Ordinal} → Replaced1 X (λ z xz → & (fx (* z) (subst (odef X) (sym &iso) xz))) x 
+                         → Replaced1 X (λ z xz → & (fy (* z) (subst (odef X) (sym &iso) xz))) x
+     ri0 {x} record { z = z ; az = az ; x=ψz = x=ψz } = record { z = z ; az = az ; x=ψz = trans x=ψz (cong (&) ( eq _ xz xz ))  } where
+         xz : X ∋ * z
+         xz = subst (λ k → odef X k ) (sym &iso) az
+     ri1 : {x : Ordinal} → Replaced1 X (λ z xz → & (fy (* z) (subst (odef X) (sym &iso) xz))) x 
+                         → Replaced1 X (λ z xz → & (fx (* z) (subst (odef X) (sym &iso) xz))) x
+     ri1 {x} record { z = z ; az = az ; x=ψz = x=ψz } = record { z = z ; az = az ; x=ψz = trans x=ψz (cong (&) (sym ( eq _ xz xz )))  } where
+         xz : X ∋ * z
+         xz = subst (λ k → odef X k ) (sym &iso) az
 
+Replace'-iso1 : (X : HOD) → (ψ : (x : HOD) → X ∋ x → HOD) → {C : HOD} → (rc : RXCod X C ψ   )
+      → Replace' (* (& X)) (λ y xy → ψ y (subst (λ k → k ∋ y ) *iso xy) ) (cod-conv X ψ rc)
+         ≡ Replace' X ( λ y xy → ψ y xy ) rc 
+Replace'-iso1 X ψ rc = Replace'-iso {* (& X)} {X} {λ y xy → ψ y (subst (λ k → k ∋ y ) *iso xy) } { λ y xy → ψ y xy } 
+    (cod-conv X ψ rc) rc 
+    *iso (λ x xx yx → fi00 x xx yx ) where
+      fi00 : (x : HOD ) → (xx : (* (& X)) ∋ x ) → (yx : X ∋ x) →  ψ x (subst (λ k → k ∋ x) *iso xx) ≡ ψ x yx
+      fi00 x xx yx = cong (λ k → ψ x k ) ( HE.≅-to-≡ ( ∋-irr {X} {& x} (subst (λ k → k ∋ x) *iso xx) yx ) )
 
 -- replacement←1 : {ψ : HOD → HOD} (X x : HOD) →  X ∋ x → Replace1 X ψ ∋ ψ x
 -- replacement←1 {ψ} X x lt = record { z = & x ; az = lt  ; x=ψz = cong (λ k → & (ψ k)) (sym *iso) }
@@ -432,7 +447,6 @@ Intersection X = record { od = record { def = λ x → (x o≤ & X ) ∧ ( {y : 
 -- ｛_｝ : ZFSet → ZFSet
 -- ｛ x ｝ = ( x ,  x )     -- better to use (x , x) directly
 
-
 data infinite-d  : ( x : Ordinal  ) → Set n where
     iφ :  infinite-d o∅
     isuc : {x : Ordinal  } →   infinite-d  x  →
@@ -446,28 +460,21 @@ data infinite-d  : ( x : Ordinal  ) → Set n where
 --
 --  Since we have Ord (next o∅), we don't need this, but ZF axiom requires this and ho<
 
+infinite-od : OD
+infinite-od = record { def = λ x → infinite-d x } 
+
+record ODAxiom-ho< : Set (suc n) where
+ field
+    omega : Ordinal  
+    ho< : {x : Ordinal } → infinite-d x →  x o< next omega
+
+postulate
+    odaxion-ho< : ODAxiom-ho< 
+
+open ODAxiom-ho< odaxion-ho<
+
 infinite : HOD
-infinite = record { od = record { def = λ x → infinite-d x } ; odmax = next o∅ ; <odmax = lemma }  where
-    u : (y : Ordinal ) → HOD
-    u y = Union (* y , (* y , * y))
-    --   next< : {x y z : Ordinal} → x o< next z  → y o< next x → y o< next z
-    lemma8 : {y : Ordinal} → & (* y , * y) o< next (odmax (* y , * y))
-    lemma8 = ho<
-    ---           (x,y) < next (omax x y) < next (osuc y) = next y
-    lemmaa : {x y : HOD} → & x o< & y → & (x , y) o< next (& y)
-    lemmaa {x} {y} x<y = subst (λ k → & (x , y) o< k ) (sym nexto≡) (subst (λ k → & (x , y) o< next k ) (sym (omax< _ _ x<y)) ho< )
-    lemma81 : {y : Ordinal} → & (* y , * y) o< next (& (* y))
-    lemma81 {y} = nexto=n (subst (λ k →  & (* y , * y) o< k ) (cong (λ k → next k) (omxx _)) lemma8)
-    lemma9 : {y : Ordinal} → & (* y , (* y , * y)) o< next (& (* y , * y))
-    lemma9 = lemmaa (c<→o< (case1 refl))
-    lemma71 : {y : Ordinal} → & (* y , (* y , * y)) o< next (& (* y))
-    lemma71 = next< lemma81 lemma9
-    lemma1 : {y : Ordinal} → & (u y) o< next (osuc (& (* y , (* y , * y))))
-    lemma1 = ho<
-    --- main recursion
-    lemma : {y : Ordinal} → infinite-d y → y o< next o∅
-    lemma {o∅} iφ = x<nx
-    lemma (isuc {y} x) = next< (lemma x) (next< (subst (λ k → & (* y , (* y , * y)) o< next k) &iso lemma71 ) (nexto=n lemma1))
+infinite = record { od = record { def = λ x → infinite-d x } ; odmax = next omega ; <odmax = ho<}  
 
 empty : (x : HOD  ) → ¬  (od∅ ∋ x)
 empty x = ¬x<0
@@ -500,9 +507,6 @@ selection {ψ} {X} {y} = ⟪
 
 selection-in-domain : {ψ : HOD → Set n} {X y : HOD} → Select X ψ ∋ y → X ∋ y
 selection-in-domain {ψ} {X} {y} lt = proj1 ((proj2 (selection {ψ} {X} )) lt)
-
-sup-c≤ :  (ψ : HOD → HOD) → {X x : HOD} → X ∋ x  → & (ψ x) o≤ (sup-o X (λ y X∋y → & (ψ (* y))))
-sup-c≤ ψ {X} {x} lt = subst (λ k → & (ψ k) o< _ ) *iso (sup-o≤ X lt )
 
 ---
 --- Power Set
@@ -541,8 +545,40 @@ infinity x lt = subst (λ k → odef infinite k ) lemma (isuc {& x} lt) where
         ≡ & (Union (x , (x , x)))
     lemma = cong (λ k → & (Union ( k , ( k , k ) ))) *iso
 
-isZF : IsZF (HOD )  _∋_  _=h=_ od∅ _,_ Union Power Select Replace infinite
-isZF = record {
+open import zf
+
+record ODAxiom-sup : Set (suc n) where
+ field
+  sup-o  :  (A : HOD) → (     ( x : Ordinal ) → def (od A) x →  Ordinal ) →  Ordinal -- required in Replace
+  sup-o≤ :  (A : HOD) → { ψ : ( x : Ordinal ) → def (od A) x →  Ordinal } 
+     → ∀ {x : Ordinal } → (lt : def (od A) x ) → ψ x lt o≤  sup-o A ψ
+ sup-c≤ :  (ψ : HOD → HOD) → {X x : HOD} → def (od X) (& x)  → & (ψ x) o≤ (sup-o X (λ y X∋y → & (ψ (* y))))
+ sup-c≤ ψ {X} {x} lt = subst (λ k → & (ψ k) o< _ ) *iso (sup-o≤ X lt )
+
+-- sup-o may contradict
+--    If we have open monotonic function in Ordinal, there is no sup-o. 
+--    for example, if we may have countable sequence of Ordinal, which contains some ordinal larger than any given Ordinal.
+--    This happens when we have a coutable model. In this case, we have to have codomain restriction in  Replacement axiom.
+--    that is, Replacement axiom does not create new ZF set.
+
+open ODAxiom-sup
+
+ZFReplace : ODAxiom-sup → HOD  → (HOD  → HOD) → HOD
+ZFReplace os X ψ = record { od = record { def = λ x → Replaced X (λ z → & (ψ (* z))) x  } ; odmax = rmax ; <odmax = rmax< } where
+        rmax : Ordinal
+        rmax = osuc ( sup-o os X (λ y X∋y → & (ψ (* y) )) )
+        rmax< :  {y : Ordinal} → Replaced X (λ z → & (ψ (* z))) y  → y o< rmax
+        rmax< {y} lt = subst (λ k → k o< rmax) r01 ( sup-o≤ os X (Replaced.az lt) ) where
+            r01 : & (ψ ( * (Replaced.z lt ) )) ≡ y
+            r01 = sym (Replaced.x=ψz lt )
+
+zf-replacement← : (os : ODAxiom-sup) → {ψ : HOD → HOD} (X x : HOD) →  X ∋ x → ZFReplace os X ψ ∋ ψ x
+zf-replacement← os {ψ} X x lt = record { z = & x ; az = lt  ; x=ψz = cong (λ k → & (ψ k)) (sym *iso) }
+zf-replacement→ : (os : ODAxiom-sup ) → {ψ : HOD → HOD} (X x : HOD) → (lt : ZFReplace os X ψ ∋ x) → ¬ ( (y : HOD) → ¬ (x =h= ψ y))
+zf-replacement→ os {ψ} X x lt eq = eq (* (Replaced.z lt)) (ord→== (Replaced.x=ψz lt)) 
+
+isZF : (os : ODAxiom-sup) → IsZF HOD _∋_  _=h=_ od∅ _,_ Union Power Select (ZFReplace os) infinite
+isZF os = record {
         isEquivalence  = record { refl = ==-refl ; sym = ==-sym; trans = ==-trans }
     ;   pair→  = pair→
     ;   pair←  = pair←
@@ -556,12 +592,12 @@ isZF = record {
     ;   infinity∅ = infinity∅
     ;   infinity = infinity
     ;   selection = λ {X} {ψ} {y} → selection {X} {ψ} {y}
-    ;   replacement← = replacement←
-    ;   replacement→ = λ {ψ} → replacement→ {ψ}
+    ;   replacement← = zf-replacement← os
+    ;   replacement→ = λ {ψ} → zf-replacement→ os {ψ}
     }
 
-HOD→ZF : ZF
-HOD→ZF   = record {
+HOD→ZF : ODAxiom-sup → ZF
+HOD→ZF os  = record {
     ZFSet = HOD
     ; _∋_ = _∋_
     ; _≈_ = _=h=_
@@ -570,9 +606,9 @@ HOD→ZF   = record {
     ; Union = Union
     ; Power = Power
     ; Select = Select
-    ; Replace = Replace
+    ; Replace = ZFReplace os
     ; infinite = infinite
-    ; isZF = isZF
+    ; isZF = isZF os
  }
 
 

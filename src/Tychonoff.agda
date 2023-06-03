@@ -3,7 +3,6 @@ open import Level
 open import Ordinals
 module Tychonoff {n : Level } (O : Ordinals {n})   where
 
-open import zf
 open import logic
 open _∧_
 open _∨_
@@ -33,9 +32,10 @@ import ODC
 open ODC O
 
 open import filter O
+open import filter-util O
 open import ZProduct O
 open import Topology O
-open import maximum-filter O
+-- open import maximum-filter O
 
 open Filter
 open Topology
@@ -80,6 +80,21 @@ record UFLP {P : HOD} (TP : Topology P)  (F : Filter {Power P} {P} (λ x → x) 
        P∋limit : odef P limit
        is-limit : {v : Ordinal} → Neighbor TP limit v → filter F ∋ (* v)
 
+-- If any ultrafilter has a limit such that all its neighbors
+-- are within the filter, it possesses the finite intersection
+-- property (FIP). 
+
+-- The finite intersection property defines a filter, and through Zorn's lemma, 
+-- we can maximize it to obtain an ultrafilter. 
+-- If the limit of the filter is not contained within a closed
+-- set 'p' in the FIP, then it must be in the complement of 'p'
+-- (P \ p). Since this complement is open and contains the limit,
+-- it is included in the ultrafilter. However, this implies that
+-- both 'p' and its complement (P \ p) are present in the filter,
+-- which contradicts the proper characteristic of the ultrafilter,
+-- meaning that the filter contains no empty set. 
+
+--
 UFLP→FIP : {P : HOD} (TP : Topology P) →
    ((F : Filter {Power P} {P} (λ x → x) ) (UF : ultra-filter F ) → UFLP TP F UF ) → FIP TP
 UFLP→FIP {P} TP uflp with trio< (& P) o∅
@@ -176,13 +191,13 @@ UFLP→FIP {P} TP uflp with trio< (& P) o∅
      --    otherwise the check requires a minute
      --
      maxf : {X : Ordinal} → o∅ o< X → (CSX : * X ⊆ CS TP) → (fp : fip {X} CSX) → MaximumFilter (λ x → x) (F CSX fp)
-     maxf {X} 0<X CSX fp = F→Maximum {Power P} {P} (λ x → x) (CAP P)  (F CSX fp) 0<PP (N∋nc 0<X CSX fp) (proper CSX fp)
+     maxf {X} 0<X CSX fp = ? -- F→Maximum {Power P} {P} (λ x → x) (CAP P)  (F CSX fp) 0<PP (N∋nc 0<X CSX fp) (proper CSX fp)
      mf : {X : Ordinal} → o∅ o< X → (CSX : * X ⊆ CS TP) → (fp : fip {X} CSX) → Filter {Power P} {P} (λ x → x)
-     mf {X} 0<X CSX fp =  MaximumFilter.mf (maxf 0<X CSX fp)
+     mf {X} 0<X CSX fp =  ? -- MaximumFilter.mf (maxf 0<X CSX fp)
      ultraf : {X : Ordinal} → (0<X : o∅ o< X ) → (CSX : * X ⊆ CS TP) → (fp : fip {X} CSX) → ultra-filter ( mf 0<X CSX fp)
-     ultraf {X} 0<X CSX fp = F→ultra {Power P} {P} (λ x → x) (CAP P) (F CSX fp)  0<PP (N∋nc 0<X CSX fp) (proper CSX fp)
+     ultraf {X} 0<X CSX fp = ? --  F→ultra {Power P} {P} (λ x → x) (CAP P) (F CSX fp)  0<PP (N∋nc 0<X CSX fp) (proper CSX fp)
      --
-     -- so it has a limit as a limit of UIP
+     -- so it has a limit as a limit of FIP
      --
      limit : {X : Ordinal} → (CSX : * X ⊆ CS TP) → fip {X} CSX → Ordinal
      limit {X} CSX fp with trio< o∅ X
@@ -243,6 +258,13 @@ x⊆Clx {P} TP {x}  x<p {y} xy  = ⟪ x<p xy , (λ c csc x<c → x<c xy )  ⟫
 P⊆Clx : {P : HOD} (TP : Topology P) →  {x : HOD} → x ⊆ P   → Cl TP x ⊆ P
 P⊆Clx {P} TP {x}  x<p {y} xy  = proj1 xy
 
+--
+-- Finite intersection property implies that any ultra filter have a limit, that is, neighbors of the limit is in the filter.
+--
+-- An ultra filter F is given. Take a closure of a filter. It is closed and it has finite intersection property, because F is porper.
+-- So it has a limit as a FIP. If a neighbor p which contains the limit, p or P \ p is in the ultra filter.
+-- If it is in P \ p, it cannot contains the limit, contradiction.
+--
 FIP→UFLP : {P : HOD} (TP : Topology P) →  FIP TP
    →  (F : Filter {Power P} {P} (λ x → x)) (UF : ultra-filter F ) → UFLP {P} TP F UF
 FIP→UFLP {P} TP fip F UF = record { limit = FIP.limit fip (subst (λ k → k ⊆ CS TP) (sym *iso) CF⊆CS) ufl01
@@ -262,7 +284,7 @@ FIP→UFLP {P} TP fip F UF = record { limit = FIP.limit fip (subst (λ k → k �
      -- take closure of given filter elements
      --
      CF : HOD
-     CF = Replace (filter F) (λ x → Cl TP x  )
+     CF = Replace (filter F) (λ x → Cl TP x  ) {P} record { ≤COD = λ {z} {y} lt → proj1 lt  } 
      CF⊆CS : CF ⊆ CS TP
      CF⊆CS {x} record { z = z ; az = az ; x=ψz = x=ψz } = subst (λ k → odef (CS TP) k) (sym x=ψz) (CS∋Cl TP (* z))
      --
@@ -345,7 +367,24 @@ import Axiom.Extensionality.Propositional
 postulate f-extensionality : { n m : Level}  → Axiom.Extensionality.Propositional.Extensionality n m
 open import Relation.Binary.HeterogeneousEquality as HE using (_≅_ )
 
+--    FilterQP : {P Q : HOD } → (F : Filter {Power (ZFP P Q)} {ZFP P Q} (λ x → x))  
+--         → Filter {Power (ZFP Q P)} {ZFP Q P} (λ x → x) 
+--    FilterQP {P} {Q} F = record { filter = ? ; f⊆L = ? ; filter1 = ? ; filter2 = ? } 
+-- 
+--    projection-of-filter : {P Q : HOD } → (F : Filter {Power (ZFP P Q)} {ZFP P Q} (λ x → x))  
+--         → Filter {Power P} {P} (λ x → x) 
+--    projection-of-filter = ?
+-- 
+--    projection-of-ultra-filter : {P Q : HOD } → (F : Filter {Power (ZFP P Q)} {ZFP P Q} (λ x → x))  (UF : ultra-filter F) 
+--         → ultra-filter (projection-of-filter F)
+--    projection-of-ultra-filter = ?
 
+--
+-- We have UFLP both in P and Q. Given an ultra filter F on P x Q. It has limits on P and Q because a projection of ultra filter
+-- is a ultra filter. Show the product of the limits is a limit of P x Q. A neighbor of P x Q contains subbase of P x Q,
+-- which is either inverse projection x of P or Q. The x in in projection of F, because of UFLP. So it is in F, because of the
+-- property of the filter.
+--
 Tychonoff : {P Q : HOD } → (TP : Topology P) → (TQ : Topology Q)  → Compact TP → Compact TQ   → Compact (ProductTopology TP TQ)
 Tychonoff {P} {Q} TP TQ CP CQ = FIP→Compact (ProductTopology TP TQ) (UFLP→FIP (ProductTopology TP TQ) uflPQ ) where
      uflP : (F : Filter {Power P} {P} (λ x → x))  (UF : ultra-filter F)
@@ -383,371 +422,25 @@ Tychonoff {P} {Q} TP TQ CP CQ = FIP→Compact (ProductTopology TP TQ) (UFLP→FI
          ---
          --- FP is a P-projection of F, which is a ultra filter
          ---
-         isP→PxQ : {x : HOD} → (x⊆P : x ⊆ P ) → ZFP x Q ⊆ ZFP P Q
-         isP→PxQ {x} x⊆P (ab-pair p q) = ab-pair (x⊆P p) q
-         fx→px : {x : HOD } → filter F ∋ x → HOD
-         fx→px {x} fx = Replace' x ( λ y xy → * (zπ1 (F⊆pxq fx xy) ))
-         fx→px1 : {p : HOD } {q : Ordinal } → odef Q q → (fp : filter F ∋  ZFP p Q ) → fx→px fp ≡ p
-         fx→px1 {p} {q} qq fp = ==→o≡ record { eq→ = ty20 ; eq← = ty22 } where
-             ty21 : {a b : Ordinal } → (pz : odef p a) → (qz : odef Q b) → ZFProduct P Q (& (* (& < * a , * b >)))
-             ty21 pz qz = F⊆pxq fp (subst (odef (ZFP p Q)) (sym &iso) (ab-pair pz qz ))
-             ty32 : {a b : Ordinal } → (pz : odef p a) → (qz : odef Q b) → zπ1 (ty21 pz qz) ≡ a
-             ty32 {a} {b} pz qz  = ty33 (ty21 pz qz) (cong (&) *iso) where
-                 ty33 : {a b x : Ordinal } ( p : ZFProduct P Q x ) → x ≡ & < * a , * b > → zπ1 p ≡ a
-                 ty33 {a} {b} (ab-pair {c} {d} zp zq) eq with prod-≡ (subst₂ (λ j k → j ≡ k) *iso *iso (cong (*) eq))
-                 ... | ⟪ a=c , b=d ⟫ = subst₂ (λ j k → j ≡ k) &iso &iso (cong (&) a=c)
-             ty20 : {x : Ordinal} → odef (fx→px fp) x → odef p x
-             ty20 {x} record { z = _ ; az = ab-pair {a} {b} pz qz ; x=ψz = x=ψz } = subst (λ k → odef p k) a=x pz  where
-                 ty24 : * x  ≡ * a
-                 ty24 = begin
-                    * x ≡⟨ cong (*) x=ψz ⟩
-                    _ ≡⟨ *iso  ⟩
-                    * (zπ1 (F⊆pxq fp (subst (odef (ZFP p Q)) (sym &iso) (ab-pair pz qz)))) ≡⟨ cong (*) (ty32 pz qz) ⟩
-                    * a ∎ where open ≡-Reasoning
-                 a=x : a  ≡ x
-                 a=x = subst₂ (λ j k → j ≡ k ) &iso &iso (cong (&) (sym ty24))
-             ty22 : {x : Ordinal} → odef p x → odef (fx→px fp) x
-             ty22 {x} px = record { z = _ ; az = ab-pair px qq ; x=ψz = subst₂ (λ j k → j ≡ k) &iso refl (cong (&) ty12 ) }  where
-                 ty12 : * x ≡ * (zπ1 (F⊆pxq fp (subst (odef (ZFP p Q)) (sym &iso) (ab-pair px qq ))))
-                 ty12 = begin
-                    * x ≡⟨ sym (cong (*) (ty32 px qq )) ⟩
-                    * (zπ1 (F⊆pxq fp (subst (odef (ZFP p Q)) (sym &iso) (ab-pair px qq )))) ∎ where open ≡-Reasoning
-
-         --  Projection of F
-         FPSet : HOD
-         FPSet = Replace' (filter F) (λ x fx → Replace' x ( λ y xy → * (zπ1 (F⊆pxq fx xy) )))
-
-         --  Projection ⁻¹  F (which is in F) is in FPSet
-         FPSet∋zpq : {q : HOD} → q ⊆ P → filter F ∋  ZFP q Q → FPSet ∋ q
-         FPSet∋zpq {q} q⊆P fq = record { z = _ ; az = fq ; x=ψz = sym (cong (&) ty10) } where
-              -- brain damaged one
-              ty11 : {y : HOD} {xy : (* (& (ZFP q Q))) ∋ y } →
-                 * (zπ1 ( (F⊆pxq (subst (odef (filter F)) (sym &iso) fq) xy))) ≡ * (zπ1 ( (F⊆pxq fq (subst (λ k → odef k (& y)) *iso xy)  )))
-              ty11 {y} {xy}  = cong (λ k → * (zπ1 k)) ( HE.≅-to-≡ (∋-irr {ZFP P Q} a b )) where
-                 a = F⊆pxq (subst (odef (filter F)) (sym &iso) fq) xy
-                 b = F⊆pxq fq (subst (λ k → odef k (& y)) *iso xy)
-              ty10 : Replace' (* (& (ZFP q Q))) (λ y xy → * (zπ1 (F⊆pxq (subst (odef (filter F)) (sym &iso) fq) xy))) ≡ q
-              ty10 = begin
-                  Replace' (* (& (ZFP q Q))) (λ y xy → * (zπ1 (F⊆pxq (subst (odef (filter F)) (sym &iso) fq) xy)))
-                     ≡⟨
-                  cong (λ k → Replace' (* (& (ZFP q Q))) k ) (f-extensionality (λ y → (f-extensionality (λ xy → ty11 {y} {xy}))))
-                      ⟩
-                  Replace' (* (& (ZFP q Q))) (λ y xy → * (zπ1 (F⊆pxq fq (subst (λ k → odef k (& y)) *iso xy)  )))
-                     ≡⟨ Replace'-iso _  ( λ y xy → * (zπ1 (F⊆pxq fq xy) )) ⟩
-                  Replace' (ZFP q Q) ( λ y xy → * (zπ1 (F⊆pxq fq xy) )) ≡⟨ refl ⟩
-                  fx→px fq ≡⟨ fx→px1 aq fq  ⟩
-                  q ∎ where open ≡-Reasoning
-         FPSet⊆PP :  FPSet  ⊆ Power P
-         FPSet⊆PP {x} record { z = z ; az = fz ; x=ψz = x=ψz } w xw with subst (λ k → odef k w) (trans (cong (*) x=ψz) *iso) xw
-         ... | record { z = z1 ; az = az1 ; x=ψz = x=ψz1 }
-            = subst (λ k → odef P k) (sym (trans x=ψz1 &iso))
-               (zp1 (F⊆pxq (subst (λ k → odef (filter F) k) (sym &iso) fz) (subst (λ k → odef (* z) k) (sym &iso) az1))  )
-         X=F1 : (x : Ordinal) (p : HOD) (fx : odef (filter F) x) → Set n
-         X=F1 x p fx = & p ≡ & (Replace' (* x) (λ y xy →
-           * (zπ1 (f⊆L F
-             (subst (odef (filter F)) (sym &iso) fx)
-             (& y) (subst (λ k → OD.def (HOD.od k) (& y)) (sym *iso) xy)))))
-         x⊆pxq : {x : Ordinal} {p : HOD} (fx : odef (filter F) x) → X=F1 x p fx → * x ⊆ ZFP p Q
-         x⊆pxq {x} {p} fx x=ψz {w} xw with F⊆pxq (subst (λ k → odef (filter F) k) (sym &iso) fx) xw
-         ... | ab-pair {a} {b} pw qw = ab-pair ty08 qw where
-              ty21 : ZFProduct P Q (& (* (& < * a , * b >)))
-              ty21 = subst (λ k → ZFProduct P Q k) (cong & (sym *iso)) (ab-pair pw qw)
-              ty32 : ZFProduct P Q (& (* (& < * a , * b >)))
-              ty32 = f⊆L F (subst (odef (filter F)) (sym &iso) fx)
-                    (& (* (& < * a , * b >))) (subst (λ k → odef k
-                    (& (* (& < * a , * b >)))) (sym *iso) (subst (odef (* x)) (sym &iso) xw))
-              ty07 : odef (* x) (& < * a , * b >)
-              ty07 = xw
-              ty08 : odef p a
-              ty08 = subst (λ k → odef k a ) (subst₂ (λ j k → j ≡ k) *iso *iso (sym (cong (*) x=ψz)))
-                   record { z = _ ; az = xw ;  x=ψz = sym (trans &iso (ty33 ty32 (cong (&) *iso ))) } where
-                 ty33 : {a b x : Ordinal } ( p : ZFProduct P Q x ) → x ≡ & < * a , * b > → zπ1 p ≡ a
-                 ty33 {a} {b} (ab-pair {c} {d} zp zq) eq with prod-≡ (subst₂ (λ j k → j ≡ k) *iso *iso (cong (*) eq))
-                 ... | ⟪ a=c , b=d ⟫ = subst₂ (λ j k → j ≡ k) &iso &iso (cong (&) a=c)
-         p⊆P : {x : Ordinal} {p : HOD} (fx : odef (filter F) x) → X=F1 x p fx → p ⊆ P
-         p⊆P {x} {p} fx x=ψz {w} pw with subst (λ k → odef k w) (subst₂ (λ j k → j ≡ k ) *iso *iso (cong (*) x=ψz))  pw
-         ... | record { z = z1 ; az = az1 ; x=ψz = x=ψz1 } = subst (λ k → odef P k) (sym (trans x=ψz1 &iso))
-               (zp1 (F⊆pxq (subst (λ k → odef (filter F) k) (sym &iso) fx) (subst (λ k → odef (* x) k) (sym &iso) az1 ))  )
          FP : Filter {Power P} {P} (λ x → x)
-         FP = record { filter = FPSet ; f⊆L = FPSet⊆PP ; filter1 = ty01 ; filter2 = ty02 } where
-             ty01 : {p q : HOD} → Power P ∋ q → FPSet ∋ p → p ⊆ q → FPSet ∋ q
-             ty01 {p} {q} Pq record { z = x ; az = fx ; x=ψz = x=ψz } p⊆q = FPSet∋zpq q⊆P (ty10 ty05 ty06 )
-                where
-                  --  p ≡ (Replace' (* x) (λ y xy → (zπ1 (F⊆pxq (subst (odef (filter F)) (sym &iso) fx) xy))
-                  --  x = ( px , qx )  , px ⊆ q
-                  ty03 : Power (ZFP P Q) ∋ ZFP q Q
-                  ty03 z zpq = isP→PxQ {* (& q)} (Pq _) ( subst (λ k → odef k z ) (trans *iso (cong (λ k → ZFP k Q) (sym *iso))) zpq )
-                  q⊆P : q ⊆ P
-                  q⊆P {w} qw = Pq _ (subst (λ k → odef k w ) (sym *iso) qw )
-                  ty05 : filter F ∋  ZFP p Q
-                  ty05 = filter1 F (λ z wz → isP→PxQ (p⊆P fx x=ψz) (subst (λ k → odef k z) *iso wz)) (subst (λ k → odef (filter F) k) (sym &iso) fx) (x⊆pxq fx x=ψz)
-                  ty06 : ZFP p Q ⊆ ZFP q Q
-                  ty06 (ab-pair wp wq ) = ab-pair (p⊆q wp) wq
-                  ty10 : filter F ∋ ZFP p Q → ZFP p Q ⊆ ZFP q Q → filter F ∋  ZFP q Q
-                  ty10 fzp zp⊆zq = filter1 F ty03 fzp zp⊆zq
-             ty02 : {p q : HOD} → FPSet ∋ p → FPSet ∋ q → Power P ∋ (p ∩ q) → FPSet ∋ (p ∩ q)
-             ty02 {p} {q} record { z = zp ; az = fzp ; x=ψz = x=ψzp }
-                          record { z = zq ; az = fzq ; x=ψz = x=ψzq } Ppq
-                = FPSet∋zpq (λ {z} xz → Ppq z (subst (λ k → odef k z) (sym *iso) xz )) ty50 where
-                  ty54 : Power (ZFP P Q) ∋ (ZFP p Q ∩ ZFP q Q)
-                  ty54 z xz = subst (λ k → ZFProduct P Q k ) (zp-iso pqz) (ab-pair pqz1 pqz2 ) where
-                     pqz :  odef (ZFP (p ∩ q) Q)  z
-                     pqz = subst (λ k → odef k z ) (trans *iso (sym (proj1 ZFP∩) ))  xz
-                     pqz1 : odef P (zπ1 pqz)
-                     pqz1 = p⊆P fzp x=ψzp (proj1 (zp1 pqz))
-                     pqz2 : odef Q (zπ2 pqz)
-                     pqz2 = zp2 pqz
-                  ty53 : filter F ∋ ZFP p Q
-                  ty53 = filter1 F (λ z wz → isP→PxQ (p⊆P fzp x=ψzp)
-                     (subst (λ k → odef k z) *iso wz))
-                     (subst (λ k → odef (filter F) k) (sym &iso) fzp ) (x⊆pxq fzp x=ψzp)
-                  ty52 : filter F ∋ ZFP q Q
-                  ty52 = filter1 F (λ z wz → isP→PxQ (p⊆P fzq x=ψzq)
-                     (subst (λ k → odef k z) *iso wz))
-                     (subst (λ k → odef (filter F) k) (sym &iso) fzq ) (x⊆pxq fzq x=ψzq)
-                  ty51 : filter F ∋ ( ZFP p Q ∩ ZFP q Q )
-                  ty51 = filter2 F ty53 ty52 ty54
-                  ty50 : filter F ∋ ZFP (p ∩ q) Q
-                  ty50 = subst (λ k → filter F ∋ k ) (sym (proj1 ZFP∩)) ty51
+         FP = Filter-Proj1 {P} {Q} is-apq F
          UFP : ultra-filter FP
-         UFP = record { proper = ty61 ; ultra = ty60 } where
-            ty61 : ¬ (FPSet ∋ od∅)
-            ty61 record { z = z ; az = az ; x=ψz = x=ψz } = ultra-filter.proper UF ty62 where
-               ty63 : {x : Ordinal} → ¬ odef (* z) x
-               ty63 {x} zx with x⊆pxq az x=ψz zx
-               ... | ab-pair xp xq = ¬x<0 xp
-               ty62 : odef (filter F) (& od∅)
-               ty62 = subst (λ k → odef (filter F) k ) (trans (sym &iso) (cong (&) (¬x∋y→x≡od∅ ty63)) ) az
-            ty60 : {p : HOD} → Power P ∋ p → Power P ∋ (P ＼ p) → (FPSet ∋ p) ∨ (FPSet ∋ (P ＼ p))
-            ty60 {p} Pp Pnp with ultra-filter.ultra UF {ZFP p Q}
-                (λ z xz → isP→PxQ (λ {x} lt → Pp _ (subst (λ k → odef k x) (sym *iso) lt)) (subst (λ k → odef k z) *iso xz))
-                (λ z xz → proj1 (subst (λ k → odef k z) *iso xz ))
-            ... | case1 fp  = case1 (FPSet∋zpq (λ {z} xz → Pp z (subst (λ k → odef k z) (sym *iso) xz )) fp )
-            ... | case2 fnp = case2 (FPSet∋zpq (λ pp → proj1 pp)  (subst (λ k → odef (filter F) k) (cong (&) (proj1 ZFP\Q)) fnp ))
+         UFP = Filter-Proj1-UF {P} {Q} is-apq F UF
          uflp : UFLP TP FP UFP
          uflp = FIP→UFLP TP (Compact→FIP TP CP) FP UFP
 
          --  FPSet is in Projection ⁻¹  F
-         FPSet⊆F : {x : Ordinal } → odef FPSet x →  odef (filter F) (& (ZFP (* x) Q))
-         FPSet⊆F {x} record { z = z ; az = az ; x=ψz = x=ψz } = filter1 F ty80 (subst (λ k → odef (filter F) k) (sym &iso) az) ty71 where
-             Rx : HOD
-             Rx = Replace' (* z) (λ y xy → * (zπ1 (F⊆pxq (subst (odef (filter F)) (sym &iso) az) xy)))
-             RxQ∋z : * z ⊆ ZFP Rx Q 
-             RxQ∋z {w} zw = subst (λ k → ZFProduct Rx Q k ) ty70 ( ab-pair record { z = w ; az = zw ; x=ψz = refl  } (zp2 b )) where
-                 a = F⊆pxq (subst (odef (filter F)) (sym &iso) az) (subst (odef (* z)) (sym &iso) zw) 
-                 b = subst (λ k → odef (ZFP P Q) k ) (sym &iso) ( f⊆L F az w zw )
-                 ty73 : & (* (zπ1 a)) ≡ zπ1 b 
-                 ty73 = begin
-                     & (* (zπ1 a)) ≡⟨ &iso ⟩ 
-                     zπ1 a ≡⟨ cong zπ1 (HE.≅-to-≡ (∋-irr {ZFP _ _ } a b)) ⟩ 
-                     zπ1 b ∎  where open ≡-Reasoning
-                 ty70 : & < * (& (* (zπ1 a))) , * (zπ2 b) > ≡ w
-                 ty70 with zp-iso (subst (λ k → odef (ZFP P Q) k) (sym &iso) (f⊆L F az _ zw )) 
-                 ... | eq = trans (cong₂ (λ j k → & < * j , k > ) ty73  refl ) (trans eq &iso ) 
-             ty71 : * z ⊆ ZFP (* x) Q
-             ty71 = subst (λ k → * z ⊆ ZFP k Q) ty72 RxQ∋z where
-                 ty72 : Rx ≡ * x 
-                 ty72 = begin
-                    Rx ≡⟨ sym *iso ⟩
-                    * (& Rx)  ≡⟨ cong (*) (sym x=ψz ) ⟩
-                    * x ∎ where open ≡-Reasoning
-             ty80 : Power (ZFP P Q) ∋ ZFP (* x) Q
-             ty80 y yx = isP→PxQ ty81 (subst (λ k → odef k y ) *iso yx ) where
-                 ty81 : * x ⊆ P 
-                 ty81 {w} xw with subst (λ k → odef k w) (trans (cong (*) x=ψz ) *iso ) xw
-                 ... | record { z = z1 ; az = az1 ; x=ψz = x=ψz1 } = subst (λ k → odef P k) (sym ty84) ty87 where
-                      a =  f⊆L F (subst (odef (filter F)) (sym &iso) az) (& (* z1)) 
-                                 (subst (λ k → odef k (& (* z1))) (sym *iso) (subst (odef (* z)) (sym &iso) az1))
-                      b = subst (λ k → odef (ZFP P Q) k ) (sym &iso) (f⊆L F az _ az1 )
-                      ty87 : odef P (zπ1 b)
-                      ty87 = zp1 b
-                      ty84 : w ≡ (zπ1 b)
-                      ty84 = begin
-                       w ≡⟨ trans x=ψz1 &iso ⟩
-                       zπ1 a ≡⟨ cong zπ1 (HE.≅-to-≡ (∋-irr {ZFP _ _ } a b )) ⟩
-                       zπ1 b  ∎ where open ≡-Reasoning
+         FPSet⊆F1 : {x : Ordinal } → odef (filter FP) x →  odef (filter F) (& (ZFP (* x) Q))
+         FPSet⊆F1 {x} fpx = FPSet⊆F  is-apq F fpx  
 
-         --  copy and pasted, sorry
-         --
-         isQ→PxQ : {x : HOD} → (x⊆Q : x ⊆ Q ) → ZFP P x  ⊆ ZFP P Q
-         isQ→PxQ {x} x⊆Q (ab-pair p q) = ab-pair p (x⊆Q q)
-         fx→qx : {x : HOD } → filter F ∋ x → HOD
-         fx→qx {x} fx = Replace' x ( λ y xy → * (zπ2 (F⊆pxq fx xy) ))
-         fx→qx1 : {q : HOD } {p : Ordinal } → odef P p → (fq : filter F ∋  ZFP P q ) → fx→qx fq ≡ q
-         fx→qx1 {q} {p} qq fq = ==→o≡ record { eq→ = ty20 ; eq← = ty22 } where
-             ty21 : {a b : Ordinal } → (qz : odef q b) → (pz : odef P a) → ZFProduct P Q (& (* (& < * a , * b >)))
-             ty21 qz pz = F⊆pxq fq (subst (odef (ZFP P q)) (sym &iso) (ab-pair pz qz ))
-             ty32 : {a b : Ordinal } → (qz : odef q b) → (pz : odef P a) → zπ2 (ty21 qz pz) ≡ b
-             ty32 {a} {b} pz qz  = ty33 (ty21 pz qz) (cong (&) *iso) where
-                 ty33 : {a b x : Ordinal } ( q : ZFProduct P Q x ) → x ≡ & < * a , * b > → zπ2 q ≡ b
-                 ty33 {a} {b} (ab-pair {c} {d} zp zq) eq with prod-≡ (subst₂ (λ j k → j ≡ k) *iso *iso (cong (*) eq))
-                 ... | ⟪ a=c , b=d ⟫ = subst₂ (λ j k → j ≡ k) &iso &iso (cong (&) b=d)
-             ty20 : {x : Ordinal} → odef (fx→qx fq) x → odef q x
-             ty20 {x} record { z = _ ; az = ab-pair {a} {b} pz qz ; x=ψz = x=ψz } = subst (λ k → odef q k) b=x qz  where
-                 ty24 : * x  ≡ * b
-                 ty24 = begin
-                    * x ≡⟨ cong (*) x=ψz ⟩
-                    _ ≡⟨ *iso  ⟩
-                    * (zπ2 (F⊆pxq fq (subst (odef (ZFP P q)) (sym &iso) (ab-pair pz qz)))) ≡⟨ cong (*) (ty32 qz pz) ⟩
-                    * b ∎ where open ≡-Reasoning
-                 b=x : b  ≡ x
-                 b=x = subst₂ (λ j k → j ≡ k ) &iso &iso (cong (&) (sym ty24))
-             ty22 : {x : Ordinal} → odef q x → odef (fx→qx fq) x
-             ty22 {x} qx = record { z = _ ; az = ab-pair qq qx ; x=ψz = subst₂ (λ j k → j ≡ k) &iso refl (cong (&) ty12 ) }  where
-                 ty12 : * x ≡ * (zπ2 (F⊆pxq fq (subst (odef (ZFP P q)) (sym &iso) (ab-pair qq qx ))))
-                 ty12 = begin
-                    * x ≡⟨ sym (cong (*) (ty32 qx qq )) ⟩
-                    * (zπ2 (F⊆pxq fq (subst (odef (ZFP P q)) (sym &iso) (ab-pair qq qx )))) ∎ where open ≡-Reasoning
-         FQSet : HOD
-         FQSet = Replace' (filter F) (λ x fx → Replace' x ( λ y xy → * (zπ2 (F⊆pxq fx xy) )))
-         FQSet∋zpq : {q : HOD} → q ⊆ Q → filter F ∋  ZFP P q → FQSet ∋ q
-         FQSet∋zpq {q} q⊆P fq = record { z = _ ; az = fq ; x=ψz = sym (cong (&) ty10) } where
-              -- brain damaged one
-              ty11 : {y : HOD} {xy : (* (& (ZFP P q ))) ∋ y } →
-                 * (zπ2 ( (F⊆pxq (subst (odef (filter F)) (sym &iso) fq) xy))) ≡ * (zπ2 ( (F⊆pxq fq (subst (λ k → odef k (& y)) *iso xy)  )))
-              ty11 {y} {xy}  = cong (λ k → * (zπ2 k)) ( HE.≅-to-≡ (∋-irr {ZFP P Q} a b )) where
-                 a = F⊆pxq (subst (odef (filter F)) (sym &iso) fq) xy
-                 b = F⊆pxq fq (subst (λ k → odef k (& y)) *iso xy)
-              ty10 : Replace' (* (& (ZFP P q ))) (λ y xy → * (zπ2 (F⊆pxq (subst (odef (filter F)) (sym &iso) fq) xy))) ≡ q
-              ty10 = begin
-                  Replace' (* (& (ZFP P q))) (λ y xy → * (zπ2 (F⊆pxq (subst (odef (filter F)) (sym &iso) fq) xy)))
-                     ≡⟨
-                  cong (λ k → Replace' (* (& (ZFP P q ))) k ) (f-extensionality (λ y → (f-extensionality (λ xy → ty11 {y} {xy}))))
-                      ⟩
-                  Replace' (* (& (ZFP P q))) (λ y xy → * (zπ2 (F⊆pxq fq (subst (λ k → odef k (& y)) *iso xy)  )))
-                     ≡⟨ Replace'-iso _  ( λ y xy → * (zπ2 (F⊆pxq fq xy) )) ⟩
-                  Replace' (ZFP P q ) ( λ y xy → * (zπ2 (F⊆pxq fq xy) )) ≡⟨ refl ⟩
-                  fx→qx fq ≡⟨ fx→qx1 ap fq  ⟩
-                  q ∎ where open ≡-Reasoning
-         FQSet⊆PP :  FQSet  ⊆ Power Q
-         FQSet⊆PP {x} record { z = z ; az = fz ; x=ψz = x=ψz } w xw with subst (λ k → odef k w) (trans (cong (*) x=ψz) *iso) xw
-         ... | record { z = z1 ; az = az1 ; x=ψz = x=ψz1 }
-            = subst (λ k → odef Q k) (sym (trans x=ψz1 &iso))
-               (zp2 (F⊆pxq (subst (λ k → odef (filter F) k) (sym &iso) fz) (subst (λ k → odef (* z) k) (sym &iso) az1))  )
-         X=F2 : (x : Ordinal) (q : HOD) (fx : odef (filter F) x) → Set n
-         X=F2 x q fx = & q ≡ & (Replace' (* x) (λ y xy →
-           * (zπ2 (f⊆L F
-             (subst (odef (filter F)) (sym &iso) fx)
-             (& y) (subst (λ k → OD.def (HOD.od k) (& y)) (sym *iso) xy)))))
-         x⊆qxq : {x : Ordinal} {q : HOD} (fx : odef (filter F) x) → X=F2 x q fx → * x ⊆ ZFP P q
-         x⊆qxq {x} {p} fx x=ψz {w} xw with F⊆pxq (subst (λ k → odef (filter F) k) (sym &iso) fx) xw
-         ... | ab-pair {a} {b} pw qw = ab-pair pw ty08 where
-              ty21 : ZFProduct P Q (& (* (& < * a , * b >)))
-              ty21 = subst (λ k → ZFProduct P Q k) (cong & (sym *iso)) (ab-pair pw qw)
-              ty32 : ZFProduct P Q (& (* (& < * a , * b >)))
-              ty32 = f⊆L F (subst (odef (filter F)) (sym &iso) fx)
-                    (& (* (& < * a , * b >))) (subst (λ k → odef k
-                    (& (* (& < * a , * b >)))) (sym *iso) (subst (odef (* x)) (sym &iso) xw))
-              ty07 : odef (* x) (& < * a , * b >)
-              ty07 = xw
-              ty08 : odef p b
-              ty08 = subst (λ k → odef k b ) (subst₂ (λ j k → j ≡ k) *iso *iso (sym (cong (*) x=ψz)))
-                   record { z = _ ; az = xw ;  x=ψz = sym (trans &iso (ty33 ty32 (cong (&) *iso ))) } where
-                 ty33 : {a b x : Ordinal } ( p : ZFProduct P Q x ) → x ≡ & < * a , * b > → zπ2 p ≡ b
-                 ty33 {a} {b} (ab-pair {c} {d} zp zq) eq with prod-≡ (subst₂ (λ j k → j ≡ k) *iso *iso (cong (*) eq))
-                 ... | ⟪ a=c , b=d ⟫ = subst₂ (λ j k → j ≡ k) &iso &iso (cong (&) b=d)
-         q⊆Q : {x : Ordinal} {p : HOD} (fx : odef (filter F) x) → X=F2 x p fx → p ⊆ Q
-         q⊆Q {x} {p} fx x=ψz {w} pw with subst (λ k → odef k w) (subst₂ (λ j k → j ≡ k ) *iso *iso (cong (*) x=ψz))  pw
-         ... | record { z = z1 ; az = az1 ; x=ψz = x=ψz1 } = subst (λ k → odef Q k) (sym (trans x=ψz1 &iso))
-               (zp2 (F⊆pxq (subst (λ k → odef (filter F) k) (sym &iso) fx) (subst (λ k → odef (* x) k) (sym &iso) az1 ))  )
          FQ : Filter {Power Q} {Q} (λ x → x)
-         FQ = record { filter = FQSet ; f⊆L = FQSet⊆PP ; filter1 = ty01 ; filter2 = ty02 } where
-             ty01 : {p q : HOD} → Power Q ∋ q → FQSet ∋ p → p ⊆ q → FQSet ∋ q
-             ty01 {p} {q} Pq record { z = x ; az = fx ; x=ψz = x=ψz } p⊆q = FQSet∋zpq q⊆P (ty10 ty05 ty06 )
-                where
-                  --  p ≡ (Replace' (* x) (λ y xy → (zπ2 (F⊆qxq (subst (odef (filter F)) (sym &iso) fx) xy))
-                  --  x = ( px , qx )  , qx ⊆ q
-                  ty03 : Power (ZFP P Q) ∋ ZFP P q
-                  ty03 z zpq = isQ→PxQ {* (& q)} (Pq _) ( subst (λ k → odef k z ) (trans *iso (cong (λ k → ZFP P k ) (sym *iso))) zpq )
-                  q⊆P : q ⊆ Q
-                  q⊆P {w} qw = Pq _ (subst (λ k → odef k w ) (sym *iso) qw )
-                  ty05 : filter F ∋  ZFP P p
-                  ty05 = filter1 F (λ z wz → isQ→PxQ (q⊆Q fx x=ψz) (subst (λ k → odef k z) *iso wz)) (subst (λ k → odef (filter F) k) (sym &iso) fx) (x⊆qxq fx x=ψz)
-                  ty06 : ZFP P p ⊆ ZFP P q
-                  ty06 (ab-pair wp wq ) = ab-pair wp (p⊆q wq)
-                  ty10 : filter F ∋ ZFP P p → ZFP P p ⊆ ZFP P q → filter F ∋  ZFP P q
-                  ty10 fzp zp⊆zq = filter1 F ty03 fzp zp⊆zq
-             ty02 : {p q : HOD} → FQSet ∋ p → FQSet ∋ q → Power Q ∋ (p ∩ q) → FQSet ∋ (p ∩ q)
-             ty02 {p} {q} record { z = zp ; az = fzp ; x=ψz = x=ψzp }
-                          record { z = zq ; az = fzq ; x=ψz = x=ψzq } Ppq
-                = FQSet∋zpq (λ {z} xz → Ppq z (subst (λ k → odef k z) (sym *iso) xz )) ty50 where
-                  ty54 : Power (ZFP P Q) ∋ (ZFP P p ∩ ZFP P q )
-                  ty54 z xz = subst (λ k → ZFProduct P Q k ) (zp-iso pqz) (ab-pair pqz1 pqz2 ) where
-                     pqz :  odef (ZFP P (p ∩ q) )  z
-                     pqz = subst (λ k → odef k z ) (trans *iso (sym (proj2 ZFP∩) ))  xz
-                     pqz1 : odef P (zπ1 pqz)
-                     pqz1 = zp1 pqz
-                     pqz2 : odef Q (zπ2 pqz)
-                     pqz2 = q⊆Q fzp x=ψzp (proj1 (zp2 pqz))
-                  ty53 : filter F ∋ ZFP P p
-                  ty53 = filter1 F (λ z wz → isQ→PxQ (q⊆Q fzp x=ψzp)
-                     (subst (λ k → odef k z) *iso wz))
-                     (subst (λ k → odef (filter F) k) (sym &iso) fzp ) (x⊆qxq fzp x=ψzp)
-                  ty52 : filter F ∋ ZFP P q
-                  ty52 = filter1 F (λ z wz → isQ→PxQ (q⊆Q fzq x=ψzq)
-                     (subst (λ k → odef k z) *iso wz))
-                     (subst (λ k → odef (filter F) k) (sym &iso) fzq ) (x⊆qxq fzq x=ψzq)
-                  ty51 : filter F ∋ ( ZFP P p ∩ ZFP P q )
-                  ty51 = filter2 F ty53 ty52 ty54
-                  ty50 : filter F ∋ ZFP P (p ∩ q)
-                  ty50 = subst (λ k → filter F ∋ k ) (sym (proj2 ZFP∩)) ty51
+         FQ = Filter-Proj2 {P} {Q} is-apq F
          UFQ : ultra-filter FQ
-         UFQ = record { proper = ty61 ; ultra = ty60 } where
-            ty61 : ¬ (FQSet ∋ od∅)
-            ty61 record { z = z ; az = az ; x=ψz = x=ψz } = ultra-filter.proper UF ty62 where
-               ty63 : {x : Ordinal} → ¬ odef (* z) x
-               ty63 {x} zx with x⊆qxq az x=ψz zx
-               ... | ab-pair xp xq = ¬x<0 xq
-               ty62 : odef (filter F) (& od∅)
-               ty62 = subst (λ k → odef (filter F) k ) (trans (sym &iso) (cong (&) (¬x∋y→x≡od∅ ty63)) ) az
-            ty60 : {p : HOD} → Power Q ∋ p → Power Q ∋ (Q ＼ p) → (FQSet ∋ p) ∨ (FQSet ∋ (Q ＼ p))
-            ty60 {q} Pp Pnp with ultra-filter.ultra UF {ZFP P q}
-                (λ z xz → isQ→PxQ (λ {x} lt → Pp _ (subst (λ k → odef k x) (sym *iso) lt)) (subst (λ k → odef k z) *iso xz))
-                (λ z xz → proj1 (subst (λ k → odef k z) *iso xz ))
-            ... | case1 fq  = case1 (FQSet∋zpq (λ {z} xz → Pp z (subst (λ k → odef k z) (sym *iso) xz )) fq )
-            ... | case2 fnp = case2 (FQSet∋zpq (λ pp → proj1 pp)  (subst (λ k → odef (filter F) k) (cong (&) (proj2 ZFP\Q)) fnp ))
-
+         UFQ = Filter-Proj2-UF {P} {Q} is-apq F UF 
 
          --  FQSet is in Projection ⁻¹  F
-         FQSet⊆F : {x : Ordinal } → odef FQSet x →  odef (filter F) (& (ZFP P (* x) ))
-         FQSet⊆F {x} record { z = z ; az = az ; x=ψz = x=ψz } = filter1 F ty80 (subst (λ k → odef (filter F) k) (sym &iso) az) ty71 where
-             Rx : HOD
-             Rx = Replace' (* z) (λ y xy → * (zπ2 (F⊆pxq (subst (odef (filter F)) (sym &iso) az) xy)))
-             PxRx∋z : * z ⊆ ZFP P Rx  
-             PxRx∋z {w} zw = subst (λ k → ZFProduct P Rx k ) ty70 ( ab-pair (zp1 b) record { z = w ; az = zw ; x=ψz = refl } ) where
-                 a = F⊆pxq (subst (odef (filter F)) (sym &iso) az) (subst (odef (* z)) (sym &iso) zw) 
-                 b = subst (λ k → odef (ZFP P Q) k ) (sym &iso) ( f⊆L F az w zw )
-                 ty73 : & (* (zπ2 a)) ≡ zπ2 b 
-                 ty73 = begin
-                     & (* (zπ2 a)) ≡⟨ &iso ⟩ 
-                     zπ2 a ≡⟨ cong zπ2 (HE.≅-to-≡ (∋-irr {ZFP _ _ } a b)) ⟩ 
-                     zπ2 b ∎  where open ≡-Reasoning
-                 ty70 : & < * (zπ1 b) , * (& (* (zπ2 a)))  > ≡ w
-                 ty70 with zp-iso (subst (λ k → odef (ZFP P Q) k) (sym &iso) (f⊆L F az _ zw )) 
-                 ... | eq = trans (cong₂ (λ j k → & < j , * k > ) refl ty73 ) (trans eq &iso ) 
-             ty71 : * z ⊆ ZFP P (* x) 
-             ty71 = subst (λ k → * z ⊆ ZFP P k ) ty72 PxRx∋z where
-                 ty72 : Rx ≡ * x 
-                 ty72 = begin
-                    Rx ≡⟨ sym *iso ⟩
-                    * (& Rx)  ≡⟨ cong (*) (sym x=ψz ) ⟩
-                    * x ∎ where open ≡-Reasoning
-             ty80 : Power (ZFP P Q) ∋ ZFP P (* x) 
-             ty80 y yx = isQ→PxQ ty81 (subst (λ k → odef k y ) *iso yx ) where
-                 ty81 : * x ⊆ Q 
-                 ty81 {w} xw with subst (λ k → odef k w) (trans (cong (*) x=ψz ) *iso ) xw
-                 ... | record { z = z1 ; az = az1 ; x=ψz = x=ψz1 } = subst (λ k → odef Q k) (sym ty84) ty87 where
-                      a =  f⊆L F (subst (odef (filter F)) (sym &iso) az) (& (* z1)) 
-                                 (subst (λ k → odef k (& (* z1))) (sym *iso) (subst (odef (* z)) (sym &iso) az1))
-                      b = subst (λ k → odef (ZFP P Q) k ) (sym &iso) (f⊆L F az _ az1 )
-                      ty87 : odef Q (zπ2 b)
-                      ty87 = zp2 b
-                      ty84 : w ≡ (zπ2 b)
-                      ty84 = begin
-                       w ≡⟨ trans x=ψz1 &iso ⟩
-                       zπ2 a ≡⟨ cong zπ2 (HE.≅-to-≡ (∋-irr {ZFP _ _ } a b )) ⟩
-                       zπ2 b  ∎ where open ≡-Reasoning
-
+         FQSet⊆F1 : {x : Ordinal } → odef (filter FQ) x →  odef (filter F) (& (ZFP P (* x) ))
+         FQSet⊆F1 {x} fpx = FQSet⊆F  is-apq F fpx  
 
          uflq : UFLP TQ FQ UFQ
          uflq = FIP→UFLP TQ (Compact→FIP TQ CQ) FQ UFQ
@@ -792,7 +485,7 @@ Tychonoff {P} {Q} TP TQ CP CQ = FIP→Compact (ProductTopology TP TQ) (UFLP→FI
                  fp∋b = UFLP.is-limit uflp record { u = _ ; ou = BaseP.op px ; ux = px∋limit
                      ; v⊆P = λ {x} lt → os⊆L TP (subst (λ k → odef (OS TP) k) (sym &iso) (BaseP.op px)) lt ; u⊆v = λ x → x }
                  f∋b : odef (filter F) (& (ZFP (* (BaseP.p px)) Q))
-                 f∋b = FPSet⊆F  (subst (λ k → odef (filter FP) k ) &iso fp∋b )
+                 f∋b = FPSet⊆F1 (subst (λ k → odef (filter FP) k ) &iso fp∋b )
              F∋base {b} (gi (case2 qx)) bl  = subst (λ k → odef (filter F) k) (sym (BaseQ.prod qx)) f∋b where
                  isl00 : odef (ZFP P (* (BaseQ.q qx))) lim
                  isl00 = subst (λ k → odef k lim ) (trans (cong (*) (BaseQ.prod qx)) *iso )  bl
@@ -806,7 +499,7 @@ Tychonoff {P} {Q} TP TQ CP CQ = FIP→Compact (ProductTopology TP TQ) (UFLP→FI
                  fp∋b = UFLP.is-limit uflq record { u = _ ; ou = BaseQ.oq qx ; ux = qx∋limit
                      ; v⊆P = λ {x} lt → os⊆L TQ (subst (λ k → odef (OS TQ) k) (sym &iso) (BaseQ.oq qx)) lt ; u⊆v = λ x → x }
                  f∋b : odef (filter F) (& (ZFP P (* (BaseQ.q qx)) ))
-                 f∋b = FQSet⊆F  (subst (λ k → odef (filter FQ) k ) &iso fp∋b )
+                 f∋b = FQSet⊆F1 (subst (λ k → odef (filter FQ) k ) &iso fp∋b )
              F∋base (g∩ {x} {y} b1 b2) bl = F∋x∩y where
                  -- filter contains finite intersection
                  fb01 :  odef (filter F) x

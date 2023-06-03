@@ -3,10 +3,7 @@ import Level
 open import Ordinals
 module generic-filter {n : Level.Level } (O : Ordinals {n})   where
 
--- import filter
-open import zf
 open import logic
--- open import partfunc {n} O
 import OD
 
 open import Relation.Nullary
@@ -71,6 +68,27 @@ record CountableModel : Set (Level.suc (Level.suc n)) where
 --
 
 -- we expect  P ∈ * ctl-M ∧ G  ⊆ L ⊆ Power P  , ¬ G ∈ * ctl-M,
+
+record COD : Set (Level.suc (Level.suc n)) where
+   field
+       CO : Ordinals {n}
+       CA : OD.ODAxiom CO
+       cod→ : ℕ → Ordinals.Ordinal CO
+       cod← : Ordinals.Ordinal CO → ℕ
+       cod-iso→ : { x : Ordinals.Ordinal CO } → cod→ (cod← x) ≡ x
+       cod-iso← : { x : ℕ } → cod← (cod→ x) ≡ x
+       -- Since it is countable, it is HOD.
+
+-- CM : COD → CountableModel 
+-- CM cod = record { 
+--       ctl-M = ?
+--     ; ctl→ = λ n → ?
+--     ; ctl<M = λ n → ?
+--     ; ctl← = λ x → ?
+--     ; ctl-iso→ = ?
+--     ; TC = ?
+--     ; is-model = ?
+--       }
 
 open CountableModel
 
@@ -392,7 +410,7 @@ record Mg {L P : HOD} (LP : L ⊆ Power P) (M : HOD) (G : GenericFilter {L} {P} 
        x∋gi : odef (* x) gi
 
 MgH : {L P : HOD} (LP : L ⊆ Power P) (M : HOD) (G : GenericFilter {L} {P} LP M) → HOD
-MgH {L} {P} LP M G = record { od = record { def = λ x → odef M x ∧ Mg LP M G x } ; odmax = & M ; <odmax = odef∧<  }
+MgH {L} {P} LP M G = record { od = record { def = λ x → (x o< & M) ∧ Mg LP M G x } ; odmax = & M ; <odmax = proj1  }
 
 MG1 : {L P : HOD} (LP : L ⊆ Power P) (M : HOD) (G : GenericFilter {L} {P} LP M) → HOD
 MG1 {L} {P} LP M G = M ∪ Union (MgH LP M G)
@@ -403,19 +421,23 @@ TCS G = {x y : HOD} → G ∋ x → x ∋ y → G ∋ y
 GH : (P L p0 : HOD ) → (LPP : L ⊆ Power P) → (Lp0 : L ∋ p0 )
       → (C : CountableModel ) → HOD
 GH P L p0 LPP Lp0 C = ⊆-Ideal.ideal (genf ( P-GenericFilter P L p0 LPP Lp0 C ))
-
-module _ {L P : HOD} (LP : L ⊆ Power P) (M : HOD) (GF : GenericFilter {L} {P} LP M) where
-
-    MG = MG1 {L} {P} LP M GF 
-    G = ⊆-Ideal.ideal (genf GF)
-
-    M⊆MG : M ⊆ MG 
-    M⊆MG = case1
-
-    MG∋G : MG ∋ G
-    MG∋G = ?
-
-    MG∋UG : MG ∋ Union G
-    MG∋UG = ?
-
-
+-- 
+-- module _ {L P : HOD} (LP : L ⊆ Power P) (M : HOD) (GF : GenericFilter {L} {P} LP M) where
+-- 
+--     MG = MG1 {L} {P} LP M GF 
+--     G = ⊆-Ideal.ideal (genf GF)
+-- 
+--     M⊆MG : M ⊆ MG 
+--     M⊆MG = case1
+-- 
+--     MG∋G : MG ∋ G
+--     MG∋G = case2 record { owner = ? ; ao = ? ; ox = ? } where
+--        gf00 : ?
+--        gf00 = ?
+-- 
+--     MG∋UG : MG ∋ Union G
+--     MG∋UG = case2 record { owner = ? ; ao = ? ; ox = ? } where
+--        gf00 : ?
+--        gf00 = ?
+-- 
+-- 

@@ -4,7 +4,6 @@ open import Level
 open import Ordinals
 module Topology {n : Level } (O : Ordinals {n})   where
 
-open import zf
 open import logic
 open _∧_
 open _∨_
@@ -315,7 +314,7 @@ FIP→Compact {L} top fip with trio< (& L) o∅
 ... | tri> ¬a ¬b 0<L = record { finCover = finCover ; isCover = isCover1 ; isFinite = isFinite } where
    -- set of coset of X
    CX : {X : Ordinal} → * X ⊆ OS top → Ordinal
-   CX {X} ox = & ( Replace (* X) (λ z → L ＼  z ))
+   CX {X} ox = & ( Replace (* X) (λ z → L ＼  z ) RC＼ )
    CCX : {X : Ordinal} → (os :  * X ⊆ OS top) → * (CX os) ⊆ CS top
    CCX {X} os {x} ox with subst (λ k → odef k x) *iso ox
    ... | record { z = z ; az = az ; x=ψz = x=ψz } = ⟪ fip05 , fip06  ⟫ where --  x ≡ & (L ＼ * z)
@@ -337,8 +336,8 @@ FIP→Compact {L} top fip with trio< (& L) o∅
    --     then some finite Intersection of (CX X) contains nothing ( contraposition of FIP .i.e. CFIP)
    --     it means there is a finite cover
    --
-   finCoverBase : {X : Ordinal } → * X ⊆ OS top → * X covers L →  Subbase (Replace (* X) (λ z → L ＼ z)) o∅
-   finCoverBase {X} ox oc with ODC.p∨¬p O (Subbase (Replace (* X) (λ z → L ＼ z)) o∅)
+   finCoverBase : {X : Ordinal } → * X ⊆ OS top → * X covers L →  Subbase (Replace (* X) (λ z → L ＼ z) RC＼ ) o∅
+   finCoverBase {X} ox oc with ODC.p∨¬p O (Subbase (Replace (* X) (λ z → L ＼ z) RC＼ ) o∅)
    ... | case1 sb = sb
    ... | case2 ¬sb = ⊥-elim (¬¬cover fip25 fip20) where
        ¬¬cover : {z : Ordinal } →  odef L z → ¬ ( {y : Ordinal } → (Xy : odef (* X) y)  → ¬ ( odef (* y) z ))
@@ -362,7 +361,7 @@ FIP→Compact {L} top fip with trio< (& L) o∅
            fip21 : odef (L ＼ * y) ( FIP.limit fip (CCX ox) fip02 )
            fip21 = subst (λ k → odef k ( FIP.limit fip (CCX ox) fip02 ) ) *iso ( FIP.is-limit fip (CCX ox) fip02 fip22 )
    -- create HOD from Subbase ( finite intersection )
-   finCoverSet : {X : Ordinal } → (x : Ordinal) →  Subbase (Replace (* X) (λ z → L ＼ z)) x → HOD
+   finCoverSet : {X : Ordinal } → (x : Ordinal) →  Subbase (Replace (* X) (λ z → L ＼ z) RC＼ ) x → HOD
    finCoverSet {X} x (gi rx) =  ( L ＼ * x ) , ( L ＼ * x  )
    finCoverSet {X} x∩y (g∩ {x} {y} sx sy) = finCoverSet {X} x sx ∪ finCoverSet {X} y sy 
    --
@@ -372,11 +371,11 @@ FIP→Compact {L} top fip with trio< (& L) o∅
    -- create Finite-∪ from finCoverSet
    isFinite : {X : Ordinal} (xo : * X ⊆ OS top) (xcp : * X covers L) → Finite-∪ (* X) (finCover xo xcp)
    isFinite {X} xo xcp = fip60 o∅ (finCoverBase xo xcp) where
-        fip60 : (x : Ordinal) → (sb : Subbase (Replace (* X) (λ z → L ＼ z)) x ) → Finite-∪ (* X) (& (finCoverSet {X} x sb))
+        fip60 : (x : Ordinal) → (sb : Subbase (Replace (* X) (λ z → L ＼ z) RC＼ ) x ) → Finite-∪ (* X) (& (finCoverSet {X} x sb))
         fip60 x (gi rx) = subst (λ k → Finite-∪ (* X) k) fip62 (fin-i (fip61 rx)) where
            fip62 : & (* (& (L ＼ * x)) , * (& (L ＼ * x))) ≡ & ((L ＼ * x) , (L ＼ * x))
            fip62 = cong₂ (λ j k → & (j , k )) *iso *iso
-           fip61 : odef (Replace (* X) (_＼_ L)) x → odef (* X) ( & ((L ＼ * x ) ))
+           fip61 : odef (Replace (* X) (_＼_ L) RC＼ ) x → odef (* X) ( & ((L ＼ * x ) ))
            fip61 record { z = z1 ; az = az1 ; x=ψz = x=ψz1 } = subst (λ k → odef (* X) k) fip33 az1 where
                fip34 : * z1 ⊆ L
                fip34 {w} wz1 = os⊆L top (subst (λ k → odef (OS top) k) (sym &iso) (xo az1)) wz1
@@ -396,7 +395,7 @@ FIP→Compact {L} top fip with trio< (& L) o∅
    isCover1 : {X : Ordinal} (xo : * X ⊆ OS top) (xcp : * X covers L) → * (finCover xo xcp) covers L
    isCover1 {X} xo xcp = subst₂ (λ j k → j covers k ) (sym *iso) (subst (λ k → L ＼ k ≡ L) (sym o∅≡od∅) L＼0=L) 
      (fip70 o∅ (finCoverBase xo xcp)) where
-        fip70 : (x : Ordinal) → (sb : Subbase (Replace (* X) (λ z → L ＼ z)) x ) → (finCoverSet {X} x sb) covers (L ＼ * x)
+        fip70 : (x : Ordinal) → (sb : Subbase (Replace (* X) (λ z → L ＼ z) RC＼ ) x ) → (finCoverSet {X} x sb) covers (L ＼ * x)
         fip70 x (gi rx) = fip73 where
             fip73 : ((L ＼ * x) , (L ＼ * x)) covers (L ＼ * x)   -- obvious
             fip73 = record { cover = λ _ → & (L ＼ * x) ; P∋cover = λ _ → case1 refl 
@@ -455,7 +454,7 @@ Compact→FIP {L} top compact with trio< (& L) o∅
 ... | tri> ¬a ¬b 0<L = record { limit = limit ; is-limit = fip00 } where
    -- set of coset of X
    OX : {X : Ordinal} → * X ⊆ CS top → Ordinal
-   OX {X} ox = & ( Replace (* X) (λ z → L ＼  z ))
+   OX {X} ox = & ( Replace (* X) (λ z → L ＼  z ) RC＼)
    OOX : {X : Ordinal} → (cs :  * X ⊆ CS top) → * (OX cs) ⊆ OS top
    OOX {X} cs {x} ox with subst (λ k → odef k x) *iso ox
    ... | record { z = z ; az = az ; x=ψz = x=ψz } =  subst (λ k → odef (OS top) k) (sym x=ψz) ( P＼CS=OS top (cs comp01))  where

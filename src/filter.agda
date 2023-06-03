@@ -4,7 +4,6 @@ open import Level
 open import Ordinals
 module filter {n : Level } (O : Ordinals {n})   where
 
-open import zf
 open import logic
 import OD 
 

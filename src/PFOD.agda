@@ -3,7 +3,6 @@ open import Ordinals
 module PFOD {n : Level } (O : Ordinals {n})   where
 
 import filter 
-open import zf
 open import logic
 -- open import partfunc {n} O
 import OD 
@@ -23,6 +22,7 @@ open inOrdinal O
 open OD O
 open OD.OD
 open ODAxiom odAxiom
+-- open ODAxiom-ho< odAxiom-ho<
 import OrdUtil
 import ODUtil
 open Ordinals.Ordinals  O
@@ -73,19 +73,19 @@ HODω2 :  HOD
 HODω2 = record { od = record { def = λ x → Hω2r x } ; odmax = next o∅ ; <odmax = odmax0 } where
     P  : (i j : Nat) (x : Ordinal ) → HOD
     P  i j x = ((nat→ω i , nat→ω i) , (nat→ω i , nat→ω j)) , * x
-    nat1 : (i : Nat) (x : Ordinal) → & (nat→ω i) o< next x
-    nat1 i x =  next< nexto∅ ( <odmax infinite (ω∋nat→ω {i}))
+    -- nat1 : (i : Nat) (x : Ordinal) → & (nat→ω i) o< next x
+    -- nat1 i x =  next< nexto∅ ( <odmax infinite (ω∋nat→ω {i}))
     lemma1 : (i j : Nat) (x : Ordinal ) → osuc (& (P i j x)) o< next x
-    lemma1 i j x = osuc<nx (pair-<xy (pair-<xy (pair-<xy (nat1 i x) (nat1 i x) ) (pair-<xy (nat1 i x) (nat1 j x) ) )
-         (subst (λ k → k o< next x) (sym &iso) x<nx ))
+    lemma1 i j x = ? -- osuc<nx (pair-<xy (pair-<xy (pair-<xy (nat1 i x) (nat1 i x) ) (pair-<xy (nat1 i x) (nat1 j x) ) )
+    --      (subst (λ k → k o< next x) (sym &iso) x<nx ))
     lemma : (i j : Nat) (x : Ordinal ) → & (Union (P i j x)) o< next x
-    lemma i j x = next< (lemma1 i j x ) ho<
+    lemma i j x = ? -- next< (lemma1 i j x ) ho<
     odmax0 :  {y : Ordinal} → Hω2r y → y o< next o∅ 
     odmax0 {y} r with hω2 r
     ... | hφ = x<nx
-    ... | h0 {i} {x} t = next< (odmax0 record { count = i ; hω2 = t }) (lemma i 0 x)
-    ... | h1 {i} {x} t = next< (odmax0 record { count = i ; hω2 = t }) (lemma i 1 x)
-    ... | he {i} {x} t = next< (odmax0 record { count = i ; hω2 = t }) x<nx
+    ... | h0 {i} {x} t = ? -- jnext< (odmax0 record { count = i ; hω2 = t }) (lemma i 0 x)
+    ... | h1 {i} {x} t = ? -- jnext< (odmax0 record { count = i ; hω2 = t }) (lemma i 1 x)
+    ... | he {i} {x} t = ? -- jnext< (odmax0 record { count = i ; hω2 = t }) x<nx
 
 3→Hω2 : List (Maybe Two) → HOD
 3→Hω2 t = list→hod t 0 where

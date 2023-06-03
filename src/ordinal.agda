@@ -250,7 +250,7 @@ C-Ordinal {n} = record {
    isNext = record {
         x<nx = x<nx 
       ; osuc<nx = λ {x} {y} → osuc<nx {x} {y}
-      ; ¬nx<nx = ¬nx<nx 
+      -- ; ¬nx<nx = ¬nx<nx 
    }
   } where
      next : Ordinal {suc n} → Ordinal {suc n}

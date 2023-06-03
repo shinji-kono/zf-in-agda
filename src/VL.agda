@@ -2,7 +2,6 @@ open import Level
 open import Ordinals
 module VL {n : Level } (O : Ordinals {n}) where
 
-open import zf
 open import logic
 import OD 
 open import Relation.Nullary 

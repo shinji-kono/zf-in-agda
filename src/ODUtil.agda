@@ -3,7 +3,6 @@ open import Level
 open import Ordinals
 module ODUtil {n : Level } (O : Ordinals {n} ) where
 
-open import zf
 open import Data.Nat renaming ( zero to Zero ; suc to Suc ;  ℕ to Nat ; _⊔_ to _n⊔_ )
 open import  Relation.Binary.PropositionalEquality hiding ( [_] )
 open import Data.Nat.Properties
@@ -24,6 +23,7 @@ import OD
 open OD O
 open OD.OD
 open ODAxiom odAxiom
+-- open ODAxiom-ho< odAxiom-ho<
 
 open HOD
 open _∧_
@@ -75,20 +75,20 @@ pair-xx<xy {x} {y} = ⊆→o≤  lemma where
    lemma {z} (case1 refl) = case1 refl
    lemma {z} (case2 refl) = case1 refl
 
-pair-<xy : {x y : HOD} → {n : Ordinal}  → & x o< next n →  & y o< next n  → & (x , y) o< next n
-pair-<xy {x} {y} {o} x<nn y<nn with trio< (& x) (& y) | inspect (omax (& x)) (& y)
-... | tri< a ¬b ¬c | record { eq = eq1 } = next< (subst (λ k → k o< next o ) (sym eq1) (osuc<nx y<nn)) ho<
-... | tri> ¬a ¬b c | record { eq = eq1 } = next< (subst (λ k → k o< next o ) (sym eq1) (osuc<nx x<nn)) ho<
-... | tri≈ ¬a b ¬c | record { eq = eq1 } = next< (subst (λ k → k o< next o ) (omax≡ _ _ b) (subst (λ k → osuc k o< next o) b (osuc<nx x<nn))) ho<
+-- pair-<xy : {x y : HOD} → {n : Ordinal}  → & x o< next n →  & y o< next n  → & (x , y) o< next n
+-- pair-<xy {x} {y} {o} x<nn y<nn with trio< (& x) (& y) | inspect (omax (& x)) (& y)
+-- ... | tri< a ¬b ¬c | record { eq = eq1 } = next< (subst (λ k → k o< next o ) (sym eq1) (osuc<nx y<nn)) ho<
+-- ... | tri> ¬a ¬b c | record { eq = eq1 } = next< (subst (λ k → k o< next o ) (sym eq1) (osuc<nx x<nn)) ho<
+-- ... | tri≈ ¬a b ¬c | record { eq = eq1 } = next< (subst (λ k → k o< next o ) (omax≡ _ _ b) (subst (λ k → osuc k o< next o) b (osuc<nx x<nn))) ho<
 
 --  another form of infinite
 -- pair-ord< :  {x : Ordinal } → Set n
-pair-ord< : {x : HOD } → ( {y : HOD } → & y o< next (odmax y) ) → & ( x , x ) o< next (& x)
-pair-ord< {x} ho< = subst (λ k → & (x , x) o< k ) lemmab0 lemmab1  where
-       lemmab0 : next (odmax (x , x)) ≡ next (& x)
-       lemmab0 = trans (cong (λ k → next k) (omxx _)) (sym nexto≡)
-       lemmab1 : & (x , x) o< next ( odmax (x , x))
-       lemmab1 = ho<
+-- pair-ord< : {x : HOD } → ( {y : HOD } → & y o< next (odmax y) ) → & ( x , x ) o< next (& x)
+-- pair-ord< {x} ho< = subst (λ k → & (x , x) o< k ) lemmab0 lemmab1  where
+--        lemmab0 : next (odmax (x , x)) ≡ next (& x)
+--        lemmab0 = trans (cong (λ k → next k) (omxx _)) (sym nexto≡)
+--        lemmab1 : & (x , x) o< next ( odmax (x , x))
+--        lemmab1 = ho<
 
 trans-⊆ :  { A B C : HOD} → A ⊆ B → B ⊆ C → A ⊆ C
 trans-⊆ A⊆B B⊆C ab = B⊆C (A⊆B ab)
@@ -115,8 +115,13 @@ subset-lemma  {A} {x} = record {
     ; proj2 = λ x⊆A lt → ⟪ x⊆A lt , lt ⟫
    }
 
-ω<next-o∅ : {y : Ordinal} → infinite-d y → y o< next o∅
-ω<next-o∅ {y} lt = <odmax infinite lt
+--postulate
+--    odaxion-ho< : ODAxiom-ho< 
+--
+--open ODAxiom-ho< odaxion-ho<
+
+-- ω<next-o∅ : {y : Ordinal} → infinite-d y → y o< next omega
+-- ω<next-o∅ {y} lt = <odmax infinite lt
 
 nat→ω : Nat → HOD
 nat→ω Zero = od∅
@@ -236,8 +241,10 @@ nat→ω-iso {i} = ε-induction {λ i →  (lt : infinite ∋ i ) → nat→ω (
 ω→nat-iso {i} = ω→nat-iso0 i (ω∋nat→ω {i}) *iso
 
 Repl⊆ : {A B : HOD} (A⊆B : A ⊆ B) → { ψa : ( x : HOD) → A ∋ x → HOD } { ψb : ( x : HOD) → B ∋ x → HOD }
+   →  {Ca : HOD} → {rca : RXCod A Ca ψa }
+   →  {Cb : HOD} → {rcb : RXCod B Cb ψb }
    → ( {z : Ordinal  } → (az : odef A z ) →  (ψa (* z) (subst (odef A) (sym &iso) az) ≡ ψb (* z) (subst (odef B) (sym &iso) (A⊆B az))))
-   → Replace' A ψa ⊆ Replace' B ψb
+   → Replace' A ψa rca ⊆ Replace' B ψb rcb
 Repl⊆ {A} {B} A⊆B {ψa} {ψb} eq  record { z = z ; az = az ; x=ψz = x=ψz } = record { z = z ; az = A⊆B az
          ; x=ψz = trans  x=ψz (cong (&) (eq az) ) }
 
@@ -256,14 +263,15 @@ UPower∩ {P} each {p} {q} record { owner = x ; ao = ppx ; ox = xz } record { ow
 
 -- ∋-irr : {X x : HOD} → (a b : X ∋ x ) → a ≡ b
 -- ∋-irr {X} {x} _ _ = refl
---    is requed in
-Replace∩ : {X P Q : HOD}  → {ψ : (x : HOD) → X ∋ x → HOD} → (P⊆X : P ⊆ X) → (Q⊆X : Q ⊆ X )
-    → ( {x : HOD} → (a b : X ∋ x ) → ψ x a ≡ ψ x b )
-    → (Replace' (P ∩ Q) (λ _ pq → ψ _ (P⊆X (proj1 pq ))))   ⊆ ( Replace' P (λ _ p → ψ _ (P⊆X p)) ∩ Replace' Q (λ _ q → ψ _ (Q⊆X q)))
-Replace∩ {X} {P} {Q} {ψ} P⊆X Q⊆X ψ-irr = lem04 where
-    lem04 : {x : Ordinal} → OD.def (od (Replace' (P ∩ Q) (λ z pq → ψ z (P⊆X (proj1 pq)) ))) x
-       → OD.def (od (Replace' P (λ z p → ψ z (P⊆X p)) ∩ Replace' Q (λ z q → ψ z (Q⊆X q)))) x
-    lem04 {x} record { z = z ; az = az ; x=ψz = x=ψz } = ⟪
-         record { z = _ ; az = proj1 az ; x=ψz = trans  x=ψz (cong (&)(ψ-irr _ _)) }  ,
-         record { z = _ ; az = proj2 az ; x=ψz = trans  x=ψz (cong (&)(ψ-irr _ _)) } ⟫
+--    is requireed in
+-- Replace∩ : {X P Q : HOD}  → {ψ : (x : HOD) → X ∋ x → HOD} → (P⊆X : P ⊆ X) → (Q⊆X : Q ⊆ X )
+--     →  {C : HOD} → (rc : RXCod X C ψ )
+--     → ( {x : HOD} → (a b : X ∋ x ) → ψ x a ≡ ψ x b )
+--     → Replace' (P ∩ Q) (λ _ pq → ψ _ (P⊆X (proj1 pq ))) {C} record { ≤COD = λ lt → RXCod.≤COD rc ?  }   ⊆ ( Replace' P (λ _ p → ψ _ (P⊆X p)) ? ∩ Replace' Q (λ _ q → ψ _ (Q⊆X q)) ? )
+-- Replace∩ {X} {P} {Q} {ψ} P⊆X Q⊆X rc ψ-irr = lem04 where
+--     lem04 : {x : Ordinal} → OD.def (od (Replace' (P ∩ Q) (λ z pq → ψ z (P⊆X (proj1 pq)) ) ? )) x
+--        → OD.def (od (Replace' P (λ z p → ψ z (P⊆X p) ) ?  ∩ Replace' Q (λ z q → ψ z (Q⊆X q)) ? )) x
+--     lem04 {x} record { z = z ; az = az ; x=ψz = x=ψz } = ⟪
+--          record { z = _ ; az = proj1 az ; x=ψz = trans  x=ψz (cong (&)(ψ-irr _ _)) }  ,
+--          record { z = _ ; az = proj2 az ; x=ψz = trans  x=ψz (cong (&)(ψ-irr _ _)) } ⟫
 

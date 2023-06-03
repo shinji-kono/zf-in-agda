@@ -14,9 +14,7 @@ module zorn {n : Level } (O : Ordinals {n}) (_<_ : (x y : OD.HOD O ) → Set n )
 --     → Maximal A
 --
 
-open import zf -- hiding ( _⊆_ )
 open import logic
--- open import partfunc {n} O
 
 open import Relation.Nullary
 open import Data.Empty
@@ -25,7 +23,6 @@ import BAlgebra
 open import Data.Nat hiding ( _<_ ; _≤_ )
 open import Data.Nat.Properties
 open import nat
-
 
 open inOrdinal O
 open OD O
@@ -38,7 +35,6 @@ open Ordinals.IsOrdinals isOrdinal
 open Ordinals.IsNext isNext
 open OrdUtil O
 open ODUtil O
-
 
 import ODC
 

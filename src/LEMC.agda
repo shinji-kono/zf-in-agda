@@ -4,7 +4,6 @@ open import logic
 open import Relation.Nullary
 module LEMC {n : Level } (O : Ordinals {n} )  where
 
-open import zf
 open import Data.Nat renaming ( zero to Zero ; suc to Suc ;  ℕ to Nat ; _⊔_ to _n⊔_ ) 
 open import  Relation.Binary.PropositionalEquality
 open import Data.Nat.Properties 

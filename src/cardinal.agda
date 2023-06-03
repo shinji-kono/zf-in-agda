@@ -4,7 +4,6 @@ open import Level
 open import Ordinals
 module cardinal {n : Level } (O : Ordinals {n}) where
 
-open import zf
 open import logic
 -- import OD
 import OD hiding ( _⊆_ )
@@ -42,41 +41,6 @@ open Bool
 open _==_
 
 open HOD
-
--- _⊗_ : (A B : HOD) → HOD
--- A ⊗ B  = Union ( Replace B (λ b → Replace A (λ a → < a , b > ) ))
-
-record Func (A B : HOD) : Set n where
-    field
-       func : Ordinal → Ordinal
-       is-func : {x : Ordinal } → odef A x → odef B (func x)
-
-data FuncHOD (A B : HOD) : (x : Ordinal) →  Set n where
-     felm :  (F : Func A B) → FuncHOD A B (& ( Replace A ( λ x → < x , (* (Func.func F (& x))) > )))
-
-FuncHOD→F : {A B : HOD} {x : Ordinal} → FuncHOD A B x → Func A B
-FuncHOD→F {A} {B} (felm F) = F
-
-FuncHOD=R : {A B : HOD} {x : Ordinal} → (fc : FuncHOD A B x) → (* x) ≡  Replace A ( λ x → < x , (* (Func.func (FuncHOD→F fc) (& x))) > )
-FuncHOD=R {A} {B}  (felm F) = *iso
-
---
---  Set of All function from A to B
---
-Funcs : (A B : HOD) → HOD
-Funcs A B = record { od = record { def = λ x → FuncHOD A B x } ; odmax = osuc (& (A ⊗ B)) 
-       ; <odmax = λ {y} px → subst ( λ k → k o≤ (& (A ⊗ B)) ) &iso (⊆→o≤ (lemma1 px)) } where
-    lemma1 : {y : Ordinal } → FuncHOD A B y → {x : Ordinal} → odef (* y) x → odef (A ⊗ B) x
-    lemma1 {y} (felm F) {x} yx with subst (λ k → odef k x) *iso yx
-    ... | record { z = z ; az = az ; x=ψz = x=ψz } = subst (λ k → odef (A ⊗ B) k ) (sym x=ψz) (
-       product→ (subst (λ k → odef A k) (sym &iso) az) (subst (λ k → odef B k) 
-         (trans (cong (Func.func F) (sym &iso)) (sym &iso)) (Func.is-func F az) ))
-
-record Injection (A B : Ordinal ) : Set n where
-   field
-       i→  : (x : Ordinal ) → odef (* A)  x → Ordinal
-       iB  : (x : Ordinal ) → ( lt : odef (* A)  x ) → odef (* B) ( i→ x lt )
-       iiso : (x y : Ordinal ) → ( ltx : odef (* A)  x ) ( lty : odef (* A)  y ) → i→ x ltx ≡ i→ y lty → x ≡ y
 
 record OrdBijection (A B : Ordinal ) : Set n where
    field

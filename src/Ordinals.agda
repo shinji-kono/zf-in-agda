@@ -1,8 +1,6 @@
 open import Level
 module Ordinals where
 
-open import zf
-
 open import Data.Nat renaming ( zero to Zero ; suc to Suc ;  ℕ to Nat ; _⊔_ to _n⊔_ ) 
 open import Data.Empty
 open import  Relation.Binary.PropositionalEquality
@@ -36,7 +34,9 @@ record IsNext {n : Level } (ord : Set n)  (o∅ : ord ) (osuc : ord → ord )  (
    field
      x<nx :    { y : ord } → (y o< next y )
      osuc<nx : { x y : ord } → x o< next y → osuc x o< next y 
-     ¬nx<nx :  {x y : ord} → y o< x → x o< next y →  ¬ ((z : ord) → ¬ (x ≡ osuc z)) 
+     --
+     -- this means we have some non constructive previous, it looks bad
+     -- ¬nx<nx :  {x y : ord} → y o< x → x o< next y →  ¬ ((z : ord) → ¬ (x ≡ osuc z)) 
 
 record Ordinals {n : Level} : Set (suc (suc n)) where
    field

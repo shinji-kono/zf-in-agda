@@ -1,8 +1,10 @@
+{-# OPTIONS --allow-unsolved-metas #-}
+
 open import Level
 open import Ordinals
 module BAlgebra {n : Level } (O : Ordinals {n})   where
 
-open import zf
+-- open import zf
 open import logic
 import OrdUtil
 import OD 
@@ -70,6 +72,12 @@ L＼0=L {L} = ==→o≡ ( record { eq→ = lem05 ; eq← = lem06 } ) where
     ... | case1 bx = bx
     ... | case2 ¬bx = ⊥-elim ( proj2 ( pba ⟪ A⊆P ax  , ¬bx ⟫ ) ax )
 
+RC＼ : {L : HOD} → RCod (Power (Union L)) (λ z → L ＼ z )
+RC＼ {L} = record { ≤COD = λ {x} lt z xz → lemm {x} lt z xz  } where
+    lemm : {x : HOD} → (L ＼ x) ⊆ Power (Union L )
+    lemm {x} ⟪ Ly , nxy ⟫ z xz = record { owner = _ ; ao = Ly ; ox = xz }
+
+
 [a-b]∩b=0 : { A B : HOD } → (A ＼ B) ∩ B ≡ od∅
 [a-b]∩b=0 {A} {B} = ==→o≡ record { eq← = λ lt → ⊥-elim ( ¬∅∋ (subst (λ k → odef od∅ k) (sym &iso) lt ))
      ; eq→ =  λ {x} lt → ⊥-elim (proj2 (proj1 lt ) (proj2 lt)) }
@@ -91,9 +99,9 @@ U-F=∅→F⊆U {F} {U} not = gt02  where
          A ∎ ) ox ) where open ≡-Reasoning
     ... | case2 b=o = case2 (subst (λ k → odef k x ) (trans (cong (*) (sym b=o)) *iso ) ox)
     lemma2 :  {x : Ordinal} → odef (A ∪ B) x → odef (Union (A , B)) x
-    lemma2 {x} (case1 A∋x) = subst (λ k → odef (Union (A , B)) k) &iso ( IsZF.union→ isZF (A , B) (* x) A
+    lemma2 {x} (case1 A∋x) = subst (λ k → odef (Union (A , B)) k) &iso ( union→ (A , B) (* x) A
         ⟪ case1 refl , d→∋ A A∋x ⟫ )
-    lemma2 {x} (case2 B∋x) = subst (λ k → odef (Union (A , B)) k) &iso ( IsZF.union→ isZF (A , B) (* x) B
+    lemma2 {x} (case2 B∋x) = subst (λ k → odef (Union (A , B)) k) &iso ( union→ (A , B) (* x) B
         ⟪ case2 refl , d→∋ B B∋x ⟫ )
 
 ∩-Select : { A B : HOD } →  Select A (  λ x → ( A ∋ x ) ∧ ( B ∋ x )  ) ≡ ( A ∩ B )
@@ -124,32 +132,95 @@ dist-ord2 {p} {q} {r} = ==→o≡ ( record { eq→ = lemma1 ; eq← = lemma2 } )
     lemma2 {x} lt | _ | case1 cp = case1 cp 
     lemma2 {x} lt | case2 cq | case2 cr = case2 ⟪ cq , cr ⟫ 
 
-record IsBooleanAlgebra ( L : Set n)
+record IsBooleanAlgebra {n : Level} ( L : Set n)
+       ( _==_ : L → L → Set n )
        ( b1 : L )
        ( b0 : L )
        ( -_ : L → L  )
        ( _+_ : L → L → L )
        ( _x_ : L → L → L ) : Set (suc n) where
    field
-       +-assoc : {a b c : L } → a + ( b + c ) ≡ (a + b) + c
-       x-assoc : {a b c : L } → a x ( b x c ) ≡ (a x b) x c
-       +-sym : {a b : L } → a + b ≡ b + a
-       -sym : {a b : L } → a x b  ≡ b x a
-       +-aab : {a b : L } → a + ( a x b ) ≡ a
-       x-aab : {a b : L } → a x ( a + b ) ≡ a
-       +-dist : {a b c : L } → a + ( b x c ) ≡ ( a x b ) + ( a x c )
-       x-dist : {a b c : L } → a x ( b + c ) ≡ ( a + b ) x ( a + c )
-       a+0 : {a : L } → a + b0 ≡ a
-       ax1 : {a : L } → a x b1 ≡ a
-       a+-a1 : {a : L } → a + ( - a ) ≡ b1
-       ax-a0 : {a : L } → a x ( - a ) ≡ b0
+       +-assoc : {a b c : L } → (a + ( b + c )) == ((a + b) + c)
+       x-assoc : {a b c : L } → (a x ( b x c )) == ((a x b) x c)
+       +-sym : {a b : L } → (a + b) == (b + a)
+       x-sym : {a b : L } → (a x b)  == (b x a)
+       +-aab : {a b : L } → (a + ( a x b )) == a
+       x-aab : {a b : L } → (a x ( a + b )) == a
+       +-dist : {a b c : L } → (a + ( b x c )) == (( a + b ) x ( a + c ))
+       x-dist : {a b c : L } → (a x ( b + c )) == (( a x b ) + ( a x c ))
+       a+0 : {a : L } → (a + b0) == a
+       ax1 : {a : L } → (a x b1) == a
+       a+-a1 : {a : L } → (a + ( - a )) == b1
+       ax-a0 : {a : L } → (a x ( - a )) == b0
 
-record BooleanAlgebra ( L : Set n) : Set (suc n) where
+record BooleanAlgebra {n : Level} ( L : Set n) : Set (suc n) where
    field
+       _=b=_ : L → L → Set n 
        b1 : L
        b0 : L
        -_ : L → L 
        _+_ : L → L → L
        _x_ : L → L → L
-       isBooleanAlgebra : IsBooleanAlgebra L b1 b0 -_ _+_ _x_
-       
+       isBooleanAlgebra : IsBooleanAlgebra L _=b=_ b1 b0 -_ _+_ _x_
+
+record PowerP (P : HOD) : Set (suc n) where
+    constructor ⟦_,_⟧
+    field
+       hod : HOD
+       x⊆P : hod ⊆ P  
+
+open PowerP
+
+HODBA : (P : HOD) → BooleanAlgebra (PowerP P)
+HODBA P = record { _=b=_ = λ x y → hod x ≡ hod y ; b1 = ⟦ P , (λ x → x) ⟧   ; b0 = ⟦ od∅ , (λ x →  ⊥-elim (¬x<0 x)) ⟧ 
+  ; -_ = λ x → ⟦  P ＼ hod x , proj1 ⟧
+  ; _+_ = λ x y → ⟦ hod x ∪ hod y , ba00 x y ⟧ ; _x_ = λ x y → ⟦ hod x ∩ hod y , (λ lt → x⊆P x (proj1 lt))  ⟧ 
+   ; isBooleanAlgebra = record {
+       +-assoc = λ {a} {b} {c} → ==→o≡ record { eq→ = ba01 a b c ; eq← = ba02 a b c  }
+     ; x-assoc = λ {a} {b} {c} → ==→o≡ 
+        record { eq→ = λ lt → ⟪ ⟪ proj1 lt  , proj1 (proj2 lt) ⟫ , proj2 (proj2 lt)  ⟫ 
+               ; eq← = λ lt → ⟪ proj1 (proj1 lt) , ⟪ proj2 (proj1 lt)  , proj2 lt ⟫ ⟫ } 
+     ; +-sym = λ {a} {b} → ==→o≡ record { eq→ = λ {x} lt → ba05 {hod a} {hod b} lt  ; eq← = ba05 {hod b} {hod a} }
+     ; x-sym = λ {a} {b} → ==→o≡ record { eq→ = λ lt → ⟪ proj2 lt , proj1 lt ⟫ ; eq← = λ lt → ⟪ proj2 lt , proj1 lt ⟫  }
+     ; +-aab = λ {a} {b} → ==→o≡ record { eq→ = ba03 a b ; eq← = case1  }
+     ; x-aab = λ {a} {b} → ==→o≡ record { eq→ = proj1 ; eq← = λ ax →  ⟪ ax , case1 ax ⟫ }
+     ; +-dist = dist-ord2
+     ; x-dist = dist-ord
+     ; a+0 = λ {a} → ==→o≡ record { eq→ = ba04 (hod a) ; eq← = case1 }
+     ; ax1 = λ {a} → ==→o≡ record { eq→ = proj1 ; eq← = λ ax → ⟪ ax , x⊆P a ax ⟫ }
+     ; a+-a1 = λ {a} → ==→o≡ record { eq→ = ba06 a ; eq← = ba07 a }
+     ; ax-a0 =  λ {a} → ==→o≡ record { eq→ = ba08 a ; eq← = λ lt → ⊥-elim (¬x<0 lt) }
+       } } where
+     ba00 : (x y : PowerP P ) →  (hod x ∪ hod y) ⊆ P
+     ba00 x y (case1 px) = x⊆P x px
+     ba00 x y (case2 py) = x⊆P y py
+     ba01 : (a b c : PowerP P) → {x : Ordinal} → odef (hod a) x ∨ odef (hod b ∪ hod c) x →
+            odef (hod a ∪ hod b) x ∨ odef (hod c) x
+     ba01 a b c {x} (case1 ax) = case1 (case1 ax)
+     ba01 a b c {x} (case2 (case1 bx)) = case1 (case2 bx)
+     ba01 a b c {x} (case2 (case2 cx)) = case2 cx
+     ba02 : (a b c : PowerP P) → {x : Ordinal} → odef (hod a ∪ hod b) x ∨ odef (hod c) x
+         → odef (hod a) x ∨ odef (hod b ∪ hod c) x 
+     ba02 a b c {x} (case1 (case1 ax)) = case1 ax
+     ba02 a b c {x} (case1 (case2 bx)) = case2 (case1 bx)
+     ba02 a b c {x} (case2 cx) = case2 (case2 cx)
+     ba03 : (a b : PowerP P) → {x : Ordinal} →
+            odef (hod a) x ∨ odef (hod a ∩ hod b) x → OD.def (od (hod a)) x
+     ba03 a b (case1 ax) = ax
+     ba03 a b (case2 ab) = proj1 ab
+     ba04 : (a : HOD) →  {x : Ordinal} → odef a x ∨ odef od∅ x → odef a x
+     ba04 a (case1 ax) = ax
+     ba04 a (case2 x) = ⊥-elim (¬x<0 x)
+     ba05 : {a b : HOD} {x : Ordinal} →  odef a x ∨ odef b x → odef b x ∨ odef a x
+     ba05 (case1 x) = case2 x
+     ba05 (case2 x) = case1 x
+     ba06 : (a : PowerP P ) → { x : Ordinal} → odef (hod a) x ∨ odef (P ＼ hod a) x → OD.def (od P) x
+     ba06 a {x} (case1 ax) = x⊆P a ax
+     ba06 a {x} (case2 nax) = proj1 nax
+     ba07 : (a : PowerP P ) → { x : Ordinal} → OD.def (od P) x → odef (hod a) x ∨ odef (P ＼ hod a) x 
+     ba07 a {x} px with ODC.∋-p O (hod a) (* x)
+     ... | yes y = case1 (subst (λ k → odef (hod a) k) &iso y)
+     ... | no n = case2 ⟪ px , subst (λ k → ¬ odef (hod a) k) &iso n ⟫
+     ba08 : (a : PowerP P) → {x : Ordinal} → OD.def (od (hod a ∩ (P ＼ hod a))) x → OD.def (od od∅) x
+     ba08 a {x} ⟪ ax , ⟪ px , nax ⟫ ⟫ = ⊥-elim ( nax ax )
+
