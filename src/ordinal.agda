@@ -236,7 +236,6 @@ C-Ordinal {n} = record {
    ; o∅ = o∅
    ; osuc = osuc
    ; _o<_ = _o<_
-   ; next = next
    ; isOrdinal = record {
        ordtrans = ordtrans
      ; trio< = trio<
@@ -246,12 +245,12 @@ C-Ordinal {n} = record {
      ; TransFinite = TransFinite2
      ; o<-irr = OrdIrr
      ; Oprev-p  = Oprev-p 
-   } ;
-   isNext = record {
-        x<nx = x<nx 
-      ; osuc<nx = λ {x} {y} → osuc<nx {x} {y}
-      -- ; ¬nx<nx = ¬nx<nx 
-   }
+   } --
+   -- isNext = record {
+   --     x<nx = x<nx 
+   --   ; osuc<nx = λ {x} {y} → osuc<nx {x} {y}
+   --   -- ; ¬nx<nx = ¬nx<nx 
+   -- }
   } where
      next : Ordinal {suc n} → Ordinal {suc n}
      next (ordinal lv ord) = ordinal (Suc lv) (Φ (Suc lv))

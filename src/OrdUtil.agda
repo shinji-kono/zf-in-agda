@@ -12,7 +12,7 @@ open import Relation.Binary hiding (_⇔_)
 
 open Ordinals.Ordinals  O
 open Ordinals.IsOrdinals isOrdinal
-open Ordinals.IsNext isNext
+-- open Ordinals.IsNext isNext
 
 o<-dom :   { x y : Ordinal } → x o< y → Ordinal
 o<-dom  {x} _ = x
@@ -253,11 +253,11 @@ FExists : {m l : Level} → ( ψ : Ordinal  → Set m )
   → ¬ p
 FExists  {m} {l} ψ {p} P = contra-position ( λ p y ψy → P {y} ψy p )
 
-nexto∅ : {x : Ordinal} → o∅ o< next x
-nexto∅ {x} with trio< o∅ x
-nexto∅ {x} | tri< a ¬b ¬c = ordtrans a x<nx
-nexto∅ {x} | tri≈ ¬a b ¬c = subst (λ k → k o< next x) (sym b) x<nx
-nexto∅ {x} | tri> ¬a ¬b c = ⊥-elim ( ¬x<0 c )
+-- nexto∅ : {x : Ordinal} → o∅ o< next x
+-- nexto∅ {x} with trio< o∅ x
+-- nexto∅ {x} | tri< a ¬b ¬c = ordtrans a x<nx
+-- nexto∅ {x} | tri≈ ¬a b ¬c = subst (λ k → k o< next x) (sym b) x<nx
+-- nexto∅ {x} | tri> ¬a ¬b c = ⊥-elim ( ¬x<0 c )
 
 -- next< : {x y z : Ordinal} → x o< next z  → y o< next x → y o< next z
 -- next< {x} {y} {z} x<nz y<nx with trio< y (next z)
@@ -283,13 +283,13 @@ osuc< {x} {y} refl = <-osuc
 -- nexto≡ {x} | tri> ¬a ¬b c = ⊥-elim (¬nx<nx (ordtrans <-osuc x<nx) c
 --    (λ z eq → o<¬≡ (sym eq) (osuc<nx  (osuc< (sym eq)))))
 
-next-is-limit : {x y : Ordinal} → ¬ (next x ≡ osuc y)
-next-is-limit {x} {y} eq = o<¬≡ (sym eq) (osuc<nx y<nx) where
-    y<nx : y o< next x
-    y<nx = osuc< (sym eq)
+-- next-is-limit : {x y : Ordinal} → ¬ (next x ≡ osuc y)
+-- next-is-limit {x} {y} eq = o<¬≡ (sym eq) (osuc<nx y<nx) where
+--     y<nx : y o< next x
+--     y<nx = osuc< (sym eq)
 
-omax<next : {x y : Ordinal} → x o< y → omax x y o< next y
-omax<next {x} {y} x<y = subst (λ k → k o< next y ) (omax< _ _ x<y ) (osuc<nx x<nx)
+-- omax<next : {x y : Ordinal} → x o< y → omax x y o< next y
+-- omax<next {x} {y} x<y = subst (λ k → k o< next y ) (omax< _ _ x<y ) (osuc<nx x<nx)
 
 -- x<ny→≡next : {x y : Ordinal} → x o< y → y o< next x → next x ≡ next y
 -- x<ny→≡next {x} {y} x<y y<nx with trio< (next x) (next y)
@@ -319,11 +319,11 @@ omax<next {x} {y} x<y = subst (λ k → k o< next y ) (omax< _ _ x<y ) (osuc<nx 
 -- omax<nomax {x} {y} | tri≈ ¬a refl ¬c = subst (λ k → osuc x o< k ) nexto≡ (osuc<nx x<nx )
 -- omax<nomax {x} {y} | tri> ¬a ¬b c    = subst (λ k → osuc x o< k ) nexto≡ (osuc<nx x<nx )
 
-omax<nx : {x y z : Ordinal} → x o< next z → y o< next z → omax x y o< next z
-omax<nx {x} {y} {z} x<nz y<nz with trio< x y
-omax<nx {x} {y} {z} x<nz y<nz | tri< a ¬b ¬c = osuc<nx y<nz
-omax<nx {x} {y} {z} x<nz y<nz | tri≈ ¬a refl ¬c = osuc<nx y<nz
-omax<nx {x} {y} {z} x<nz y<nz | tri> ¬a ¬b c = osuc<nx x<nz
+-- omax<nx : {x y z : Ordinal} → x o< next z → y o< next z → omax x y o< next z
+-- omax<nx {x} {y} {z} x<nz y<nz with trio< x y
+-- omax<nx {x} {y} {z} x<nz y<nz | tri< a ¬b ¬c = osuc<nx y<nz
+-- omax<nx {x} {y} {z} x<nz y<nz | tri≈ ¬a refl ¬c = osuc<nx y<nz
+-- omax<nx {x} {y} {z} x<nz y<nz | tri> ¬a ¬b c = osuc<nx x<nz
 
 -- nn<omax : {x nx ny : Ordinal} → x o< next nx → x o< next ny → x o< next (omax nx ny)
 -- nn<omax {x} {nx} {ny} xnx xny with trio< nx ny

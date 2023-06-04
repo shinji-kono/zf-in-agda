@@ -15,7 +15,7 @@ open import nat
 
 open Ordinals.Ordinals  O
 open Ordinals.IsOrdinals isOrdinal
-open Ordinals.IsNext isNext
+-- open Ordinals.IsNext isNext
 import OrdUtil
 open OrdUtil O
 
@@ -81,7 +81,7 @@ pair-xx<xy {x} {y} = ⊆→o≤  lemma where
 -- ... | tri> ¬a ¬b c | record { eq = eq1 } = next< (subst (λ k → k o< next o ) (sym eq1) (osuc<nx x<nn)) ho<
 -- ... | tri≈ ¬a b ¬c | record { eq = eq1 } = next< (subst (λ k → k o< next o ) (omax≡ _ _ b) (subst (λ k → osuc k o< next o) b (osuc<nx x<nn))) ho<
 
---  another form of infinite
+--  another form of Omega
 -- pair-ord< :  {x : Ordinal } → Set n
 -- pair-ord< : {x : HOD } → ( {y : HOD } → & y o< next (odmax y) ) → & ( x , x ) o< next (& x)
 -- pair-ord< {x} ho< = subst (λ k → & (x , x) o< k ) lemmab0 lemmab1  where
@@ -120,23 +120,23 @@ subset-lemma  {A} {x} = record {
 --
 --open ODAxiom-ho< odaxion-ho<
 
--- ω<next-o∅ : {y : Ordinal} → infinite-d y → y o< next omega
--- ω<next-o∅ {y} lt = <odmax infinite lt
+-- ω<next-o∅ : {y : Ordinal} → Omega-d y → y o< next omega
+-- ω<next-o∅ {y} lt = <odmax Omega lt
 
 nat→ω : Nat → HOD
 nat→ω Zero = od∅
 nat→ω (Suc y) = Union (nat→ω y , (nat→ω y , nat→ω y))
 
-ω→nato : {y : Ordinal} → infinite-d y → Nat
+ω→nato : {y : Ordinal} → Omega-d y → Nat
 ω→nato iφ = Zero
 ω→nato (isuc lt) = Suc (ω→nato lt)
 
-ω→nat : (n : HOD) → infinite ∋ n → Nat
+ω→nat : (n : HOD) → Omega ∋ n → Nat
 ω→nat n = ω→nato
 
-ω∋nat→ω : {n : Nat} → def (od infinite) (& (nat→ω n))
-ω∋nat→ω {Zero} = subst (λ k → def (od infinite) k) (sym ord-od∅) iφ
-ω∋nat→ω {Suc n} = subst (λ k → def (od infinite) k) lemma (isuc ( ω∋nat→ω {n})) where
+ω∋nat→ω : {n : Nat} → def (od Omega) (& (nat→ω n))
+ω∋nat→ω {Zero} = subst (λ k → def (od Omega) k) (sym ord-od∅) iφ
+ω∋nat→ω {Suc n} = subst (λ k → def (od Omega) k) lemma (isuc ( ω∋nat→ω {n})) where
     lemma :  & (Union (* (& (nat→ω n)) , (* (& (nat→ω n)) , * (& (nat→ω n))))) ≡ & (nat→ω (Suc n))
     lemma = subst (λ k → & (Union (k , ( k , k ))) ≡ & (nat→ω (Suc n))) (sym *iso) refl
 
@@ -191,12 +191,12 @@ pair=∨ {a} {b} {c} (case2 c=b) = case2 ( sym (trans c=b &iso))
 ωs≠0 : (x : HOD) →  ¬ ( Union ( x , (x , x)) ≡ od∅ )
 ωs≠0 y eq =  ⊥-elim ( ¬x<0 (subst (λ k → & y  o< k ) ord-od∅ (c<→o< (subst (λ k → odef k (& y )) eq (ω-∈s y) ))) )
 
-nat→ω-iso : {i : HOD} → (lt : infinite ∋ i ) → nat→ω ( ω→nat i lt ) ≡ i
-nat→ω-iso {i} = ε-induction {λ i →  (lt : infinite ∋ i ) → nat→ω ( ω→nat i lt ) ≡ i  } ind i where
-     ind : {x : HOD} → ({y : HOD} → x ∋ y → (lt : infinite ∋ y) → nat→ω (ω→nat y lt) ≡ y) →
-                                            (lt : infinite ∋ x) → nat→ω (ω→nat x lt) ≡ x
+nat→ω-iso : {i : HOD} → (lt : Omega ∋ i ) → nat→ω ( ω→nat i lt ) ≡ i
+nat→ω-iso {i} = ε-induction {λ i →  (lt : Omega ∋ i ) → nat→ω ( ω→nat i lt ) ≡ i  } ind i where
+     ind : {x : HOD} → ({y : HOD} → x ∋ y → (lt : Omega ∋ y) → nat→ω (ω→nat y lt) ≡ y) →
+                                            (lt : Omega ∋ x) → nat→ω (ω→nat x lt) ≡ x
      ind {x} prev lt = ind1 lt *iso where
-         ind1 : {ox : Ordinal } → (ltd : infinite-d ox ) → * ox ≡ x → nat→ω (ω→nato ltd) ≡ x
+         ind1 : {ox : Ordinal } → (ltd : Omega-d ox ) → * ox ≡ x → nat→ω (ω→nato ltd) ≡ x
          ind1 {o∅} iφ refl = sym o∅≡od∅
          ind1 (isuc {x₁} ltd) ox=x = begin
               nat→ω (ω→nato (isuc ltd) )
@@ -211,23 +211,23 @@ nat→ω-iso {i} = ε-induction {λ i →  (lt : infinite ∋ i ) → nat→ω (
                lemma0 :  x ∋ * x₁
                lemma0 = subst (λ k → odef k (& (* x₁))) (trans (sym *iso) ox=x)
                    record { owner = & ( * x₁ , * x₁ ) ; ao = case2 refl ; ox = subst (λ k → odef k (& (* x₁))) (sym *iso) (case1 refl)  }
-               lemma1 : infinite ∋ * x₁
-               lemma1 = subst (λ k → odef infinite k) (sym &iso) ltd
-               lemma3 : {x y : Ordinal} → (ltd : infinite-d x ) (ltd1 : infinite-d y ) → y ≡ x → ltd ≅ ltd1
+               lemma1 : Omega ∋ * x₁
+               lemma1 = subst (λ k → odef Omega k) (sym &iso) ltd
+               lemma3 : {x y : Ordinal} → (ltd : Omega-d x ) (ltd1 : Omega-d y ) → y ≡ x → ltd ≅ ltd1
                lemma3 iφ iφ refl = HE.refl
                lemma3 iφ (isuc {y} ltd1) eq = ⊥-elim ( ¬x<0 (subst₂ (λ j k → j o< k ) &iso eq (c<→o< (ω-∈s (* y)) )))
                lemma3 (isuc {y} ltd)  iφ eq = ⊥-elim ( ¬x<0 (subst₂ (λ j k → j o< k ) &iso (sym eq) (c<→o< (ω-∈s (* y)) )))
                lemma3 (isuc {x} ltd) (isuc {y} ltd1) eq with lemma3 ltd ltd1 (ω-prev-eq (sym eq))
                ... | t = HE.cong₂ (λ j k → isuc {j} k ) (HE.≡-to-≅  (ω-prev-eq eq)) t
-               lemma2 : {x y : Ordinal} → (ltd : infinite-d x ) (ltd1 : infinite-d y ) → y ≡ x → ω→nato ltd ≡ ω→nato ltd1
+               lemma2 : {x y : Ordinal} → (ltd : Omega-d x ) (ltd1 : Omega-d y ) → y ≡ x → ω→nato ltd ≡ ω→nato ltd1
                lemma2 {x} {y} ltd ltd1 eq = lemma6 eq (lemma3 {x} {y} ltd ltd1 eq)  where
-                   lemma6 : {x y : Ordinal} → {ltd : infinite-d x } {ltd1 : infinite-d y } → y ≡ x → ltd ≅ ltd1 → ω→nato ltd ≡ ω→nato ltd1
+                   lemma6 : {x y : Ordinal} → {ltd : Omega-d x } {ltd1 : Omega-d y } → y ≡ x → ltd ≅ ltd1 → ω→nato ltd ≡ ω→nato ltd1
                    lemma6 refl HE.refl = refl
                lemma :  nat→ω (ω→nato ltd) ≡ * x₁
-               lemma = trans  (cong (λ k →  nat→ω  k) (lemma2 {x₁} {_} ltd (subst (λ k → infinite-d k ) (sym &iso) ltd)  &iso ) ) ( prev {* x₁} lemma0 lemma1 )
+               lemma = trans  (cong (λ k →  nat→ω  k) (lemma2 {x₁} {_} ltd (subst (λ k → Omega-d k ) (sym &iso) ltd)  &iso ) ) ( prev {* x₁} lemma0 lemma1 )
 
 
-ω→nat-iso0 : (x : Nat) → {ox : Ordinal } → (ltd : infinite-d ox) → * ox ≡ nat→ω x → ω→nato ltd ≡ x
+ω→nat-iso0 : (x : Nat) → {ox : Ordinal } → (ltd : Omega-d ox) → * ox ≡ nat→ω x → ω→nato ltd ≡ x
 ω→nat-iso0 Zero iφ eq = refl
 ω→nat-iso0 (Suc x) iφ eq = ⊥-elim ( ωs≠0 _ (trans (sym eq) o∅≡od∅ ))
 ω→nat-iso0 Zero (isuc ltd) eq = ⊥-elim ( ωs≠0 _ (subst (λ k → k ≡ od∅  ) *iso eq ))

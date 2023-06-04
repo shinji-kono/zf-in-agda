@@ -22,7 +22,7 @@ open import Data.Nat renaming ( zero to Zero ; suc to Suc ;  ℕ to Nat ; _⊔_ 
 open inOrdinal O
 open Ordinals.Ordinals  O
 open Ordinals.IsOrdinals isOrdinal
-open Ordinals.IsNext isNext
+-- open Ordinals.IsNext isNext
 open OrdUtil O
 open ODUtil O
 

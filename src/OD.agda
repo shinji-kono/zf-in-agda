@@ -18,7 +18,7 @@ open import nat
 
 open Ordinals.Ordinals  O
 open Ordinals.IsOrdinals isOrdinal
-open Ordinals.IsNext isNext
+-- open Ordinals.IsNext isNext
 open OrdUtil O
 
 -- Ordinal Definable Set
@@ -54,7 +54,6 @@ open  _==_
 eq→ ( ⇔→==  {x} {y}  eq ) {z} m = proj1 eq m
 eq← ( ⇔→==  {x} {y}  eq ) {z} m = proj2 eq m
 
--- next assumptions are our axiom
 --
 --  OD is an equation on Ordinals, so it contains Ordinals. If these Ordinals have one-to-one
 --  correspondence to the OD then the OD looks like a ZF Set.
@@ -106,7 +105,7 @@ record ODAxiom : Set (suc n) where
 postulate  odAxiom : ODAxiom
 open ODAxiom odAxiom
 
--- possible order restriction (required in the axiom of infinite )
+-- possible order restriction (required in the axiom of Omega )
 
 -- postulate  odAxiom-ho< : ODAxiom-ho<
 -- open ODAxiom-ho< odAxiom-ho<
@@ -443,41 +442,83 @@ power← A t t⊆A z xz = subst (λ k → odef A k ) &iso ( t⊆A  (subst₂ (λ
 Intersection : (X : HOD ) → HOD   -- ∩ X
 Intersection X = record { od = record { def = λ x → (x o≤ & X ) ∧ ( {y : Ordinal} → odef X y → odef (* y) x )} ; odmax = osuc (& X) ; <odmax = λ lt → proj1 lt } 
 
+empty : (x : HOD  ) → ¬  (od∅ ∋ x)
+empty x = ¬x<0
+
 
 -- ｛_｝ : ZFSet → ZFSet
 -- ｛ x ｝ = ( x ,  x )     -- better to use (x , x) directly
 
-data infinite-d  : ( x : Ordinal  ) → Set n where
-    iφ :  infinite-d o∅
-    isuc : {x : Ordinal  } →   infinite-d  x  →
-            infinite-d  (& ( Union (* x , (* x , * x ) ) ))
+data Omega-d  : ( x : Ordinal  ) → Set n where
+    iφ :  Omega-d o∅
+    isuc : {x : Ordinal  } →   Omega-d  x  →
+            Omega-d  (& ( Union (* x , (* x , * x ) ) ))
 
 -- ω can be diverged in our case, since we have no restriction on the corresponding ordinal of a pair.
--- We simply assumes infinite-d y has a maximum.
+-- We simply assumes Omega-d y has a maximum.
 --
 -- This means that many of OD may not be HODs because of the & mapping divergence.
--- We should have some axioms to prevent this such as & x o< next (odmax x).
+-- We should have some axioms to prevent this .
 --
---  Since we have Ord (next o∅), we don't need this, but ZF axiom requires this and ho<
 
-infinite-od : OD
-infinite-od = record { def = λ x → infinite-d x } 
+Omega-od : OD
+Omega-od = record { def = λ x → Omega-d x } 
 
+o∅<x : {x : Ordinal} → o∅ o≤ x
+o∅<x {x} with trio< o∅ x
+... | tri< a ¬b ¬c = o<→≤ a
+... | tri≈ ¬a b ¬c = o≤-refl0 b
+... | tri> ¬a ¬b c = ⊥-elim (¬x<0 c)
+
+¬0=ux : {x : HOD} → ¬ o∅ ≡ & (Union ( x , ( x ,  x)))
+¬0=ux {x} eq = ⊥-elim ( o<¬≡ eq (ordtrans≤-< o∅<x (subst (λ k → k o< & (Union (x , (x , x)))) &iso (c<→o< lemma ) ))) where
+    lemma : Own (x , (x , x)) (& ( * (& x )))
+    lemma = record { owner = _ ; ao = case2 refl ; ox = subst₂ (λ j k → odef j k ) (sym *iso) (sym &iso) (case1 refl) }
+
+ux-2cases : {x y : HOD } → Union ( x , ( x ,  x)) ∋ y → ( x ≡ y ) ∨ ( x ∋ y )
+ux-2cases {x} {y} record { owner = owner ; ao = (case1 eq) ; ox = ox } = case2 (subst (λ k → odef k (& y)) (trans (cong (*) eq) *iso) ox)
+ux-2cases {x} {y} record { owner = owner ; ao = (case2 eq) ; ox = ox } with subst (λ k → odef k (& y))  (trans (cong (*) eq) *iso) ox
+... | case1 eq = case1 (sym (&≡&→≡ eq))
+... | case2 eq = case1 (sym (&≡&→≡ eq))
+
+ux-transitve  : {x y : HOD} → x ∋ y →  Union ( x , ( x ,  x)) ∋ y 
+ux-transitve {x} {y} ox  = record { owner = _ ; ao = case1 refl ; ox = subst (λ k → odef k (& y)) (sym *iso) ox }
+
+--
+-- Possible Ordinal Limit
+--
+
+--        our Ordinals is greater than Union ( x , ( x ,  x)) transitive closure
+--
 record ODAxiom-ho< : Set (suc n) where
  field
     omega : Ordinal  
-    ho< : {x : Ordinal } → infinite-d x →  x o< next omega
+    ho< : {x : Ordinal } → Omega-d x →  x o< omega
 
 postulate
     odaxion-ho< : ODAxiom-ho< 
 
 open ODAxiom-ho< odaxion-ho<
 
-infinite : HOD
-infinite = record { od = record { def = λ x → infinite-d x } ; odmax = next omega ; <odmax = ho<}  
+Omega : HOD
+Omega = record { od = record { def = λ x → Omega-d x } ; odmax = omega ; <odmax = ho<}  
 
-empty : (x : HOD  ) → ¬  (od∅ ∋ x)
-empty x = ¬x<0
+infinity∅ : Omega  ∋ od∅
+infinity∅ = subst (λ k → odef Omega k ) lemma iφ where
+    lemma : o∅ ≡ & od∅
+    lemma =  let open ≡-Reasoning in begin
+        o∅
+        ≡⟨ sym &iso ⟩
+        & ( * o∅ )
+        ≡⟨ cong ( λ k → & k ) o∅≡od∅ ⟩
+        & od∅
+        ∎
+
+infinity : (x : HOD) → Omega ∋ x → Omega ∋ Union (x , (x , x ))
+infinity x lt = subst (λ k → odef Omega k ) lemma (isuc {& x} lt) where
+    lemma :  & (Union (* (& x) , (* (& x) , * (& x))))
+        ≡ & (Union (x , (x , x)))
+    lemma = cong (λ k → & (Union ( k , ( k , k ) ))) *iso
 
 pair→ : ( x y t : HOD  ) →  (x , y)  ∋ t  → ( t =h= x ) ∨ ( t =h= y )
 pair→ x y t (case1 t≡x ) = case1 (subst₂ (λ j k → j =h= k ) *iso *iso (o≡→== t≡x ))
@@ -529,22 +570,6 @@ extensionality : {A B w : HOD  } → ((z : HOD ) → (A ∋ z) ⇔ (B ∋ z)) �
 proj1 (extensionality {A} {B} {w} eq ) d = subst (λ k → w ∋ k) ( ==→o≡ (extensionality0 {A} {B} eq) ) d
 proj2 (extensionality {A} {B} {w} eq ) d = subst (λ k → w ∋ k) (sym ( ==→o≡ (extensionality0 {A} {B} eq) )) d
 
-infinity∅ : infinite  ∋ od∅
-infinity∅ = subst (λ k → odef infinite k ) lemma iφ where
-    lemma : o∅ ≡ & od∅
-    lemma =  let open ≡-Reasoning in begin
-        o∅
-        ≡⟨ sym &iso ⟩
-        & ( * o∅ )
-        ≡⟨ cong ( λ k → & k ) o∅≡od∅ ⟩
-        & od∅
-        ∎
-infinity : (x : HOD) → infinite ∋ x → infinite ∋ Union (x , (x , x ))
-infinity x lt = subst (λ k → odef infinite k ) lemma (isuc {& x} lt) where
-    lemma :  & (Union (* (& x) , (* (& x) , * (& x))))
-        ≡ & (Union (x , (x , x)))
-    lemma = cong (λ k → & (Union ( k , ( k , k ) ))) *iso
-
 open import zf
 
 record ODAxiom-sup : Set (suc n) where
@@ -577,7 +602,7 @@ zf-replacement← os {ψ} X x lt = record { z = & x ; az = lt  ; x=ψz = cong (�
 zf-replacement→ : (os : ODAxiom-sup ) → {ψ : HOD → HOD} (X x : HOD) → (lt : ZFReplace os X ψ ∋ x) → ¬ ( (y : HOD) → ¬ (x =h= ψ y))
 zf-replacement→ os {ψ} X x lt eq = eq (* (Replaced.z lt)) (ord→== (Replaced.x=ψz lt)) 
 
-isZF : (os : ODAxiom-sup) → IsZF HOD _∋_  _=h=_ od∅ _,_ Union Power Select (ZFReplace os) infinite
+isZF : (os : ODAxiom-sup) → IsZF HOD _∋_  _=h=_ od∅ _,_ Union Power Select (ZFReplace os) Omega
 isZF os = record {
         isEquivalence  = record { refl = ==-refl ; sym = ==-sym; trans = ==-trans }
     ;   pair→  = pair→
@@ -607,7 +632,7 @@ HOD→ZF os  = record {
     ; Power = Power
     ; Select = Select
     ; Replace = ZFReplace os
-    ; infinite = infinite
+    ; infinite = Omega
     ; isZF = isZF os
  }
 

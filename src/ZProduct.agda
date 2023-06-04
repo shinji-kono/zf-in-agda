@@ -24,7 +24,7 @@ open ODAxiom odAxiom
 
 open Ordinals.Ordinals  O
 open Ordinals.IsOrdinals isOrdinal
-open Ordinals.IsNext isNext
+-- open Ordinals.IsNext isNext
 open OrdUtil O
 open ODUtil O
 
@@ -351,6 +351,12 @@ Funcs A B = record { od = record { def = λ x → FuncHOD A B x } ; odmax = osuc
           (sym x=ψz) lemma4 where
        lemma4 : ZFProduct A B (& < * z , * (Func.func F (subst (λ k → odef A k) (sym &iso) az)) > )
        lemma4 = ab-pair az (Func.is-func F (subst (λ k → odef A k) (sym &iso) az))
+
+TwoHOD : HOD
+TwoHOD = ( od∅ , ( od∅ ,  od∅ ))
+
+Aleph1 : HOD
+Aleph1 = Funcs Omega TwoHOD
 
 record Injection (A B : Ordinal ) : Set n where
    field

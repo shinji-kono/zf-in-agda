@@ -25,7 +25,7 @@ import OrdUtil
 import ODUtil
 open Ordinals.Ordinals  O
 open Ordinals.IsOrdinals isOrdinal
-open Ordinals.IsNext isNext
+-- open Ordinals.IsNext isNext
 open OrdUtil O
 open ODUtil O
 

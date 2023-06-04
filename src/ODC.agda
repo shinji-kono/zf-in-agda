@@ -26,7 +26,7 @@ open ODUtil O
 
 open Ordinals.Ordinals  O
 open Ordinals.IsOrdinals isOrdinal
-open Ordinals.IsNext isNext
+-- open Ordinals.IsNext isNext
 open OrdUtil O
 
 
