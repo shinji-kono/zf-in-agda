@@ -56,7 +56,9 @@ open import ZProduct O
 data Hω2 :  (i : Nat) ( x : Ordinal  ) → Set n where
   hφ :  Hω2 0 o∅
   h0 : {i : Nat} {x : Ordinal  } → Hω2 i x  →
-    Hω2 (Suc i) (& (Union ((nat→ω i , nat→ω i) ,  * x )))
+    Hω2 (Suc i) (& (Union (< nat→ω i , od∅ >  ,  * x )))
+  h1 : {i : Nat} {x : Ordinal  } → Hω2 i x  →
+    Hω2 (Suc i) (& (Union (< nat→ω i , nat→ω 1 > ,  * x )))
   he : {i : Nat} {x : Ordinal  } → Hω2 i x  →
     Hω2 (Suc i) x
 
@@ -67,33 +69,60 @@ record  Hω2r (x : Ordinal) : Set n where
 
 open Hω2r
 
-hw⊆POmega :  {y : Ordinal} → Hω2r y → odef (Power Omega) y
-hw⊆POmega {y} r = odmax1 (Hω2r.count r) (Hω2r.hω2 r) where
-    odmax1 : {y : Ordinal} (i : Nat)  →  Hω2 i y → odef (Power Omega) y
+hw⊆POmega :  {x : Ordinal} → Hω2r x → odef (Power (Power Omega )) x
+hw⊆POmega {x} r = odmax1 (Hω2r.count r) (Hω2r.hω2 r) where
+    odmax1 : {y : Ordinal} (i : Nat)  →  Hω2 i y → odef (Power (Power Omega )) y
     odmax1 0 hφ z xz = ⊥-elim ( ¬x<0 (subst (λ k → odef k z) o∅≡od∅  xz ))
     odmax1 (Suc i) (h0 {_} {y} hw) = pf01 where
-        pf00 : odef ( Power Omega) y
+        pf00 : odef ( Power (Power Omega)) y
         pf00 = odmax1 i hw
-        pf01 : odef (Power Omega) (& (Union ((nat→ω i , nat→ω i ) , * y)))
+        pf01 : odef (Power (Power Omega)) (& (Union (< nat→ω i , nat→ω 0 > , * y)))
         pf01 z xz with subst (λ k → odef k z ) *iso xz
         ... | record { owner = owner ; ao = case1 refl ; ox = ox } = pf02 where
-             pf02 : Omega-d z
-             pf02 with subst (λ k → odef k z) *iso ox
+             pf02 : (w : Ordinal) → odef (* z) w → Omega-d w
+             pf02 w zw with subst (λ k → odef k z) *iso ox  
+             ... | case2 refl with subst (λ k → odef k w) *iso zw
+             ... | case1 refl = ω∋nat→ω {i}
+             ... | case2 refl = ω∋nat→ω {0}
+             pf02 w zw | case1 refl with subst (λ k → odef k w) *iso zw
+             ... | case1 refl = ω∋nat→ω {i}
+             ... | case2 refl = ω∋nat→ω {i} 
+        ... | record { owner = owner ; ao = case2 refl ; ox = ox } = pf02 where
+             pf03 : odef ( Power (Power Omega)) y
+             pf03 = odmax1 i hw
+             pf02 : (w : Ordinal) → odef (* z) w → Omega-d w
+             pf02 w zw = odmax1 i hw _ (subst (λ k → odef (* k) z) (&iso) ox)  _ zw
+    odmax1 (Suc i) (h1 {_} {y} hw) = pf01 where
+        pf00 : odef ( Power (Power Omega)) y
+        pf00 = odmax1 i hw
+        pf01 : odef (Power (Power Omega)) (& (Union (< nat→ω i , nat→ω 1 > , * y)))
+        pf01 z xz with subst (λ k → odef k z ) *iso xz
+        ... | record { owner = owner ; ao = case1 refl ; ox = ox } = pf02 where
+             pf02 : (w : Ordinal) → odef (* z) w → Omega-d w
+             pf02 w zw with subst (λ k → odef k z) *iso ox  
+             ... | case2 refl with subst (λ k → odef k w) *iso zw
+             ... | case1 refl = ω∋nat→ω {i}
+             ... | case2 refl = ω∋nat→ω {1}
+             pf02 w zw | case1 refl with subst (λ k → odef k w) *iso zw
              ... | case1 refl = ω∋nat→ω {i}
              ... | case2 refl = ω∋nat→ω {i}
-        ... | record { owner = owner ; ao = case2 refl ; ox = ox } = pf00 _ (subst (λ k → odef k z) *iso ox)
+        ... | record { owner = owner ; ao = case2 refl ; ox = ox } = pf02 where
+             pf03 : odef ( Power (Power Omega)) y
+             pf03 = odmax1 i hw
+             pf02 : (w : Ordinal) → odef (* z) w → Omega-d w
+             pf02 w zw = odmax1 i hw _ (subst (λ k → odef (* k) z) (&iso) ox)  _ zw
     odmax1 (Suc i) (he {_} {y} hw) = pf00 where
-        pf00 : odef ( Power Omega) y
+        pf00 : odef ( Power (Power Omega)) y
         pf00 = odmax1 i hw
 
 --
 -- Set of limited partial function of Omega
 --
 HODω2 :  HOD
-HODω2 = record { od = record { def = λ x → Hω2r x } ; odmax = & (Power Omega)
+HODω2 = record { od = record { def = λ x → Hω2r x } ; odmax = & (Power (Power Omega))
   ; <odmax = λ lt → odef< (hw⊆POmega  lt) } 
 
-HODω2⊆Omega : {x : HOD} → HODω2 ∋ x → x ⊆ Omega 
+HODω2⊆Omega : {x : HOD} → HODω2 ∋ x → x ⊆ Power  Omega 
 HODω2⊆Omega {x} hx {z} wz = hw⊆POmega hx _ (subst (λ k → odef k z) (sym *iso) wz)
 
 record HwStep : Set n where
@@ -102,23 +131,29 @@ record HwStep : Set n where
      i : Nat
      isHw : Hω2 i x
 
-3→Hω2 : List Two → HOD
+3→Hω2 : List (Maybe Two) → HOD
 3→Hω2 t = * (HwStep.x (list→hod t))  where
-   list→hod : List Two → HwStep
+   list→hod : List (Maybe Two) → HwStep
    list→hod []  = record { x = o∅ ; i = 0 ; isHw = hφ }
-   list→hod (i0 ∷ t)  = record { x = & (Union ( (nat→ω (HwStep.i pf01) , nat→ω (HwStep.i pf01))  , * x )) 
+   list→hod (just i0 ∷ t)  = record { x = & (Union ( < nat→ω (HwStep.i pf01) , od∅ >  , * x )) 
             ; i = Suc (HwStep.i pf01) ; isHw = h0 (HwStep.isHw pf01) } where 
         pf01 : HwStep
         pf01 = list→hod t 
         x = HwStep.x pf01
-   list→hod (i1 ∷ t)  = list→hod t 
+   list→hod (just i1 ∷ t)  = record { x = & (Union ( < nat→ω (HwStep.i pf01) , nat→ω 1 >  , * x )) 
+            ; i = Suc (HwStep.i pf01) ; isHw = h1 (HwStep.isHw pf01) } where 
+        pf01 : HwStep
+        pf01 = list→hod t 
+        x = HwStep.x pf01
+   list→hod (nothing ∷ t)  = list→hod t 
 
-Hω2→3 : (x :  HOD) → HODω2 ∋ x → List Two 
+Hω2→3 : (x :  HOD) → HODω2 ∋ x → List (Maybe Two) 
 Hω2→3 x = lemma where
-   lemma : { y : Ordinal } →  Hω2r y → List Two
+   lemma : { y : Ordinal } →  Hω2r y → List (Maybe Two)
    lemma record { count = 0 ; hω2 = hφ } = []
-   lemma record { count = (Suc i) ; hω2 = (h0 hω3) } = i0 ∷ lemma record { count = i ; hω2 =  hω3 }
-   lemma record { count = (Suc i) ; hω2 = (he hω3) } = i1 ∷ lemma record { count = i ; hω2 =  hω3 }
+   lemma record { count = (Suc i) ; hω2 = (h0 hω3) } = just i0 ∷ lemma record { count = i ; hω2 =  hω3 }
+   lemma record { count = (Suc i) ; hω2 = (h1 hω3) } = just i0 ∷ lemma record { count = i ; hω2 =  hω3 }
+   lemma record { count = (Suc i) ; hω2 = (he hω3) } = nothing ∷ lemma record { count = i ; hω2 =  hω3 }
 
 ω→2 : HOD
 ω→2 = Power Omega

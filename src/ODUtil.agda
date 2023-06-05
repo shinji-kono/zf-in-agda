@@ -179,17 +179,23 @@ pair=∨ {a} {b} {c} (case2 c=b) = case2 ( sym (trans c=b &iso))
           (* x , * x ) ∎ ) &iso uy ) ⟩  -- (* x , * x ) ∋ * y
         y ∎ ) x<y)  where open ≡-Reasoning
 
-ω-prev-eq : {x y : Ordinal} →  & (Union (* y , (* y , * y))) ≡ & (Union (* x , (* x , * x))) → x ≡ y
+ω-prev-eq : {x y : Ordinal} →  & (Union (* y , (* y , * y))) ≡ & (Union (* x , (* x , * x))) → y ≡ x
 ω-prev-eq {x} {y} eq with trio< x y
 ω-prev-eq {x} {y} eq | tri< a ¬b ¬c = ⊥-elim (ω-prev-eq1 eq a)
-ω-prev-eq {x} {y} eq | tri≈ ¬a b ¬c = b
+ω-prev-eq {x} {y} eq | tri≈ ¬a b ¬c = (sym b)
 ω-prev-eq {x} {y} eq | tri> ¬a ¬b c = ⊥-elim (ω-prev-eq1 (sym eq) c)
+
+ω-inject : {x y : HOD} →  Union ( y , ( y ,  y)) ≡ Union ( x , ( x ,  x)) → y ≡ x
+ω-inject {x} {y} eq = subst₂ (λ j k → j ≡ k ) *iso *iso (cong (*) ( ω-prev-eq (cong (&) (subst₂ (λ j k →  Union (j , (j , j)) ≡ Union (k , (k , k))) (sym *iso) (sym *iso) eq ))))
 
 ω-∈s : (x : HOD) →  Union ( x , (x , x)) ∋ x
 ω-∈s x = record { owner = & ( x , x ) ; ao = case2 refl  ; ox = subst₂ (λ j k → odef j k ) (sym *iso) refl (case2 refl) }
 
 ωs≠0 : (x : HOD) →  ¬ ( Union ( x , (x , x)) ≡ od∅ )
 ωs≠0 y eq =  ⊥-elim ( ¬x<0 (subst (λ k → & y  o< k ) ord-od∅ (c<→o< (subst (λ k → odef k (& y )) eq (ω-∈s y) ))) )
+
+ωs0 : o∅ ≡ & (nat→ω 0)
+ωs0 = trans (sym ord-od∅) (cong (&) refl ) 
 
 nat→ω-iso : {i : HOD} → (lt : Omega ∋ i ) → nat→ω ( ω→nat i lt ) ≡ i
 nat→ω-iso {i} = ε-induction {λ i →  (lt : Omega ∋ i ) → nat→ω ( ω→nat i lt ) ≡ i  } ind i where
@@ -217,8 +223,8 @@ nat→ω-iso {i} = ε-induction {λ i →  (lt : Omega ∋ i ) → nat→ω ( ω
                lemma3 iφ iφ refl = HE.refl
                lemma3 iφ (isuc {y} ltd1) eq = ⊥-elim ( ¬x<0 (subst₂ (λ j k → j o< k ) &iso eq (c<→o< (ω-∈s (* y)) )))
                lemma3 (isuc {y} ltd)  iφ eq = ⊥-elim ( ¬x<0 (subst₂ (λ j k → j o< k ) &iso (sym eq) (c<→o< (ω-∈s (* y)) )))
-               lemma3 (isuc {x} ltd) (isuc {y} ltd1) eq with lemma3 ltd ltd1 (ω-prev-eq (sym eq))
-               ... | t = HE.cong₂ (λ j k → isuc {j} k ) (HE.≡-to-≅  (ω-prev-eq eq)) t
+               lemma3 (isuc {x} ltd) (isuc {y} ltd1) eq with lemma3 ltd ltd1 (ω-prev-eq (eq))
+               ... | t = HE.cong₂ (λ j k → isuc {j} k ) (HE.≡-to-≅  (ω-prev-eq (sym eq))) t
                lemma2 : {x y : Ordinal} → (ltd : Omega-d x ) (ltd1 : Omega-d y ) → y ≡ x → ω→nato ltd ≡ ω→nato ltd1
                lemma2 {x} {y} ltd ltd1 eq = lemma6 eq (lemma3 {x} {y} ltd ltd1 eq)  where
                    lemma6 : {x y : Ordinal} → {ltd : Omega-d x } {ltd1 : Omega-d y } → y ≡ x → ltd ≅ ltd1 → ω→nato ltd ≡ ω→nato ltd1
@@ -234,11 +240,17 @@ nat→ω-iso {i} = ε-induction {λ i →  (lt : Omega ∋ i ) → nat→ω ( ω
 ω→nat-iso0 (Suc i) (isuc {x} ltd) eq = cong Suc ( ω→nat-iso0 i ltd (lemma1 eq) ) where
        lemma1 :  * (& (Union (* x , (* x , * x)))) ≡ Union (nat→ω i , (nat→ω i , nat→ω i)) → * x ≡ nat→ω i
        lemma1 eq = subst (λ k → * x ≡ k ) *iso (cong (λ k → * k)
-            ( ω-prev-eq (subst (λ k → _ ≡ k ) &iso (cong (λ k → & k ) (sym
-                (subst (λ k → _ ≡ Union ( k , ( k , k ))) (sym *iso ) eq ))))))
+            (sym ( ω-prev-eq (subst (λ k → _ ≡ k ) &iso (cong (λ k → & k ) (sym
+                (subst (λ k → _ ≡ Union ( k , ( k , k ))) (sym *iso ) eq )))))))
 
 ω→nat-iso : {i : Nat} → ω→nat ( nat→ω i ) (ω∋nat→ω {i}) ≡ i
 ω→nat-iso {i} = ω→nat-iso0 i (ω∋nat→ω {i}) *iso
+
+nat→ω-inject : {i j : Nat} → nat→ω i ≡  nat→ω j → i ≡ j
+nat→ω-inject {Zero} {Zero} eq = refl
+nat→ω-inject {Zero} {Suc j} eq = ⊥-elim ( ¬0=ux (trans (trans (sym ord-od∅) (cong (&) eq)) refl ))
+nat→ω-inject {Suc i} {Zero} eq = ⊥-elim ( ¬0=ux (trans (trans (sym ord-od∅) (cong (&) (sym eq))) refl ))
+nat→ω-inject {Suc i} {Suc j} eq = cong Suc (nat→ω-inject {i} {j} ( ω-inject (eq) ))
 
 Repl⊆ : {A B : HOD} (A⊆B : A ⊆ B) → { ψa : ( x : HOD) → A ∋ x → HOD } { ψb : ( x : HOD) → B ∋ x → HOD }
    →  {Ca : HOD} → {rca : RXCod A Ca ψa }
