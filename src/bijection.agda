@@ -970,3 +970,33 @@ LMℕ A Ln = Countable-Bernstein (List A) (List (Maybe A)) (List A ∧ List Bool
             lem01 with cong proj2 eq
             ... | refl = refl
 
+--
+--  (     Bool ∷      Bool ∷ [] )    (      Bool ∷      Bool ∷ []   )  (      Bool ∷ [] )
+--        true ∷      true ∷ false ∷        true ∷      true ∷ false ∷        true ∷ []
+
+-- LMℕ A Ln = Countable-Bernstein (List A) (List (Maybe A)) (List A ∧ List Bool) Ln (LM1 A Ln)  fi gi dec0 dec1 where
+
+LBBℕ : Bijection (List (List Bool)) ℕ
+LBBℕ = Countable-Bernstein (List Bool ∧ List Bool) (List (List Bool)) (List Bool ∧ List Bool ) (LM1 Bool (bi-sym _ _ LBℕ)) (LM1 Bool (bi-sym _ _ LBℕ))  
+        ? ? ? ? where
+
+    atob : List (List Bool) →  List Bool ∧ List Bool 
+    atob [] = ⟪ [] , [] ⟫
+    atob ( [] ∷  t ) = ⟪ false  ∷ proj1 ( atob t ) , false ∷ proj2 ( atob t ) ⟫
+    atob ( (h ∷ t1) ∷ t ) = ⟪ h ∷ proj1 ( atob t ) , true  ∷ proj2 ( atob t ) ⟫
+
+    btoa : List Bool ∧ List Bool → List (List Bool) 
+    btoa ⟪ [] , _ ⟫ = []
+    btoa ⟪ _ ∷ _  , [] ⟫ = []
+    btoa ⟪ _ ∷ t0 ,  false ∷ t1  ⟫ = [] ∷ btoa ⟪ t0 , t1 ⟫ 
+    btoa ⟪ h ∷ t0 ,  true  ∷ t1  ⟫ with btoa ⟪ t0 , t1 ⟫
+    ... | [] = ( h ∷ [] ) ∷ []
+    ... | x ∷ y = (h ∷ x ) ∷ y
+
+Lℕ=ℕ : Bijection (List ℕ) ℕ
+Lℕ=ℕ = record {
+       fun→  = λ x → ?
+     ; fun←  = λ n → ?
+     ; fiso→ = ?
+     ; fiso← = ?
+     }

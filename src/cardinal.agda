@@ -97,14 +97,6 @@ Bernstein1 = ?
 
 Bernstein : {a b : Ordinal } → Injection a b → Injection b a → OrdBijection a b
 Bernstein {a} {b} iab iba = be00 where
-    a⊆b : * a ⊆ * b
-    a⊆b {x} ax = subst (λ k → odef (* b) k) be01 ( iB iab _ ax ) where
-        be01 : i→ iab x ax ≡ x
-        be01 = ?
-        be02 : x ≡  i→ iba x ?
-        be02 = inject iab ? ? ax ( iB iba _ ? ) ? 
-    b⊆a : * b ⊆ * a
-    b⊆a bx = ?
     be05 : {a b : Ordinal } → a o< b → Injection a b → Injection b a → ⊥ 
     be05 {a} {b} a<b iab iba = TransFinite0 {λ x → (b : Ordinal) → x o< b → Injection x b → Injection b x → ⊥  } 
           ind a b a<b iab iba where

@@ -39,6 +39,8 @@ Shinji KONO (kono@ie.u-ryukyu.ac.jp), University of the Ryukyus
 
 [OPair](https://shinji-kono.github.io/zf-in-agda/html/OPair.html)   Orderd Pair and Direct Product
 
+[bijection](https://shinji-kono.github.io/zf-in-agda/html/bijection.html)   Bijection without HOD
+
 
 ```
 
