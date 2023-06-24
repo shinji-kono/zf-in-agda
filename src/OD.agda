@@ -343,6 +343,10 @@ union→ X z u xx =  record { owner = & u ; ao = proj1 xx ; ox = subst (λ k →
 union← :  (X z : HOD) (X∋z : Union X ∋ z) →  ¬  ( (u : HOD ) → ¬ ((X ∋  u) ∧ (u ∋ z )))
 union← X z UX∋z not = ⊥-elim ( not (* (Own.owner UX∋z)) ⟪ subst (λ k → odef X k) (sym &iso) ( Own.ao UX∋z) , Own.ox UX∋z ⟫  )
 
+--
+--
+--
+
 record RCod (COD : HOD) (ψ : HOD → HOD)  : Set (suc n) where
  field
      ≤COD : ∀ {x : HOD } → ψ x ⊆ COD 

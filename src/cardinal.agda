@@ -102,7 +102,7 @@ Bernstein {a} {b} iab iba = be00 where
         be01 : i→ iab x ax ≡ x
         be01 = ?
         be02 : x ≡  i→ iba x ?
-        be02 = iiso iab ? ? ax ( iB iba _ ? ) ? 
+        be02 = inject iab ? ? ax ( iB iba _ ? ) ? 
     b⊆a : * b ⊆ * a
     b⊆a bx = ?
     be05 : {a b : Ordinal } → a o< b → Injection a b → Injection b a → ⊥ 

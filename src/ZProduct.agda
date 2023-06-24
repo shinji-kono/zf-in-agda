@@ -362,7 +362,7 @@ record Injection (A B : Ordinal ) : Set n where
    field
        i→  : (x : Ordinal ) → odef (* A)  x → Ordinal
        iB  : (x : Ordinal ) → ( lt : odef (* A)  x ) → odef (* B) ( i→ x lt )
-       iiso : (x y : Ordinal ) → ( ltx : odef (* A)  x ) ( lty : odef (* A)  y ) → i→ x ltx ≡ i→ y lty → x ≡ y
+       inject : (x y : Ordinal ) → ( ltx : odef (* A)  x ) ( lty : odef (* A)  y ) → i→ x ltx ≡ i→ y lty → x ≡ y
 
 record HODBijection (A B : HOD ) : Set n where
    field

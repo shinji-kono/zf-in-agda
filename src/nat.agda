@@ -45,11 +45,42 @@ a<sa {suc la} = s≤s a<sa
 <-∨ {suc x} {suc y} (s≤s lt) | case1 eq = case1 (cong (λ k → suc k ) eq)
 <-∨ {suc x} {suc y} (s≤s lt) | case2 lt1 = case2 (s≤s lt1)
 
+≤-∨ : { x y : ℕ } → x ≤ y → ( (x ≡ y ) ∨ (x < y) )
+≤-∨ {zero} {zero} z≤n = case1 refl
+≤-∨ {zero} {suc y} z≤n = case2 (s≤s z≤n)
+≤-∨ {suc x} {zero} ()
+≤-∨ {suc x} {suc y} (s≤s lt) with ≤-∨ {x} {y} lt
+≤-∨ {suc x} {suc y} (s≤s lt) | case1 eq = case1 (cong (λ k → suc k ) eq)
+≤-∨ {suc x} {suc y} (s≤s lt) | case2 lt1 = case2 (s≤s lt1)
+
 max : (x y : ℕ) → ℕ
 max zero zero = zero
 max zero (suc x) = (suc x)
 max (suc x) zero = (suc x)
 max (suc x) (suc y) = suc ( max x y )
+
+x≤max : (x y : ℕ) → x ≤ max x y
+x≤max zero zero = ≤-refl
+x≤max zero (suc x) = z≤n
+x≤max (suc x) zero = ≤-refl
+x≤max (suc x) (suc y) = s≤s( x≤max x y )
+
+y≤max : (x y : ℕ) → y ≤ max x y
+y≤max zero zero = ≤-refl
+y≤max zero (suc x) = ≤-refl
+y≤max (suc x) zero = z≤n
+y≤max (suc x) (suc y) = s≤s( y≤max x y )
+
+x≤y→max=y : (x y : ℕ) → x ≤ y → max x y ≡ y
+x≤y→max=y zero zero x≤y = refl
+x≤y→max=y zero (suc y) x≤y = refl
+x≤y→max=y (suc x) (suc y) (s≤s x≤y) = cong suc (x≤y→max=y x y x≤y )
+
+y≤x→max=x : (x y : ℕ) → y ≤ x → max x y ≡ x
+y≤x→max=x zero zero y≤x = refl
+y≤x→max=x zero (suc y) ()
+y≤x→max=x (suc x) zero lt = refl
+y≤x→max=x (suc x) (suc y) (s≤s y≤x) = cong suc (y≤x→max=x x y y≤x )
 
 -- _*_ : ℕ → ℕ → ℕ
 -- _*_ zero _ = zero
@@ -201,13 +232,24 @@ x+y<z→x<z {suc x} {y} {suc z} (s≤s lt1) = s≤s ( x+y<z→x<z {x} {y} {z} lt
 <to≤ {zero} {suc y} (s≤s z≤n) = z≤n
 <to≤ {suc x} {suc y} (s≤s lt) = s≤s (<to≤ {x} {y}  lt)
 
+<∨≤ : ( x y : ℕ ) →  (x < y ) ∨ (y ≤ x) 
+<∨≤ x y with <-cmp x y
+... | tri< a ¬b ¬c = case1 a
+... | tri≈ ¬a refl ¬c = case2 ≤-refl
+... | tri> ¬a ¬b c = case2 (<to≤ c)
+
 refl-≤s : {x : ℕ } → x ≤ suc x
 refl-≤s {zero} = z≤n
 refl-≤s {suc x} = s≤s (refl-≤s {x})
 
+a≤sa = refl-≤s
+
 refl-≤ : {x : ℕ } → x ≤ x
 refl-≤ {zero} = z≤n
 refl-≤ {suc x} = s≤s (refl-≤ {x})
+
+refl-≤≡ : {x y : ℕ } → x ≡ y → x ≤ y
+refl-≤≡ refl = refl-≤ 
 
 x<y→≤ : {x y : ℕ } → x < y →  x ≤ suc y
 x<y→≤ {zero} {.(suc _)} (s≤s z≤n) = z≤n
@@ -225,6 +267,26 @@ px≤py : {x y : ℕ } → x ≤ y → pred x  ≤ pred y
 px≤py {zero} {zero} lt = refl-≤
 px≤py {zero} {suc y} lt = z≤n
 px≤py {suc x} {suc y} (s≤s lt) = lt 
+
+sx≤py→x≤y : {x y : ℕ } → suc x ≤ suc y → x  ≤ y 
+sx≤py→x≤y (s≤s lt) = lt
+
+sx<py→x<y : {x y : ℕ } → suc x < suc y → x  < y 
+sx<py→x<y (s≤s lt) = lt
+
+sx≤y→x≤y : {x y : ℕ } → suc x ≤ y → x  ≤ y 
+sx≤y→x≤y {zero} {suc y} (s≤s le) = z≤n
+sx≤y→x≤y {suc x} {suc y} (s≤s le) = s≤s (sx≤y→x≤y {x} {y} le)
+
+x<sy→x≤y : {x y : ℕ } → x < suc y → x  ≤ y 
+x<sy→x≤y {zero} {suc y} (s≤s le) = z≤n
+x<sy→x≤y {suc x} {suc y} (s≤s le) = s≤s (x<sy→x≤y {x} {y} le)
+x<sy→x≤y {zero} {zero} (s≤s z≤n) = ≤-refl
+
+x≤y→x<sy : {x y : ℕ } → x ≤ y → x < suc y 
+x≤y→x<sy {.zero} {y} z≤n = ≤-trans a<sa (s≤s z≤n)
+x≤y→x<sy {.(suc _)} {.(suc _)} (s≤s le) = s≤s ( x≤y→x<sy le) 
+
 
 open import Data.Product
 
@@ -687,4 +749,5 @@ decD {k} {m} k>1 = n-induction {_} {_} {ℕ} {λ m → Dec (Dividable k m ) } F 
             ; decline = λ {m} lt → decl lt 
             ; ind = λ {p} prev → ind p prev
           } 
+
 
