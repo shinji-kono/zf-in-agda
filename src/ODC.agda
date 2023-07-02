@@ -94,6 +94,11 @@ or-exclude {A} {B} (case1 a) | case2 ¬a = ⊥-elim ( ¬a a )
 or-exclude {A} {B} (case2 b) | case1 a = case1 a
 or-exclude {A} {B} (case2 b) | case2 ¬a = case2 ⟪ ¬a , b ⟫
 
+or-exclude1 : {A B : Set n} →  (¬ A →  B ) → A ∨ B 
+or-exclude1 {A} {B} ab with p∨¬p A
+... | case1 a = case1 a
+... | case2 ¬a = case2 ( ab ¬a)
+
 -- record By-contradiction (A : Set n) (B : A → Set n)  : Set (suc n) where
 --  field
 --     a : A

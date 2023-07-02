@@ -57,6 +57,13 @@ bijIsEquivalence = record { refl = λ {R} → bid R ; sym = λ {R} {S} → bi-sy
 -- famous diagnostic function
 --
 
+--   1 1 0 1 0 ...
+--   0 1 0 1 0 ...
+--   1 0 0 1 0 ...
+--   1 1 1 1 0 ...
+
+--   0 0 1 0 1 ...  diag
+
 diag : {S : Set }  (b : Bijection  ( S → Bool ) S) → S → Bool
 diag b n = not (fun← b n n)
 
@@ -82,7 +89,7 @@ b-iso : (b : Bijection  ( ℕ → Bool ) ℕ) → fun← b (b1 b) ≡ (diag b)
 b-iso b = fiso← b _
 
 --
--- ℕ <=> ℕ + 1
+-- ℕ <=> ℕ + 1    (infinite hotel)
 --
 to1 : {n : Level} {R : Set n} → Bijection ℕ R → Bijection ℕ (⊤ ∨ R )
 to1 {n} {R} b = record {
