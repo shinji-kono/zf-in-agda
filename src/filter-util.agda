@@ -143,6 +143,11 @@ Filter-Proj1-UF {P} {Q} pqa F UF = record { proper = ty60 ; ultra = ty62 } where
 rcq :  {P Q : HOD } → (F : Filter {Power (ZFP P Q)} {ZFP P Q} (λ x → x)) → RXCod (filter F) Q (λ x fx → ZP-proj2 P Q x (filter-⊆ F fx))
 rcq {P} {Q} F = record { ≤COD = λ {x} fx {z} ly → ZP2.bb ly }
 
+--
+-- Proj2 can be dervie from symmetry of ZFP (Product)
+-- but it makes Agda very slow
+--   so we copy Proj1
+--
 Filter-Proj2 : {P Q a : HOD } → ZFP P Q ∋ a → 
      (F : Filter {Power (ZFP P Q)} {ZFP P Q} (λ x → x))  
       →    Filter {Power Q} {Q} (λ x → x) 

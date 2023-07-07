@@ -525,7 +525,8 @@ Countable-Bernstein A B C an cn fi gi is-A is-B = record {
     --
     --     an     f     g     cn
     --   ℕ ↔   A  →  B  →  C  ↔   ℕ
-    --
+    --            B = Image A f ∪ (B \ Image A f )
+    -- 
     open Bijection
     f = InjectiveF.f fi
     g = InjectiveF.f gi
@@ -724,6 +725,9 @@ Countable-Bernstein A B C an cn fi gi is-A is-B = record {
     lem02 : (n : ℕ) → maxAC n
     lem02 n = record { ac = c n ; n<ca = subst (λ k → n < k) (ca-list=count-A (c n)) (n<ca-list n ) }
 
+    --
+    -- countB record create ℕ → B and its injection
+    --
     record CountB (n : ℕ) : Set where
        field
           b : B
@@ -845,6 +849,9 @@ Countable-Bernstein A B C an cn fi gi is-A is-B = record {
            open ≡-Reasoning
            CB  = lem01 n (maxAC.ac (lem02 n)) (≤-trans (maxAC.n<ca (lem02 n)) (ca≤cb0 (maxAC.ac (lem02 n))) )
 
+    --
+    -- uniqueness of ntob is proved by injection
+    --
     biso1 : (b : B) → ntob (bton b) ≡ b
     biso1 b with count-B (fun→ cn (g b)) | inspect count-B (fun→ cn (g b)) 
     ... | zero  | record { eq = eq1 } = ⊥-elim ( nat-≡< (sym lem20) (lem21 _ refl) ) where
@@ -982,6 +989,7 @@ LMℕ A Ln = Countable-Bernstein (List A) (List (Maybe A)) (List A ∧ List Bool
 --        true ∷      true ∷ false ∷        true ∷      true ∷ false ∷        true ∷ []
 
 -- LMℕ A Ln = Countable-Bernstein (List A) (List (Maybe A)) (List A ∧ List Bool) Ln (LM1 A Ln)  fi gi dec0 dec1 where
+--    someday ...
 
 LBBℕ : Bijection (List (List Bool)) ℕ
 LBBℕ = Countable-Bernstein (List Bool ∧ List Bool) (List (List Bool)) (List Bool ∧ List Bool ) (LM1 Bool (bi-sym _ _ LBℕ)) (LM1 Bool (bi-sym _ _ LBℕ))  

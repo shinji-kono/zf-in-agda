@@ -6,7 +6,7 @@ module cardinal {n : Level } (O : Ordinals {n}) where
 
 open import logic
 -- import OD
-import OD hiding ( _⊆_ )
+import OD 
 
 import ODC
 open import Data.Nat 
@@ -31,9 +31,7 @@ open Ordinals.IsOrdinals isOrdinal
 open OrdUtil O
 open ODUtil O
 
-_⊆_ : ( A B : HOD ) → Set n
-_⊆_ A B = {x : Ordinal } → odef A x → odef B x
-
+open import Relation.Binary.HeterogeneousEquality as HE using (_≅_ )
 
 open _∧_
 open _∨_
@@ -44,37 +42,15 @@ open HOD
 
 -- record HODBijection (A B : HOD ) : Set n where
 --   field
---       fun←  : (x : Ordinal ) → odef A  x → Ordinal
 --       fun→  : (x : Ordinal ) → odef B  x → Ordinal
+--       fun←  : (x : Ordinal ) → odef A  x → Ordinal
 --       funB  : (x : Ordinal ) → ( lt : odef A  x ) → odef B ( fun← x lt )
 --       funA  : (x : Ordinal ) → ( lt : odef B  x ) → odef A ( fun→ x lt )
---       fiso← : (x : Ordinal ) → ( lt : odef B  x ) → fun← ( fun→ x lt ) ( funA x lt ) ≡ x
 --       fiso→ : (x : Ordinal ) → ( lt : odef A  x ) → fun→ ( fun← x lt ) ( funB x lt ) ≡ x
--- 
--- rrdbij-refl : { a b : HOD } → a ≡ b → HODBijection a b
--- rrdbij-refl {a} refl = record {
---       fun←  = λ x _ → x 
---     ; fun→  = λ x _ → x 
---     ; funB  = λ x lt → lt
---     ; funA  = λ x lt → lt
---     ; fiso← = λ x lt → refl
---     ; fiso→ = λ x lt → refl
---    }
-
+--       fiso← : (x : Ordinal ) → ( lt : odef B  x ) → fun← ( fun→ x lt ) ( funA x lt ) ≡ x
+ 
 open Injection
 open HODBijection
-
-record IsImage (a b : Ordinal) (iab : Injection a b ) (x : Ordinal ) : Set n where
-   field
-      y : Ordinal 
-      ay : odef (* a) y
-      x=fy : x ≡ i→ iab _ ay
-
-Image : (a : Ordinal) { b : Ordinal } → Injection a b → HOD
-Image a {b} iab = record { od = record { def = λ x → IsImage a b iab x } ; odmax = b ; <odmax = im00  } where
-    im00 : {x : Ordinal } → IsImage a b iab x → x o< b
-    im00 {x} record { y = y ; ay = ay ; x=fy = x=fy } = subst₂ ( λ j k → j o< k) (trans &iso (sym x=fy)) &iso 
-         (c<→o< (subst ( λ k → odef (* b) k) (sym &iso) (iB iab y ay)) )
 
 record IsImage0 (a b : HOD) (f : (x : Ordinal) → odef a x → Ordinal) (x : Ordinal ) : Set n where
    field
@@ -82,7 +58,16 @@ record IsImage0 (a b : HOD) (f : (x : Ordinal) → odef a x → Ordinal) (x : Or
       ay : odef a y
       x=fy : x ≡ f y ay
 
-Image⊆b : { a b : Ordinal } → (iab : Injection a b) → Image a iab ⊆ * b 
+IsImage : (a b : Ordinal) (iab : Injection a b ) (x : Ordinal ) → Set n 
+IsImage a b iab x = IsImage0 (* a) (* b) (i→ iab) x
+
+Image : (a : Ordinal) { b : Ordinal } → Injection a b → HOD
+Image a {b} iab = record { od = record { def = λ x → IsImage a b iab x } ; odmax = b ; <odmax = im00  } where
+    im00 : {x : Ordinal } → IsImage a b iab x → x o< b
+    im00 {x} record { y = y ; ay = ay ; x=fy = x=fy } = subst₂ ( λ j k → j o< k) (trans &iso (sym x=fy)) &iso 
+         (c<→o< (subst ( λ k → odef (* b) k) (sym &iso) (iB iab y ay)) )
+
+Image⊆b : { a b : Ordinal } → (iab : Injection a b) → Image a iab ⊆ (* b )
 Image⊆b {a} {b} iab {x} record { y = y ; ay = ay ; x=fy = x=fy } = subst (λ k → odef (* b) k) (sym x=fy) (iB iab y ay)
 
 _=c=_ : ( A B : HOD ) → Set n
@@ -111,22 +96,26 @@ Injection-∙ : {a b c : Ordinal } → Injection a b → Injection b c → Injec
 Injection-∙ {a} {b} {c} f g = record { i→ = λ x ax → i→ g (i→ f x ax) (iB f x ax) ; iB = λ x ax → iB g (i→ f x ax) (iB f x ax)
         ; inject = λ x y ix iy eq → inject f x y ix iy (inject g (i→ f x ix) (i→ f y iy) (iB f x ix) (iB f y iy) eq)   } 
 
+--
+-- Two injection can be joined
+--   A and C may overrap
+--
 bi-∪  : {A B C D : HOD } → (ab : HODBijection A B) → (cd : HODBijection C D )  
        → HODBijection (A ∪ C) (B ∪ D)
 bi-∪  {A} {B} {C} {D} ab cd = record { 
-         fun←  = fa
-       ; fun→  = fb
+         fun→  = fa
+       ; fun←  = fb
        ; funB  = fa-isb
        ; funA  = fb-isa
-       ; fiso← = faiso
-       ; fiso→ = fbiso
+       ; fiso→ = faiso
+       ; fiso← = fbiso
        } where
           fa : (x : Ordinal) → odef (A ∪ C) x → Ordinal
-          fa x (case1 a) = fun← ab x a
-          fa x (case2 c) = fun← cd x c
+          fa x (case1 a) = fun→ ab x a
+          fa x (case2 c) = fun→ cd x c
           fb : (x : Ordinal) → odef (B ∪ D) x → Ordinal
-          fb x (case1 b) = fun→ ab x b
-          fb x (case2 d) = fun→ cd x d
+          fb x (case1 b) = fun← ab x b
+          fb x (case2 d) = fun← cd x d
           fa-isb :  (x : Ordinal) (lt : odef (A ∪ C) x) → odef (B ∪ D) (fa x lt)
           fa-isb x (case1 a) = case1 (funB ab x a)
           fa-isb x (case2 c) = case2 (funB cd x c)
@@ -134,12 +123,19 @@ bi-∪  {A} {B} {C} {D} ab cd = record {
           fb-isa x (case1 b) = case1 (funA ab x b)
           fb-isa x (case2 d) = case2 (funA cd x d)
           faiso : (x : Ordinal) (lt : odef (B ∪ D) x) → fa (fb x lt) (fb-isa x lt) ≡ x
-          faiso x (case1 b) = fiso← ab x b
-          faiso x (case2 d) = fiso← cd x d
+          faiso x (case1 b) = fiso→ ab x b
+          faiso x (case2 d) = fiso→ cd x d
           fbiso : (x : Ordinal) (lt : odef (A ∪ C) x) → fb (fa x lt) (fa-isb x lt) ≡ x
-          fbiso x (case1 b) = fiso→ ab x b
-          fbiso x (case2 d) = fiso→ cd x d
+          fbiso x (case1 b) = fiso← ab x b
+          fbiso x (case2 d) = fiso← cd x d
 
+--
+--  f : A → B        OrdBijection A           (Image A f)
+--  g : B → A        OrdBijection (Image B g) B
+--                     UC (closure of g ∙ f from ¬ Image B g )
+--                         A =   UC ∪ (A \ Image B g )
+--                         B =   (Image B g) UC 
+--
 Bernstein : {a b : Ordinal } → Injection a b → Injection b a → HODBijection (* a) (* b)
 Bernstein {a} {b} (f @ record { i→ = fab ; iB = b∋fab ; inject = fab-inject }) ( g @ record { i→ = fba ; iB = a∋fba ; inject = fba-inject })
      = subst₂ (λ j k → HODBijection j k ) (sym a=UC∨a-UC) (sym b=fUC∨b-fUC) (bi-∪  bi-UC  bi-fUC)
@@ -148,9 +144,12 @@ Bernstein {a} {b} (f @ record { i→ = fab ; iB = b∋fab ; inject = fab-inject 
       gf = record { i→ = λ x ax → fba (fab x ax) (b∋fab x ax) ; iB = λ x ax → a∋fba _ (b∋fab x ax) 
          ; inject = λ x y ax ay eq → fab-inject _ _ ax ay ( fba-inject _ _ (b∋fab _ ax) (b∋fab _ ay) eq) } 
 
+      --
+      -- HOD UC is closure of g ∙ f starting from a - Image g
+      --
       data gfImage :  (x : Ordinal) → Set n where
           a-g : {x : Ordinal} → (ax : odef (* a) x ) → (¬ib : ¬ ( IsImage b a g x )) → gfImage  x
-          next-gf : {x : Ordinal} → (ix : IsImage a a gf x) → (gfiy : gfImage (IsImage.y ix) ) → gfImage  x
+          next-gf : {x : Ordinal} → (ix : IsImage a a gf x) → (gfiy : gfImage (IsImage0.y ix) ) → gfImage  x
 
       a∋gfImage : {x : Ordinal } → gfImage x → odef (* a) x
       a∋gfImage {x} (a-g ax ¬ib) = ax
@@ -200,8 +199,6 @@ Bernstein {a} {b} (f @ record { i→ = fab ; iB = b∋fab ; inject = fab-inject 
       ... | case1 img = img
       ... | case2 nimg = ⊥-elim ( ncn (a-g ax nimg ) )
 
-      open import Relation.Binary.HeterogeneousEquality as HE using (_≅_ )
-
       fab-eq : {x y : Ordinal } → {ax : odef (* a) x} {ax1 : odef (* a) y}  → x ≡ y  → fab x ax ≡ fab y ax1
       fab-eq {x} {x} {ax} {ax1} refl = cong (λ k → fab x k) ( HE.≅-to-≡ ( ∋-irr {* a} ax ax1 ))  
 
@@ -223,7 +220,6 @@ Bernstein {a} {b} (f @ record { i→ = fab ; iB = b∋fab ; inject = fab-inject 
       g⁻¹-eq : {x : Ordinal } → (ax ax' : odef (* a) x) → {nc0 nc0' : IsImage b a g x } → g⁻¹ ax nc0 ≡ g⁻¹ ax' nc0'
       g⁻¹-eq {x} ax ax' {record { y = y₁ ; ay = ay₁ ; x=fy = x=fy₁ }} {record { y = y ; ay = ay ; x=fy = x=fy }} 
            = inject g _ _ ay₁ ay (trans (sym x=fy₁) x=fy )
-
 
       cc11-case2 : {x : Ordinal} (ax : odef (* a) x) 
           → (ncn : ¬ gfImage x) 
@@ -250,7 +246,6 @@ Bernstein {a} {b} (f @ record { i→ = fab ; iB = b∋fab ; inject = fab-inject 
       Uf1 : (x : Ordinal) → IsImage0 UC (* b) FA x → Ordinal
       Uf1 x record { y = y ; ay = ay ; x=fy = x=fy } = y
 
-
       UC∋Uf1 : {x : Ordinal } → (lt : odef fUC x) → odef UC (Uf1 x lt )
       UC∋Uf1 {x} record { y = y ; ay = ay ; x=fy = x=fy } = ay
 
@@ -262,14 +257,21 @@ Bernstein {a} {b} (f @ record { i→ = fab ; iB = b∋fab ; inject = fab-inject 
       fU-iso0 {x} (a-g ax ¬ib) = refl 
       fU-iso0 {x} (next-gf record { y = y ; ay = ay ; x=fy = x=fy } lt) = refl
 
+      --
+      -- We cannot directly create h : * a → * b , because the cnoise of UC ∨  a-UC is non constructive and
+      -- even LEM cannot be used in positive context. The merging bi-UC and  bi-fUC uses also LEM but use it positively.
+      --
+      -- bijection on each side is easy, because these are images of f and g.
+      --    somehow we don't use injection of f.
+
       bi-UC : HODBijection UC fUC
       bi-UC = record { 
-         fun←  = λ x lt → fU1 x lt
-       ; fun→  = λ x lt → Uf1 x lt
+         fun→  = λ x lt → fU1 x lt
+       ; fun←  = λ x lt → Uf1 x lt
        ; funB  = λ x lt → record { y = _ ; ay = lt  ; x=fy = refl }
        ; funA  = λ x lt → UC∋Uf1 lt
-       ; fiso← = λ x lt → fU-iso1 lt
-       ; fiso→ = λ x lt → fU-iso0 lt
+       ; fiso→ = λ x lt → fU-iso1 lt
+       ; fiso← = λ x lt → fU-iso0 lt
        }
 
       b-FUC∋g⁻¹ : {x : Ordinal } → (lt : odef a-UC x )→ odef b-fUC (g⁻¹ (proj1 lt) (nimg (proj1 lt) (proj2 lt))) 
@@ -288,17 +290,17 @@ Bernstein {a} {b} (f @ record { i→ = fab ; iB = b∋fab ; inject = fab-inject 
 
       bi-fUC : HODBijection a-UC b-fUC
       bi-fUC = record { 
-         fun←  = λ x lt → g⁻¹ (proj1 lt) (nimg (proj1 lt) (proj2 lt))
-       ; fun→  = λ x lt → fba x (proj1 lt)
+         fun→  = λ x lt → g⁻¹ (proj1 lt) (nimg (proj1 lt) (proj2 lt))
+       ; fun←  = λ x lt → fba x (proj1 lt)
        ; funB  = λ x lt → b-FUC∋g⁻¹  lt
        ; funA  = λ x lt → a-UC∋g lt
-       ; fiso← = λ x lt → fUC-iso1 lt
-       ; fiso→ = λ x lt → fUC-iso0 lt
+       ; fiso→ = λ x lt → fUC-iso1 lt
+       ; fiso← = λ x lt → fUC-iso0 lt
        }
 
 
 _c<_ : ( A B : HOD ) → Set n
-A c< B = ¬ ( Injection (& A)  (& B) )
+A c< B = ¬ ( Injection (& B)  (& A) )
 
 Card : OD
 Card = record { def = λ x → (a : Ordinal) → a o< x → ¬ HODBijection (* a) (* x) }
@@ -309,17 +311,123 @@ record Cardinal (a : Ordinal ) : Set (Level.suc n) where
        ciso : HODBijection (* a) (* card)
        cmax : (x : Ordinal) → card o< x → ¬ HODBijection (* a) (* x)
 
-Cardinal∈ : { s : HOD } → { t : Ordinal } → Ord t ∋ s →   s c< Ord t
-Cardinal∈ = {!!}
+-- Cardinal∈ : { s : HOD } → { t : Ordinal } → Ord t ∋ s →   s c< Ord t
+-- Cardinal∈ = {!!}
 
-Cardinal⊆ : { s t : HOD } → s ⊆ t →  ( s c< t ) ∨ ( s =c= t )
-Cardinal⊆ = {!!}
+-- Cardinal⊆ : { s t : HOD } → s ⊆ t →  ( s c< t ) ∨ ( s =c= t ) -- this is not valid
+-- Cardinal⊆ = {!!}
 
-Cantor1 : { u : HOD } → u c< Power u
-Cantor1 = {!!}
+-- HBool : HOD
+-- HBool = record { od = record { def = λ x → (x ≡ o∅) ∨ (x ≡ osuc o∅ ) } ; odmax = osuc (osuc o∅) ; <odmax = ? }
 
+PtoF : {u : HOD} {x s : Ordinal } → odef (Power u) s → odef u x → Bool
+PtoF {u} {x} {s} su ux with ODC.p∨¬p O (odef (* s) x )
+... | case1 a = true
+... | case2 b = false
+
+fun←eq : {S : HOD} (b : HODBijection (Power S) S ) {x y : Ordinal } → {ax : odef S x} {ax1 : odef S y}  
+    → x ≡ y  → fun← b x ax ≡ fun← b y ax1
+fun←eq {S} b {x} {x} {ax} {ax1} refl = cong (λ k → fun← b x k) ( HE.≅-to-≡ ( ∋-irr {S} ax ax1 ))  
+     
+fun→eq : {S : HOD} (b : HODBijection (Power S) S ) {x y : Ordinal } → {ax : odef (Power S) x} {ax1 : odef (Power S) y}  
+    → x ≡ y  → fun→ b x ax ≡ fun→ b y ax1
+fun→eq {S} b {x} {x} {ax} {ax1} refl = cong (λ k → fun→ b x k) ( HE.≅-to-≡ ( ∋-irr {Power S} ax ax1 ))  
+     
+
+--    S
+--    t ⊆ S    ( Power S ∋ t )
+--    S   s₀    s₁      ...  sn
+--    t   true  false   ...  false
+---
+Cantor1 : { S : HOD } → S c< Power S
+Cantor1 {S} f = diag4 where 
+     f1 : Injection (& S) (& (Power S))
+     f1 = record { i→ = λ x sx → & (* x , * x) ; iB = c00 ;  inject = c02 }where
+         c02 : (x y : Ordinal) (ltx : odef (* (& S)) x) (lty : odef (* (& S)) y) →
+            & (* x , * x) ≡ & (* y , * y) → x ≡ y
+         c02 x y ltx lty eq = subst₂ (λ j k → j ≡ k ) &iso &iso (cong (&) (xx=zy→x=y c03 )) where
+             c03 : (* x , * x) =h= (* y , * y)
+             c03 = ord→== eq
+         c00 : (x : Ordinal) (lt : odef (* (& S)) x) → odef (* (& (Power S))) (& (* x , * x))
+         c00 x lt = subst₂ (λ j k → odef j (& k) ) (sym *iso) refl (λ y z → c01 y (subst (λ k → odef k y ) *iso z  )) where
+             c01 : (y : Ordinal ) → odef (* x , * x ) y  → odef S y
+             c01 y (case1 eq) = subst₂ (λ j k  → odef j k ) *iso (trans (sym &iso) (sym eq) ) lt
+             c01 y (case2 eq) = subst₂ (λ j k  → odef j k ) *iso (trans (sym &iso) (sym eq) ) lt
+     f2 : Injection (& (Power S)) (& S) 
+     f2 = f
+     b : HODBijection (Power S) S 
+     b = subst₂ (λ j k → HODBijection j k) *iso *iso ( Bernstein f2 f1)   -- this makes check very slow
+
+     -- we have at least one element since Power S contains od∅
+     --
+
+     p0 : odef (Power S) o∅
+     p0 z xz = ⊥-elim (¬x<0 (subst (λ k → odef k z) o∅≡od∅ xz)  )
+
+     s : Ordinal 
+     s = fun→ b o∅ p0
+
+     ss : odef S s
+     ss = funB b o∅ p0
+
+     is-S : (S : HOD) → (x : Ordinal ) →  Bool
+     is-S S x with ODC.p∨¬p O (odef S x )
+     ... | case1 _ = true
+     ... | case2 _ = false
+
+     diag : {x : Ordinal} → (sx : odef S x) → Bool 
+     diag {x} sx = is-S (* (fun← b x sx)) x
+
+     Diag : HOD
+     Diag = record { od = record { def = λ x → odef S x ∧ ((sx : odef S x) → diag sx ≡ false) } 
+         ; odmax = & S ; <odmax = odef∧< } 
+
+     diag3 : odef (Power S) (& Diag)
+     diag3 z xz with subst (λ k → odef k z) *iso xz
+     ... | ⟪ sx , eq ⟫ = sx
+
+     not-isD : (x : Ordinal) → (sn : odef S x)  → not (  is-S (* (fun← b x sn )) x ) ≡ is-S Diag x
+     not-isD x sn with  ODC.p∨¬p O (odef (* (fun← b x sn )) x)  | ODC.p∨¬p O (odef Diag x) | inspect (is-S (* (fun← b x sn ))) x
+     ... | case1 lt | case1 ⟪ sx , eq ⟫ | record { eq = eq1 } = ⊥-elim (¬t=f false (trans (sym eq1) (eq sn )) )
+     ... | case1 lt | case2 lt1 | _ = refl
+     ... | case2 lt | case1 lt1 | _ = refl
+     ... | case2 lt | case2 neg | record { eq = eq1 } = ⊥-elim ( neg ⟪ sn , (λ sx → trans (cong diag ( HE.≅-to-≡ ( ∋-irr {S} sx sn ))) eq1 ) ⟫ )
+
+
+     diagn1 : (n : Ordinal ) → odef S n → ¬ (fun→ b (& Diag) diag3 ≡ n)
+     diagn1 n sn dn = ¬t=f (is-S Diag n) (begin
+          not (is-S Diag n)
+        ≡⟨ cong (λ k → not (is-S k n)) (sym *iso) ⟩
+          not (is-S (* (& Diag)) n)
+        ≡⟨ cong (λ k → not (is-S (* k) n)) (sym (fiso← b (& Diag) diag3 )) ⟩
+          not (  is-S (* (fun← b (fun→ b (& Diag) diag3) (funB b (& Diag) diag3 ))) n ) 
+        ≡⟨ cong (λ k → not (is-S (* k) n)) ( fun←eq b {_} {_} {funB b _ diag3} {sn} dn )   ⟩
+          not (  is-S (* (fun← b n sn )) n ) 
+        ≡⟨ not-isD _ sn  ⟩
+          is-S Diag n
+        ∎ ) where 
+          open ≡-Reasoning
+ 
+     diag4 : ⊥ 
+     diag4 = diagn1  (fun→ b (& Diag) diag3) (funB b (& Diag) diag3) refl
+ 
 Cantor2 : { u : HOD } → ¬ ( u =c=  Power u )
-Cantor2 = {!!}
+Cantor2 {u} ceq = Cantor1 {u} record { i→ = λ x lt → fun← ceq x (subst (λ k → odef k x) *iso lt) 
+     ; iB = λ x lt → subst₂ (λ j k → odef j k) (sym *iso) refl (funA ceq x (subst (λ k → odef k x) *iso lt))  
+     ; inject = c04 } where
+         c04 :  (x y : Ordinal) (ltx : odef (* (& (Power u))) x) (lty : odef (* (& (Power u))) y) 
+            → fun← ceq x (subst (λ k → odef k x) *iso ltx) ≡ fun← ceq y (subst (λ k → odef k y) *iso lty) → x ≡ y
+         c04 x y ltx lty eq = begin
+           x ≡⟨ sym ( fiso→ ceq x c05 ) ⟩
+           fun→ ceq ( fun← ceq x c05 ) (funA ceq x c05)  ≡⟨ fun←eq (hodbij-sym ceq) eq ⟩
+           fun→ ceq ( fun← ceq y c06 ) (funA ceq y c06)  ≡⟨ fiso→ ceq y c06 ⟩
+           y ∎ where 
+             open ≡-Reasoning
+             c05 : odef (Power u) x
+             c05 = subst (λ k → odef k x) *iso ltx
+             c06 : odef (Power u) y
+             c06 = subst (λ k → odef k y) *iso lty
+
 
 
 

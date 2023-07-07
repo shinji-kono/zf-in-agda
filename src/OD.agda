@@ -430,7 +430,7 @@ _∈_ : ( A B : HOD  ) → Set n
 A ∈ B = B ∋ A
 
 Power : HOD  → HOD
-Power A =  record { od = record { def = λ x → ( ( z : Ordinal) → odef (* x) z → odef A z ) } ; odmax = osuc (& A) 
+Power A =  record { od = record { def = λ x → ( z : Ordinal) → odef (* x) z → odef A z  } ; odmax = osuc (& A) 
        ; <odmax = p00  } where
    p00 :  {y : Ordinal} → ((z : Ordinal) → odef (* y) z → odef A z) → y o< osuc (& A)
    p00 {y} y⊆A = p01 where
@@ -442,6 +442,9 @@ power→ A t P∋t {x} t∋x = P∋t (& x) (subst (λ k → odef k (& x) ) (sym 
 
 power← :  (A t : HOD) → ({x : HOD} → (t ∋ x → A ∋ x)) → Power A ∋ t
 power← A t t⊆A z xz = subst (λ k → odef A k ) &iso ( t⊆A  (subst₂ (λ j k → odef j k) *iso (sym &iso) xz ))
+
+Power∋∅ : {S : HOD} → odef (Power S) o∅
+Power∋∅ z xz = ⊥-elim (¬x<0 (subst (λ k → odef k z) o∅≡od∅ xz)  )
 
 Intersection : (X : HOD ) → HOD   -- ∩ X
 Intersection X = record { od = record { def = λ x → (x o≤ & X ) ∧ ( {y : Ordinal} → odef X y → odef (* y) x )} ; odmax = osuc (& X) ; <odmax = λ lt → proj1 lt } 

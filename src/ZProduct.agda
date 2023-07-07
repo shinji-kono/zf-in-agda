@@ -366,12 +366,12 @@ record Injection (A B : Ordinal ) : Set n where
 
 record HODBijection (A B : HOD ) : Set n where
    field
-       fun←  : (x : Ordinal ) → odef A  x → Ordinal
-       fun→  : (x : Ordinal ) → odef B  x → Ordinal
-       funB  : (x : Ordinal ) → ( lt : odef A  x ) → odef B ( fun← x lt )
-       funA  : (x : Ordinal ) → ( lt : odef B  x ) → odef A ( fun→ x lt )
-       fiso← : (x : Ordinal ) → ( lt : odef B  x ) → fun← ( fun→ x lt ) ( funA x lt ) ≡ x
-       fiso→ : (x : Ordinal ) → ( lt : odef A  x ) → fun→ ( fun← x lt ) ( funB x lt ) ≡ x
+       fun←  : (x : Ordinal ) → odef B  x → Ordinal
+       fun→  : (x : Ordinal ) → odef A  x → Ordinal
+       funB  : (x : Ordinal ) → ( lt : odef A  x ) → odef B ( fun→ x lt )
+       funA  : (x : Ordinal ) → ( lt : odef B  x ) → odef A ( fun← x lt )
+       fiso← : (x : Ordinal ) → ( lt : odef A  x ) → fun← ( fun→ x lt ) ( funB x lt ) ≡ x
+       fiso→ : (x : Ordinal ) → ( lt : odef B  x ) → fun→ ( fun← x lt ) ( funA x lt ) ≡ x
 
 hodbij-refl : { a b : HOD } → a ≡ b → HODBijection a b
 hodbij-refl {a} refl = record {
@@ -382,6 +382,16 @@ hodbij-refl {a} refl = record {
      ; fiso← = λ x lt → refl
      ; fiso→ = λ x lt → refl
     }
+
+hodbij-sym : { a b : HOD } → HODBijection a b → HODBijection b a
+hodbij-sym {a} eq = record {
+       fun←  = fun→ eq
+     ; fun→  = fun← eq
+     ; funB  = funA eq
+     ; funA  = funB eq
+     ; fiso← = fiso→  eq
+     ; fiso→ = fiso←  eq
+    } where open HODBijection
 
 pj12 : (A B : HOD) {x : Ordinal} → (ab : odef (ZFP A B) x ) →
    (zπ1  (subst (odef (ZFP A B)) (sym &iso) ab) ≡ & (* (zπ1 ab ))) ∧
@@ -416,12 +426,12 @@ pj1 A B _ (ab-pair ax by) = ab-pair (aZPI1 A B by) (aZPI2 A B ax)
 
 ZFPsym1 : (A B  : HOD) → HODBijection (ZFP A B) (ZFP (ZPI2 A B) (ZPI1 A B))
 ZFPsym1 A B = record {
-       fun←  = λ xy ab → & < * ( zπ2 ab) , * ( zπ1 ab) >
-     ; fun→  = λ xy ab → & < * ( zπ2 ab) , * ( zπ1 ab) >
+       fun→  = λ xy ab → & < * ( zπ2 ab) , * ( zπ1 ab) >
+     ; fun←  = λ xy ab → & < * ( zπ2 ab) , * ( zπ1 ab) >
      ; funB  = pj2 A B
      ; funA  = pj1 A B
-     ; fiso← = λ xy ab → pj00 A B ab
-     ; fiso→ = λ xy ab → zp-iso ab
+     ; fiso→ = λ xy ab → pj00 A B ab
+     ; fiso← = λ xy ab → zp-iso ab
     } where
        pj10 : (A B : HOD) → {xy : Ordinal} → (ab : odef (ZFP (ZPI2 A B) (ZPI1 A B)) xy )
            → & < * (zπ1 ab) , * (zπ2 ab) > ≡ & < *  (zπ2 (pj1 A B xy ab)) ,  * (zπ1 (pj1 A B xy ab)) >
