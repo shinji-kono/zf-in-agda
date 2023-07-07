@@ -325,13 +325,13 @@ PtoF {u} {x} {s} su ux with ODC.p∨¬p O (odef (* s) x )
 ... | case1 a = true
 ... | case2 b = false
 
-fun←eq : {S : HOD} (b : HODBijection (Power S) S ) {x y : Ordinal } → {ax : odef S x} {ax1 : odef S y}  
+fun←eq : {P S : HOD} (b : HODBijection P S ) {x y : Ordinal } → {ax : odef S x} {ax1 : odef S y}  
     → x ≡ y  → fun← b x ax ≡ fun← b y ax1
-fun←eq {S} b {x} {x} {ax} {ax1} refl = cong (λ k → fun← b x k) ( HE.≅-to-≡ ( ∋-irr {S} ax ax1 ))  
+fun←eq {P} {S} b {x} {x} {ax} {ax1} refl = cong (λ k → fun← b x k) ( HE.≅-to-≡ ( ∋-irr {S} ax ax1 ))  
      
-fun→eq : {S : HOD} (b : HODBijection (Power S) S ) {x y : Ordinal } → {ax : odef (Power S) x} {ax1 : odef (Power S) y}  
+fun→eq : {P S : HOD} (b : HODBijection P S ) {x y : Ordinal } → {ax : odef P x} {ax1 : odef P y}  
     → x ≡ y  → fun→ b x ax ≡ fun→ b y ax1
-fun→eq {S} b {x} {x} {ax} {ax1} refl = cong (λ k → fun→ b x k) ( HE.≅-to-≡ ( ∋-irr {Power S} ax ax1 ))  
+fun→eq {P} {S} b {x} {x} {ax} {ax1} refl = cong (λ k → fun→ b x k) ( HE.≅-to-≡ ( ∋-irr {P} ax ax1 ))  
      
 
 --    S
@@ -339,8 +339,8 @@ fun→eq {S} b {x} {x} {ax} {ax1} refl = cong (λ k → fun→ b x k) ( HE.≅-t
 --    S   s₀    s₁      ...  sn
 --    t   true  false   ...  false
 ---
-Cantor1 : { S : HOD } → S c< Power S
-Cantor1 {S} f = diag4 where 
+Cantor1 : ( S : HOD ) → S c< Power S
+Cantor1 S f = diag4 where 
      f1 : Injection (& S) (& (Power S))
      f1 = record { i→ = λ x sx → & (* x , * x) ; iB = c00 ;  inject = c02 }where
          c02 : (x y : Ordinal) (ltx : odef (* (& S)) x) (lty : odef (* (& S)) y) →
@@ -411,11 +411,11 @@ Cantor1 {S} f = diag4 where
      diag4 : ⊥ 
      diag4 = diagn1  (fun→ b (& Diag) diag3) (funB b (& Diag) diag3) refl
  
-Cantor2 : { u : HOD } → ¬ ( u =c=  Power u )
-Cantor2 {u} ceq = Cantor1 {u} record { i→ = λ x lt → fun← ceq x (subst (λ k → odef k x) *iso lt) 
+c<¬= : { u s : HOD } →  u c< s → ¬ ( u =c=  s )
+c<¬= {u} {s} c<u ceq = c<u record { i→ = λ x lt → fun← ceq x (subst (λ k → odef k x) *iso lt) 
      ; iB = λ x lt → subst₂ (λ j k → odef j k) (sym *iso) refl (funA ceq x (subst (λ k → odef k x) *iso lt))  
      ; inject = c04 } where
-         c04 :  (x y : Ordinal) (ltx : odef (* (& (Power u))) x) (lty : odef (* (& (Power u))) y) 
+         c04 :  (x y : Ordinal) (ltx : odef (* (& (s))) x) (lty : odef (* (& (s))) y) 
             → fun← ceq x (subst (λ k → odef k x) *iso ltx) ≡ fun← ceq y (subst (λ k → odef k y) *iso lty) → x ≡ y
          c04 x y ltx lty eq = begin
            x ≡⟨ sym ( fiso→ ceq x c05 ) ⟩
@@ -423,11 +423,13 @@ Cantor2 {u} ceq = Cantor1 {u} record { i→ = λ x lt → fun← ceq x (subst (�
            fun→ ceq ( fun← ceq y c06 ) (funA ceq y c06)  ≡⟨ fiso→ ceq y c06 ⟩
            y ∎ where 
              open ≡-Reasoning
-             c05 : odef (Power u) x
+             c05 : odef (s) x
              c05 = subst (λ k → odef k x) *iso ltx
-             c06 : odef (Power u) y
+             c06 : odef (s) y
              c06 = subst (λ k → odef k y) *iso lty
 
+Cantor2 : (u : HOD) → ¬ ( u =c=  Power u )
+Cantor2 u =  c<¬= (Cantor1 u )
 
 
 

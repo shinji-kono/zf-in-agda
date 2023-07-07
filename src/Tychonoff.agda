@@ -35,7 +35,7 @@ open import filter O
 open import filter-util O
 open import ZProduct O
 open import Topology O
--- open import maximum-filter O
+open import maximum-filter O
 
 open Filter
 open Topology
@@ -191,11 +191,11 @@ UFLP→FIP {P} TP uflp with trio< (& P) o∅
      --    otherwise the check requires a minute
      --
      maxf : {X : Ordinal} → o∅ o< X → (CSX : * X ⊆ CS TP) → (fp : fip {X} CSX) → MaximumFilter (λ x → x) (F CSX fp)
-     maxf {X} 0<X CSX fp = ? -- F→Maximum {Power P} {P} (λ x → x) (CAP P)  (F CSX fp) 0<PP (N∋nc 0<X CSX fp) (proper CSX fp)
+     maxf {X} 0<X CSX fp = F→Maximum {Power P} {P} (λ x → x) (CAP P)  (F CSX fp) 0<PP (N∋nc 0<X CSX fp) (proper CSX fp)
      mf : {X : Ordinal} → o∅ o< X → (CSX : * X ⊆ CS TP) → (fp : fip {X} CSX) → Filter {Power P} {P} (λ x → x)
      mf {X} 0<X CSX fp =  ? -- MaximumFilter.mf (maxf 0<X CSX fp)
      ultraf : {X : Ordinal} → (0<X : o∅ o< X ) → (CSX : * X ⊆ CS TP) → (fp : fip {X} CSX) → ultra-filter ( mf 0<X CSX fp)
-     ultraf {X} 0<X CSX fp = ? --  F→ultra {Power P} {P} (λ x → x) (CAP P) (F CSX fp)  0<PP (N∋nc 0<X CSX fp) (proper CSX fp)
+     ultraf {X} 0<X CSX fp = F→ultra {Power P} {P} (λ x → x) (CAP P) (F CSX fp)  0<PP (N∋nc 0<X CSX fp) (proper CSX fp)
      --
      -- so it has a limit as a limit of FIP
      --
