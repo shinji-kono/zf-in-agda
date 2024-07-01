@@ -1,33 +1,72 @@
-{-# OPTIONS --allow-unsolved-metas #-}
+{-# OPTIONS --cubical-compatible --safe #-}
 open import Level
-open import Relation.Nullary 
-open import Relation.Binary.PropositionalEquality
--- open import Ordinals
-module partfunc {n : Level } where -- (O : Ordinals {n})  where
+open import Ordinals
+open import logic
+open import Relation.Nullary
+
+open import Level
+open import Ordinals
+import HODBase
+import OD
+open import Relation.Nullary
+module partfunc {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho< : OD.ODAxiom-ho< O HODAxiom ) where
+
+open import  Relation.Binary.PropositionalEquality hiding ( [_] )
+open import Data.Empty
+
+import OrdUtil
+
+open Ordinals.Ordinals  O
+open Ordinals.IsOrdinals isOrdinal
+import ODUtil
 
 open import logic
-open import Relation.Binary 
-open import Data.Empty 
-open import Data.Unit using ( ⊤ ; tt )
-open import Data.List hiding (filter)
-open import Data.Maybe  
-open import Relation.Binary
-open import Relation.Binary.Core
-open import Data.Nat renaming ( zero to Zero ; suc to Suc ;  ℕ to Nat ; _⊔_ to _n⊔_ ) 
--- open import filter O
+open import nat
+
+open OrdUtil O
+open ODUtil O HODAxiom  ho<
 
 open _∧_
 open _∨_
 open Bool
+
+open  HODBase._==_
+
+open HODBase.ODAxiom HODAxiom  
+open OD O HODAxiom
+
+open HODBase.HOD
+
+
+open import Relation.Nullary
+open import Relation.Binary
+open import Data.Empty
+open import Relation.Binary
+open import Relation.Binary.Core
+open import  Relation.Binary.PropositionalEquality
+open import Data.Nat renaming ( zero to Zero ; suc to Suc ;  ℕ to Nat ; _⊔_ to _n⊔_ )
+
+open import Data.Empty 
+open import Data.Unit using ( ⊤ ; tt )
+open import Data.List hiding (filter ; find)
+open import Data.Maybe  
+
+open _∧_
+open _∨_
+open Bool
+
+data Two : Set where
+  i0 : Two
+  i1 : Two
 
 ----
 --
 -- Partial Function without ZF
 --
 
-record PFunc  (Dom : Set n) (Cod : Set n) : Set (suc n) where
+record PFunc {n m l : Level } (Dom : Set n) (Cod : Set m) : Set (suc  (n ⊔ m ⊔ l)) where
    field
-      dom : Dom → Set n
+      dom : Dom → Set l
       pmap : (x : Dom ) → dom x → Cod
       meq : {x : Dom } → { p q : dom x } → pmap x p ≡ pmap x q
 
@@ -36,26 +75,26 @@ record PFunc  (Dom : Set n) (Cod : Set n) : Set (suc n) where
 -- PFunc (Lift n Nat) Cod is equivalent to List (Maybe Cod)
 --
 
-data Findp : {Cod : Set n} → List (Maybe Cod) → (x : Nat) → Set where
-   v0 : {Cod : Set n} → {f : List (Maybe Cod)} → ( v : Cod ) → Findp ( just v  ∷ f ) Zero
-   vn : {Cod : Set n} → {f : List (Maybe Cod)} {d : Maybe Cod} → {x : Nat} → Findp f x → Findp (d ∷ f) (Suc x) 
+data Findp {n : Level} {Cod : Set n} : List (Maybe Cod) → (x : Nat) → Set (suc n) where
+   v0 : {f : List (Maybe Cod)} → ( v : Cod ) → Findp ( just v  ∷ f ) Zero
+   vn : {f : List (Maybe Cod)} {d : Maybe Cod} → {x : Nat} → Findp f x → Findp (d ∷ f) (Suc x) 
 
 open PFunc
 
-find : {Cod : Set n} → (f : List (Maybe Cod) ) → (x : Nat) → Findp f x → Cod
+find : {n : Level} {Cod : Set n} → (f : List (Maybe Cod) ) → (x : Nat) → Findp f x → Cod
 find (just v ∷ _) 0 (v0 v) = v
 find (_ ∷ n) (Suc i) (vn p) = find n i p
 
-findpeq : {Cod : Set n} → (f : List (Maybe Cod)) → {x : Nat} {p q : Findp f x } → find f x p ≡ find f x q
+findpeq : {n : Level} {Cod : Set n} → (f : List (Maybe Cod)) → {x : Nat} {p q : Findp f x } → find f x p ≡ find f x q
 findpeq n {0} {v0 _} {v0 _} = refl
 findpeq [] {Suc x} {()}
 findpeq (just x₁ ∷ n) {Suc x} {vn p} {vn q} = findpeq n {x} {p} {q}
 findpeq (nothing ∷ n) {Suc x} {vn p} {vn q} = findpeq n {x} {p} {q}
 
-List→PFunc : {Cod : Set n} → List (Maybe Cod) → PFunc (Lift n Nat) Cod
-List→PFunc fp = record { dom = λ x → Lift n (Findp fp (lower x))
+List→PFunc : {Cod : Set (suc n)} → List (Maybe Cod) → PFunc (Lift n Nat) Cod
+List→PFunc fp = record { dom = λ x → Lift zero (Findp fp (lower x))
                        ; pmap = λ x y → find fp (lower x) (lower y)
-                       ; meq = λ {x} {p} {q} → findpeq fp {lower x} {lower p} {lower q} 
+                       ; meq = λ {x} {p} {q} →  findpeq fp {lower x} {lower p} {lower q}
                        }
 ----
 --

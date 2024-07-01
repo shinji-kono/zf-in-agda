@@ -1,33 +1,42 @@
-{-# OPTIONS --allow-unsolved-metas #-}
+{-# OPTIONS --cubical-compatible --safe #-}
 open import Level
 open import Ordinals
-module ODUtil {n : Level } (O : Ordinals {n} ) where
+import HODBase
+import OD
+module ODUtil {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O) (ho< : OD.ODAxiom-ho< O HODAxiom ) where
 
 open import Data.Nat renaming ( zero to Zero ; suc to Suc ;  ℕ to Nat ; _⊔_ to _n⊔_ )
 open import  Relation.Binary.PropositionalEquality hiding ( [_] )
 open import Data.Nat.Properties
 open import Data.Empty
+open import Data.Unit
 open import Relation.Nullary
-open import Relation.Binary hiding ( _⇔_ )
+open import Relation.Binary  hiding (_⇔_)
+open import Relation.Binary.Core hiding (_⇔_)
+import Relation.Binary.Reasoning.Setoid as EqR
 
 open import logic
+import OrdUtil
 open import nat
 
 open Ordinals.Ordinals  O
 open Ordinals.IsOrdinals isOrdinal
 -- open Ordinals.IsNext isNext
-import OrdUtil
 open OrdUtil O
 
-import OD
-open OD O
-open OD.OD
-open ODAxiom odAxiom
--- open ODAxiom-ho< odAxiom-ho<
+-- Ordinal Definable Set
 
-open HOD
+open HODBase.HOD 
+open HODBase.OD 
+
 open _∧_
-open _==_
+open _∨_
+open Bool
+
+open  HODBase._==_
+
+open HODBase.ODAxiom HODAxiom  
+open OD O HODAxiom
 
 _⊂_ : ( A B : HOD) → Set n
 _⊂_ A B = ( & A o< & B) ∧ ( A ⊆ B )
@@ -41,13 +50,34 @@ _⊂_ A B = ( & A o< & B) ∧ ( A ⊆ B )
 ⊆∩-incl-2 : {a b c : HOD} → a ⊆ c → ( b ∩ a ) ⊆ c
 ⊆∩-incl-2 {a} {b} {c} a<c {z} ab = a<c (proj2 ab)
 
+*iso∩ : {p q : HOD} →  (p ∩ q) =h= (* (& p) ∩ * (& q))
+eq→ (*iso∩ {p} {q}) {x} ⟪ px , qx ⟫ = ⟪ eq← *iso px , eq← *iso qx ⟫
+eq← (*iso∩ {p} {q}) {x} ⟪ px , qx ⟫ = ⟪ eq→ *iso px , eq→ *iso qx ⟫
+
+∩-cong : {A B C D : HOD} → A =h= B → C =h= D → (A ∩ C) =h= (B ∩ D)
+eq→ (∩-cong eq1 eq2) {x} lt = ⟪ eq→ eq1 (proj1 lt) , eq→ eq2 (proj2 lt) ⟫
+eq← (∩-cong eq1 eq2) {x} lt = ⟪ eq← eq1 (proj1 lt) , eq← eq2 (proj2 lt) ⟫
+
+power→⊆ :  ( A t : HOD) → Power A ∋ t → t ⊆ A
+power→⊆ A t  PA∋t t∋x = subst (λ k → odef A k ) &iso ( t1 (subst (λ k → odef t k ) (sym &iso) t∋x))  where
+   t1 : {x : HOD }  → t ∋ x → A ∋ x
+   t1 = power→ A t PA∋t
+
+power-∩ : { A x y : HOD } → Power A ∋ x → Power A ∋ y → Power A ∋ ( x ∩ y )
+power-∩ {A} {x} {y} ax ay = power← A (x ∩ y) p01  where
+   p01 :  {z : HOD} → (x ∩ y) ∋ z → A ∋ z
+   p01 {z} xyz = power→ A x ax (proj1 xyz )
+
+odef-not : {S : HOD} {x : Ordinal } →  ¬ ( odef S x ) → odef S x → ⊥
+odef-not neg sx = ⊥-elim ( neg sx )
+
 cseq :  HOD  →  HOD
 cseq x = record { od = record { def = λ y → odef x (osuc y) } ; odmax = osuc (odmax x) ; <odmax = lemma } where
     lemma : {y : Ordinal} → def (od x) (osuc y) → y o< osuc (odmax x)
     lemma {y} lt = ordtrans <-osuc (ordtrans (<odmax x lt) <-osuc )
 
-∩-comm : { A B : HOD } → (A ∩ B) ≡ (B ∩ A)
-∩-comm {A} {B} = ==→o≡ record { eq← = λ {x} lt → ⟪ proj2 lt , proj1 lt ⟫ ; eq→ =  λ {x} lt → ⟪ proj2 lt , proj1 lt ⟫ }
+∩-comm : { A B : HOD } → (A ∩ B) =h= (B ∩ A)
+∩-comm {A} {B} = record { eq← = λ {x} lt → ⟪ proj2 lt , proj1 lt ⟫ ; eq→ =  λ {x} lt → ⟪ proj2 lt , proj1 lt ⟫ }
 
 _∪_ : ( A B : HOD  ) → HOD
 A ∪ B = record { od = record { def = λ x → odef A x ∨ odef B x } ;
@@ -56,8 +86,14 @@ A ∪ B = record { od = record { def = λ x → odef A x ∨ odef B x } ;
       lemma {y} (case1 a) = ordtrans (<odmax A a) (omax-x _ _)
       lemma {y} (case2 b) = ordtrans (<odmax B b) (omax-y _ _)
 
-x∪x≡x : { A  : HOD  } → (A ∪ A) ≡ A 
-x∪x≡x {A} = ==→o≡ record { eq← = λ {x} lt → case1 lt ; eq→ =  lem00 } where
+∪-cong : {A B C D : HOD} → A =h= B → C =h= D → (A ∪ C) =h= (B ∪ D)
+eq→ (∪-cong {A} {B} {C} {D} eq1 eq2) {x} (case1 lt) = case1 (eq→ eq1 lt)
+eq→ (∪-cong {A} {B} {C} {D} eq1 eq2) {x} (case2 lt) = case2 (eq→ eq2 lt)
+eq← (∪-cong {A} {B} {C} {D} eq1 eq2) {x} (case1 lt) = case1 (eq← eq1 lt)
+eq← (∪-cong {A} {B} {C} {D} eq1 eq2) {x} (case2 lt) = case2 (eq← eq2 lt)
+
+x∪x≡x : { A  : HOD  } → (A ∪ A) =h= A 
+x∪x≡x {A} = record { eq← = λ {x} lt → case1 lt ; eq→ =  lem00 } where
     lem00 : {x : Ordinal} → odef A x ∨ odef A x → odef A x
     lem00 {x} (case1 ax) = ax
     lem00 {x} (case2 ax) = ax
@@ -74,21 +110,6 @@ pair-xx<xy {x} {y} = ⊆→o≤  lemma where
    lemma : {z : Ordinal} → def (od (x , x)) z → def (od (x , y)) z
    lemma {z} (case1 refl) = case1 refl
    lemma {z} (case2 refl) = case1 refl
-
--- pair-<xy : {x y : HOD} → {n : Ordinal}  → & x o< next n →  & y o< next n  → & (x , y) o< next n
--- pair-<xy {x} {y} {o} x<nn y<nn with trio< (& x) (& y) | inspect (omax (& x)) (& y)
--- ... | tri< a ¬b ¬c | record { eq = eq1 } = next< (subst (λ k → k o< next o ) (sym eq1) (osuc<nx y<nn)) ho<
--- ... | tri> ¬a ¬b c | record { eq = eq1 } = next< (subst (λ k → k o< next o ) (sym eq1) (osuc<nx x<nn)) ho<
--- ... | tri≈ ¬a b ¬c | record { eq = eq1 } = next< (subst (λ k → k o< next o ) (omax≡ _ _ b) (subst (λ k → osuc k o< next o) b (osuc<nx x<nn))) ho<
-
---  another form of Omega
--- pair-ord< :  {x : Ordinal } → Set n
--- pair-ord< : {x : HOD } → ( {y : HOD } → & y o< next (odmax y) ) → & ( x , x ) o< next (& x)
--- pair-ord< {x} ho< = subst (λ k → & (x , x) o< k ) lemmab0 lemmab1  where
---        lemmab0 : next (odmax (x , x)) ≡ next (& x)
---        lemmab0 = trans (cong (λ k → next k) (omxx _)) (sym nexto≡)
---        lemmab1 : & (x , x) o< next ( odmax (x , x))
---        lemmab1 = ho<
 
 trans-⊆ :  { A B C : HOD} → A ⊆ B → B ⊆ C → A ⊆ C
 trans-⊆ A⊆B B⊆C ab = B⊆C (A⊆B ab)
@@ -115,14 +136,6 @@ subset-lemma  {A} {x} = record {
     ; proj2 = λ x⊆A lt → ⟪ x⊆A lt , lt ⟫
    }
 
---postulate
---    odaxion-ho< : ODAxiom-ho< 
---
---open ODAxiom-ho< odaxion-ho<
-
--- ω<next-o∅ : {y : Ordinal} → Omega-d y → y o< next omega
--- ω<next-o∅ {y} lt = <odmax Omega lt
-
 nat→ω : Nat → HOD
 nat→ω Zero = od∅
 nat→ω (Suc y) = Union (nat→ω y , (nat→ω y , nat→ω y))
@@ -131,14 +144,16 @@ nat→ω (Suc y) = Union (nat→ω y , (nat→ω y , nat→ω y))
 ω→nato iφ = Zero
 ω→nato (isuc lt) = Suc (ω→nato lt)
 
-ω→nat : (n : HOD) → Omega ∋ n → Nat
+ω→nat : (n : HOD) → Omega ho< ∋ n → Nat
 ω→nat n = ω→nato
 
-ω∋nat→ω : {n : Nat} → def (od Omega) (& (nat→ω n))
-ω∋nat→ω {Zero} = subst (λ k → def (od Omega) k) (sym ord-od∅) iφ
-ω∋nat→ω {Suc n} = subst (λ k → def (od Omega) k) lemma (isuc ( ω∋nat→ω {n})) where
-    lemma :  & (Union (* (& (nat→ω n)) , (* (& (nat→ω n)) , * (& (nat→ω n))))) ≡ & (nat→ω (Suc n))
-    lemma = subst (λ k → & (Union (k , ( k , k ))) ≡ & (nat→ω (Suc n))) (sym *iso) refl
+ω∋nat→ω : {n : Nat} → def (od (Omega ho<)) (& (nat→ω n))
+ω∋nat→ω {Zero} = subst (λ k → def (od (Omega ho<)) k) (sym ord-od∅) iφ
+ω∋nat→ω {Suc n} =  subst (λ k → Omega-d k) (sym (==→o≡ nat01)) nat00 where
+   nat00 : Omega-d (& (Union (* (& (nat→ω n)) , (* (& (nat→ω n)) , * (& (nat→ω n))))))
+   nat00 = isuc ( ω∋nat→ω {n})
+   nat01 : Union (nat→ω n , ( nat→ω n , nat→ω n)) =h= Union (* (& (nat→ω n)) , (* (& (nat→ω n)) , * (& (nat→ω n))))
+   nat01 = ==-sym Omega-iso 
 
 pair1 : { x y  : HOD  } →  (x , y ) ∋ x
 pair1 = case1 refl
@@ -146,16 +161,13 @@ pair1 = case1 refl
 pair2 : { x y  : HOD  } →  (x , y ) ∋ y
 pair2 = case2 refl
 
-single : {x y : HOD } → (x , x ) ∋ y → x ≡ y
-single (case1 eq) = ==→o≡ ( ord→== (sym eq) )
-single (case2 eq) = ==→o≡ ( ord→== (sym eq) )
+single : {x y : HOD } → (x , x ) ∋ y → x =h= y
+single (case1 eq) = ord→== (sym eq) 
+single (case2 eq) = ord→== (sym eq) 
 
 single& : {x y : Ordinal } → odef (* x , * x ) y → x ≡ y
 single& (case1 eq) = sym (trans eq &iso)
 single& (case2 eq) = sym (trans eq &iso)
-
-open import Relation.Binary.HeterogeneousEquality as HE using (_≅_ )
--- postulate f-extensionality : { n m : Level}  → HE.Extensionality n m
 
 pair=∨ : {a b c : Ordinal  } → odef (* a , * b) c → (  a ≡ c ) ∨  (  b ≡ c )
 pair=∨ {a} {b} {c} (case1 c=a) = case1 ( sym (trans c=a &iso))
@@ -163,7 +175,7 @@ pair=∨ {a} {b} {c} (case2 c=b) = case2 ( sym (trans c=b &iso))
 
 ω-prev-eq1 : {x y : Ordinal} →  & (Union (* y , (* y , * y))) ≡ & (Union (* x , (* x , * x))) → ¬ (x o< y)
 ω-prev-eq1 {x} {y} eq x<y with  eq→ (ord→== eq) record { owner = & (* y , * y) ; ao = case2 refl
-        ; ox = subst (λ k → odef k (& (* y))) (sym *iso) (case1 refl) }   --  (* x , (* x , * x)) ∋ * y
+        ; ox = eq→ (==-sym *iso) (case1 refl) }   --  (* x , (* x , * x)) ∋ * y
 ... | record { owner = u ; ao = xxx∋u ; ox = uy } with xxx∋u
 ... | case1 u=x = ⊥-elim ( o<> x<y (osucprev (begin
        osuc y ≡⟨ sym (cong osuc  &iso) ⟩
@@ -173,84 +185,76 @@ pair=∨ {a} {b} {c} (case2 c=b) = case2 ( sym (trans c=b &iso))
        & (* x) ≡⟨ &iso ⟩
        x ∎ ))) where open o≤-Reasoning O
 ... | case2 u=xx = ⊥-elim (o<¬≡ ( begin
-        x ≡⟨ single& (subst₂ (λ j k → odef j k ) (begin
-          * u ≡⟨ cong (*) u=xx ⟩
-          * (& (* x , * x)) ≡⟨ *iso  ⟩
-          (* x , * x ) ∎ ) &iso uy ) ⟩  -- (* x , * x ) ∋ * y
+        x ≡⟨ single& ( eq← (==-sym *iso)  (subst₂ (λ j k → odef j k ) (cong (*) u=xx ) &iso uy)) ⟩
         y ∎ ) x<y)  where open ≡-Reasoning
 
-ω-prev-eq : {x y : Ordinal} →  & (Union (* y , (* y , * y))) ≡ & (Union (* x , (* x , * x))) → y ≡ x
-ω-prev-eq {x} {y} eq with trio< x y
-ω-prev-eq {x} {y} eq | tri< a ¬b ¬c = ⊥-elim (ω-prev-eq1 eq a)
-ω-prev-eq {x} {y} eq | tri≈ ¬a b ¬c = (sym b)
-ω-prev-eq {x} {y} eq | tri> ¬a ¬b c = ⊥-elim (ω-prev-eq1 (sym eq) c)
+Omega-inject : {x y : Ordinal} →  & (Union (* y , (* y , * y))) ≡ & (Union (* x , (* x , * x))) → y ≡ x
+Omega-inject {x} {y} eq with trio< x y
+Omega-inject {x} {y} eq | tri< a ¬b ¬c = ⊥-elim (ω-prev-eq1 eq a)
+Omega-inject {x} {y} eq | tri≈ ¬a b ¬c = (sym b)
+Omega-inject {x} {y} eq | tri> ¬a ¬b c = ⊥-elim (ω-prev-eq1 (sym eq) c)
 
-ω-inject : {x y : HOD} →  Union ( y , ( y ,  y)) ≡ Union ( x , ( x ,  x)) → y ≡ x
-ω-inject {x} {y} eq = subst₂ (λ j k → j ≡ k ) *iso *iso (cong (*) ( ω-prev-eq (cong (&) (subst₂ (λ j k →  Union (j , (j , j)) ≡ Union (k , (k , k))) (sym *iso) (sym *iso) eq ))))
+ω-inject : {x y : HOD} →  Union ( y , ( y ,  y)) =h= Union ( x , ( x ,  x)) → y =h= x
+ω-inject {x} {y} eq = ord→== ( Omega-inject (==→o≡ (==-trans Omega-iso (==-trans eq (==-sym Omega-iso)))))
 
 ω-∈s : (x : HOD) →  Union ( x , (x , x)) ∋ x
-ω-∈s x = record { owner = & ( x , x ) ; ao = case2 refl  ; ox = subst₂ (λ j k → odef j k ) (sym *iso) refl (case2 refl) }
+ω-∈s x = record { owner = & ( x , x ) ; ao = case2 refl  ; ox = eq→ (==-sym *iso) (case2 refl) }
 
-ωs≠0 : (x : HOD) →  ¬ ( Union ( x , (x , x)) ≡ od∅ )
-ωs≠0 y eq =  ⊥-elim ( ¬x<0 (subst (λ k → & y  o< k ) ord-od∅ (c<→o< (subst (λ k → odef k (& y )) eq (ω-∈s y) ))) )
+ωs≠0 : (x : HOD) →  ¬ ( Union ( x , (x , x)) =h= od∅ )
+ωs≠0 x =  ∅< {Union ( x , ( x ,  x))} (ω-∈s  _)
+
+ω→nato-cong : {n m : Ordinal} → (x : odef (Omega ho< ) n) (y : odef (Omega ho< ) m) → n ≡ m → ω→nato x ≡ ω→nato y
+ω→nato-cong OD.iφ OD.iφ eq = refl
+ω→nato-cong OD.iφ (OD.isuc {x} y) eq = ⊥-elim ( ∅< {Union (* x , (* x , * x))} {* x} (ω-∈s _) (≡o∅→=od∅ (sym eq)   ) )
+ω→nato-cong (OD.isuc {x} y) OD.iφ eq = ⊥-elim ( ∅< {Union (* x , (* x , * x))} {* x} (ω-∈s _) (≡o∅→=od∅ eq   ) )
+ω→nato-cong (OD.isuc x) (OD.isuc y) eq = cong Suc ( ω→nato-cong x y (Omega-inject eq) )
 
 ωs0 : o∅ ≡ & (nat→ω 0)
 ωs0 = trans (sym ord-od∅) (cong (&) refl ) 
 
-nat→ω-iso : {i : HOD} → (lt : Omega ∋ i ) → nat→ω ( ω→nat i lt ) ≡ i
-nat→ω-iso {i} = ε-induction {λ i →  (lt : Omega ∋ i ) → nat→ω ( ω→nat i lt ) ≡ i  } ind i where
-     ind : {x : HOD} → ({y : HOD} → x ∋ y → (lt : Omega ∋ y) → nat→ω (ω→nat y lt) ≡ y) →
-                                            (lt : Omega ∋ x) → nat→ω (ω→nat x lt) ≡ x
-     ind {x} prev lt = ind1 lt *iso where
-         ind1 : {ox : Ordinal } → (ltd : Omega-d ox ) → * ox ≡ x → nat→ω (ω→nato ltd) ≡ x
-         ind1 {o∅} iφ refl = sym o∅≡od∅
-         ind1 (isuc {x₁} ltd) ox=x = begin
-              nat→ω (ω→nato (isuc ltd) )
-           ≡⟨⟩
-              Union (nat→ω (ω→nato ltd) , (nat→ω (ω→nato ltd) , nat→ω (ω→nato ltd)))
-           ≡⟨ cong (λ k → Union (k , (k , k ))) lemma  ⟩
-              Union (* x₁ , (* x₁ , * x₁))
-           ≡⟨ trans ( sym *iso) ox=x ⟩
-              x
-           ∎ where
-               open ≡-Reasoning
-               lemma0 :  x ∋ * x₁
-               lemma0 = subst (λ k → odef k (& (* x₁))) (trans (sym *iso) ox=x)
-                   record { owner = & ( * x₁ , * x₁ ) ; ao = case2 refl ; ox = subst (λ k → odef k (& (* x₁))) (sym *iso) (case1 refl)  }
-               lemma1 : Omega ∋ * x₁
-               lemma1 = subst (λ k → odef Omega k) (sym &iso) ltd
-               lemma3 : {x y : Ordinal} → (ltd : Omega-d x ) (ltd1 : Omega-d y ) → y ≡ x → ltd ≅ ltd1
-               lemma3 iφ iφ refl = HE.refl
-               lemma3 iφ (isuc {y} ltd1) eq = ⊥-elim ( ¬x<0 (subst₂ (λ j k → j o< k ) &iso eq (c<→o< (ω-∈s (* y)) )))
-               lemma3 (isuc {y} ltd)  iφ eq = ⊥-elim ( ¬x<0 (subst₂ (λ j k → j o< k ) &iso (sym eq) (c<→o< (ω-∈s (* y)) )))
-               lemma3 (isuc {x} ltd) (isuc {y} ltd1) eq with lemma3 ltd ltd1 (ω-prev-eq (eq))
-               ... | t = HE.cong₂ (λ j k → isuc {j} k ) (HE.≡-to-≅  (ω-prev-eq (sym eq))) t
-               lemma2 : {x y : Ordinal} → (ltd : Omega-d x ) (ltd1 : Omega-d y ) → y ≡ x → ω→nato ltd ≡ ω→nato ltd1
-               lemma2 {x} {y} ltd ltd1 eq = lemma6 eq (lemma3 {x} {y} ltd ltd1 eq)  where
-                   lemma6 : {x y : Ordinal} → {ltd : Omega-d x } {ltd1 : Omega-d y } → y ≡ x → ltd ≅ ltd1 → ω→nato ltd ≡ ω→nato ltd1
-                   lemma6 refl HE.refl = refl
-               lemma :  nat→ω (ω→nato ltd) ≡ * x₁
-               lemma = trans  (cong (λ k →  nat→ω  k) (lemma2 {x₁} {_} ltd (subst (λ k → Omega-d k ) (sym &iso) ltd)  &iso ) ) ( prev {* x₁} lemma0 lemma1 )
+Omega-subst : (x y : HOD) → x =h= y  →  Union ( x , (x , x)) =h= Union ( y , (y , y)) 
+Omega-subst x y x=y = begin
+    Union (x , (x , x)) ≈⟨ ==-sym Omega-iso ⟩ 
+    Union (* (& x) , (* (& x) , * (& x))) ≈⟨ ord→== (cong (λ k → & (Union (* k , (* k , * k )))) (==→o≡ x=y) )  ⟩ 
+    Union (* (& y) , (* (& y) , * (& y))) ≈⟨ Omega-iso ⟩ 
+    Union (y , (y , y)) ∎ where open EqR ==-Setoid                       
 
+nat→ω-iso : {i : HOD} → (lt : Omega ho< ∋ i ) → nat→ω ( ω→nat i lt ) =h= i
+nat→ω-iso {i} lt = ==-trans (nat→ω-iso-ord _ lt) *iso where
+    nat→ω-iso-ord : (x : Ordinal) → (lt : odef (Omega ho< ) x) → nat→ω ( ω→nato lt ) =h= (* x)
+    nat→ω-iso-ord _ OD.iφ = ==-sym o∅==od∅
+    nat→ω-iso-ord x (OD.isuc OD.iφ) = ==-trans (Omega-subst _ _ (==-sym o∅==od∅)) (==-sym *iso)
+    nat→ω-iso-ord x (OD.isuc (OD.isuc {y} lt)) = ==-trans (Omega-subst _ _ 
+      (==-trans (Omega-subst _ _ lem02 ) (==-sym *iso)))  (==-sym *iso)  where
+      lem02  : nat→ω ( ω→nato lt ) =h= (* y)
+      lem02  = nat→ω-iso-ord y lt
 
-ω→nat-iso0 : (x : Nat) → {ox : Ordinal } → (ltd : Omega-d ox) → * ox ≡ nat→ω x → ω→nato ltd ≡ x
+ω→nat-iso0 : (x : Nat) → {ox : Ordinal } → (ltd : Omega-d ox) → * ox =h= nat→ω x → ω→nato ltd ≡ x
 ω→nat-iso0 Zero iφ eq = refl
-ω→nat-iso0 (Suc x) iφ eq = ⊥-elim ( ωs≠0 _ (trans (sym eq) o∅≡od∅ ))
-ω→nat-iso0 Zero (isuc ltd) eq = ⊥-elim ( ωs≠0 _ (subst (λ k → k ≡ od∅  ) *iso eq ))
+ω→nat-iso0 (Suc x) iφ eq = ⊥-elim ( ωs≠0 _ (begin
+    Union (nat→ω x , (nat→ω x , nat→ω x)) ≈⟨ ==-sym eq ⟩
+    * o∅ ≈⟨ o∅==od∅  ⟩
+    od∅ ∎ )) where open EqR ==-Setoid
+ω→nat-iso0 Zero (isuc ltd) eq = ⊥-elim ( ωs≠0 _ (==-trans (==-sym *iso) eq) )
 ω→nat-iso0 (Suc i) (isuc {x} ltd) eq = cong Suc ( ω→nat-iso0 i ltd (lemma1 eq) ) where
-       lemma1 :  * (& (Union (* x , (* x , * x)))) ≡ Union (nat→ω i , (nat→ω i , nat→ω i)) → * x ≡ nat→ω i
-       lemma1 eq = subst (λ k → * x ≡ k ) *iso (cong (λ k → * k)
-            (sym ( ω-prev-eq (subst (λ k → _ ≡ k ) &iso (cong (λ k → & k ) (sym
-                (subst (λ k → _ ≡ Union ( k , ( k , k ))) (sym *iso ) eq )))))))
+       lemma1 :  * (& (Union (* x , (* x , * x)))) =h= Union (nat→ω i , (nat→ω i , nat→ω i)) → * x =h= nat→ω i
+       lemma1 eq = begin
+          * x  ≈⟨ (o≡→== ( Omega-inject  (==→o≡ (begin
+             Union (* x , (* x , * x)) ≈⟨ ==-sym  *iso ⟩
+             * (& ( Union (* x , (* x , * x)))) ≈⟨  eq ⟩
+             Union ((nat→ω i) , (nat→ω i , nat→ω i)) ≈⟨ ==-sym Omega-iso ⟩
+             Union (* (& (nat→ω i)) , (* (& (nat→ω i)) , * (& (nat→ω i)))) ∎ )) ))  ⟩
+          * (& ( nat→ω i))  ≈⟨ *iso ⟩
+          nat→ω i ∎  where open EqR ==-Setoid
 
 ω→nat-iso : {i : Nat} → ω→nat ( nat→ω i ) (ω∋nat→ω {i}) ≡ i
 ω→nat-iso {i} = ω→nat-iso0 i (ω∋nat→ω {i}) *iso
 
-nat→ω-inject : {i j : Nat} → nat→ω i ≡  nat→ω j → i ≡ j
+nat→ω-inject : {i j : Nat} → nat→ω i =h=  nat→ω j → i ≡ j
 nat→ω-inject {Zero} {Zero} eq = refl
-nat→ω-inject {Zero} {Suc j} eq = ⊥-elim ( ¬0=ux (trans (trans (sym ord-od∅) (cong (&) eq)) refl ))
-nat→ω-inject {Suc i} {Zero} eq = ⊥-elim ( ¬0=ux (trans (trans (sym ord-od∅) (cong (&) (sym eq))) refl ))
-nat→ω-inject {Suc i} {Suc j} eq = cong Suc (nat→ω-inject {i} {j} ( ω-inject (eq) ))
+nat→ω-inject {Zero} {Suc j} eq = ⊥-elim ( ∅< {Union (nat→ω j , (nat→ω j , nat→ω j))} (ω-∈s  _) (==-sym eq) )
+nat→ω-inject {Suc i} {Zero} eq = ⊥-elim ( ∅< {Union (nat→ω i , (nat→ω i , nat→ω i))} (ω-∈s  _) eq )
+nat→ω-inject {Suc i} {Suc j} eq = cong Suc (nat→ω-inject {i} {j} ( ω-inject eq ))
 
 Repl⊆ : {A B : HOD} (A⊆B : A ⊆ B) → { ψa : ( x : HOD) → A ∋ x → HOD } { ψb : ( x : HOD) → B ∋ x → HOD }
    →  {Ca : HOD} → {rca : RXCod A Ca ψa }
@@ -261,7 +265,7 @@ Repl⊆ {A} {B} A⊆B {ψa} {ψb} eq  record { z = z ; az = az ; x=ψz = x=ψz }
          ; x=ψz = trans  x=ψz (cong (&) (eq az) ) }
 
 PPP : {P : HOD} → Power P ∋ P
-PPP {P} z pz = subst (λ k → odef k z ) *iso pz
+PPP {P} z pz = eq← (==-sym *iso) pz
 
 UPower⊆Q : {P Q : HOD} → P ⊆ Q → Union (Power P) ⊆ Q
 UPower⊆Q {P} {Q} P⊆Q {z} record { owner = y ; ao = ppy ; ox = yz } = P⊆Q (ppy _ yz)
@@ -271,19 +275,5 @@ UPower∩ : {P  : HOD} → ({ p q : HOD } → P ∋ p →  P ∋ q  → P ∋ (p
 UPower∩ {P} each {p} {q} record { owner = x ; ao = ppx ; ox = xz } record { owner = y ; ao = ppy ; ox = yz }
    =  record { owner = & P ; ao = PPP ; ox = lem03 }  where
     lem03 :   odef (* (& P)) (& (p ∩ q))
-    lem03 = subst (λ k → odef k (& (p ∩ q))) (sym *iso) ( each (ppx _ xz) (ppy _ yz) )
-
--- ∋-irr : {X x : HOD} → (a b : X ∋ x ) → a ≡ b
--- ∋-irr {X} {x} _ _ = refl
---    is requireed in
--- Replace∩ : {X P Q : HOD}  → {ψ : (x : HOD) → X ∋ x → HOD} → (P⊆X : P ⊆ X) → (Q⊆X : Q ⊆ X )
---     →  {C : HOD} → (rc : RXCod X C ψ )
---     → ( {x : HOD} → (a b : X ∋ x ) → ψ x a ≡ ψ x b )
---     → Replace' (P ∩ Q) (λ _ pq → ψ _ (P⊆X (proj1 pq ))) {C} record { ≤COD = λ lt → RXCod.≤COD rc ?  }   ⊆ ( Replace' P (λ _ p → ψ _ (P⊆X p)) ? ∩ Replace' Q (λ _ q → ψ _ (Q⊆X q)) ? )
--- Replace∩ {X} {P} {Q} {ψ} P⊆X Q⊆X rc ψ-irr = lem04 where
---     lem04 : {x : Ordinal} → OD.def (od (Replace' (P ∩ Q) (λ z pq → ψ z (P⊆X (proj1 pq)) ) ? )) x
---        → OD.def (od (Replace' P (λ z p → ψ z (P⊆X p) ) ?  ∩ Replace' Q (λ z q → ψ z (Q⊆X q)) ? )) x
---     lem04 {x} record { z = z ; az = az ; x=ψz = x=ψz } = ⟪
---          record { z = _ ; az = proj1 az ; x=ψz = trans  x=ψz (cong (&)(ψ-irr _ _)) }  ,
---          record { z = _ ; az = proj2 az ; x=ψz = trans  x=ψz (cong (&)(ψ-irr _ _)) } ⟫
+    lem03 = eq→  (==-sym *iso) ( each (ppx _ xz) (ppy _ yz) )
 

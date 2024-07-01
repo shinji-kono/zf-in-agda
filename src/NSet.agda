@@ -1,3 +1,5 @@
+{-# OPTIONS --cubical-compatible --safe #-}
+
 open import Level 
 module NSet (n : Level) where
 

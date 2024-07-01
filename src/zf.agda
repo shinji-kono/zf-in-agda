@@ -1,3 +1,4 @@
+{-# OPTIONS --cubical-compatible --safe #-}
 module zf where
 
 open import Level
@@ -8,6 +9,18 @@ open import Relation.Nullary
 open import Relation.Binary hiding (_⇔_)
 open import Data.Empty
 
+record ZPred {n m : Level } (ZFSet : Set n) (_∋_ : ( A x : ZFSet  ) → Set m) (_≈_ : Rel ZFSet m)
+      (ψ : ZFSet → Set m ) : Set (suc (n ⊔ suc m)) where
+  field
+      ψ-cong : (x y : ZFSet) → x ≈ y → ψ x ⇔ ψ y
+
+record ZFunc {n m : Level } (ZFSet : Set n) (_∋_ : ( A x : ZFSet  ) → Set m) (_≈_ : Rel ZFSet m)
+      (ψ : ZFSet → ZFSet ) : Set (suc (n ⊔ suc m)) where
+  field
+      cod : ZFSet
+      cod∋ψ : (x : ZFSet) → cod ∋ ψ x
+      ψ-cong : (x y : ZFSet) → x ≈ y → ψ x ≈ ψ y
+
 record IsZF {n m : Level }
      (ZFSet : Set n)
      (_∋_ : ( A x : ZFSet  ) → Set m)
@@ -16,8 +29,8 @@ record IsZF {n m : Level }
      (_,_ : ( A B : ZFSet  ) → ZFSet)
      (Union : ( A : ZFSet  ) → ZFSet)
      (Power : ( A : ZFSet  ) → ZFSet)
-     (Select :  (X : ZFSet  ) → ( ψ : (x : ZFSet ) → Set m ) → ZFSet ) 
-     (Replace : ZFSet → ( ZFSet → ZFSet ) → ZFSet )
+     (Select :  (X : ZFSet  ) → ( ψ : (x : ZFSet ) → Set m ) → ZPred ZFSet _∋_ _≈_ ψ → ZFSet ) 
+     (Replace : ZFSet → ( φ : ZFSet → ZFSet ) → ZFunc ZFSet _∋_ _≈_ φ → ZFSet )
      (infinite : ZFSet)
        : Set (suc (n ⊔ suc m)) where
   field
@@ -32,14 +45,12 @@ record IsZF {n m : Level }
   A ∈ B = B ∋ A
   _⊆_ : ( A B : ZFSet  ) → ∀{ x : ZFSet } →  Set m
   _⊆_ A B {x} = A ∋ x →  B ∋ x
-  _∩_ : ( A B : ZFSet  ) → ZFSet
-  A ∩ B = Select A (  λ x → ( A ∋ x ) ∧ ( B ∋ x )  )
   _∪_ : ( A B : ZFSet  ) → ZFSet
   A ∪ B = Union (A , B)    
   ｛_｝ : ZFSet → ZFSet
   ｛ x ｝ = ( x ,  x )
   infixr  200 _∈_
-  infixr  230 _∩_ _∪_
+  infixr  230 _∪_
   infixr  220 _⊆_ 
   field
      empty :  ∀( x : ZFSet  ) → ¬ ( ∅ ∋ x )
@@ -55,10 +66,16 @@ record IsZF {n m : Level }
      -- infinity : ∃ A ( ∅ ∈ A ∧ ∀ x ∈ A ( x ∪ { x } ∈ A ) )
      infinity∅ :  ∅ ∈ infinite
      infinity :  ∀( x : ZFSet  ) → x ∈ infinite →  ( x ∪ ｛ x ｝) ∈ infinite 
-     selection : { ψ : ZFSet → Set m } → ∀ { X y : ZFSet  } →  ( ( y ∈ X ) ∧ ψ y ) ⇔ (y ∈  Select X ψ ) 
+     selection : { ψ : ZFSet → Set m } → { zψ : ZPred ZFSet _∋_ _≈_ ψ }  → ∀ { X y : ZFSet  } 
+         →  ( ( y ∈ X ) ∧ ψ y ) ⇔ (y ∈  Select X ψ zψ ) 
      -- replacement : ∀ x ∀ y ∀ z ( ( ψ ( x , y ) ∧ ψ ( x , z ) ) → y = z ) → ∀ X ∃ A ∀ y ( y ∈ A ↔ ∃ x ∈ X ψ ( x , y ) )
-     replacement← : {ψ : ZFSet → ZFSet} → ∀ ( X x : ZFSet  ) → x ∈ X → ψ x ∈  Replace X ψ 
-     replacement→ : {ψ : ZFSet → ZFSet} → ∀ ( X x : ZFSet  ) →  ( lt : x ∈  Replace X ψ ) → ¬ ( ∀ (y : ZFSet)  →  ¬ ( x ≈ ψ y ) )
+     replacement← : {ψ : ZFSet → ZFSet} → { zψ : ZFunc ZFSet _∋_ _≈_ ψ } → ∀ ( X x : ZFSet  ) → x ∈ X → ψ x ∈  Replace X ψ zψ
+     replacement→ : {ψ : ZFSet → ZFSet} → { zψ : ZFunc ZFSet _∋_ _≈_ ψ } → ∀ ( X x : ZFSet  ) 
+         →  ( lt : x ∈  Replace X ψ zψ) → ¬ ( ∀ (y : ZFSet)  →  ¬ ( x ≈ ψ y ) )
+     -- ≈→⇔  :  { A B : ZFSet  } → A ≈ B → ( (z : ZFSet) → ( A ∋ z ) ⇔ (B ∋ z)  ) 
+  -- _∩_ : ( A B : ZFSet  ) → ZFSet
+  -- A ∩ B = Select A (  λ x → ( A ∋ x ) ∧ ( B ∋ x )  ) record { ψ-cong = λ x y x≈y 
+  --    → record { proj1 = λ x∋y → ⟪ ? , ? ⟫ ; proj2 = λ x∋y → ⟪ ? , ? ⟫ } } we need ≈-sym
 
 record ZF {n m : Level } : Set (suc (n ⊔ suc m)) where
   infixr  210 _,_
@@ -73,8 +90,8 @@ record ZF {n m : Level } : Set (suc (n ⊔ suc m)) where
      _,_ : ( A B : ZFSet  ) → ZFSet
      Union : ( A : ZFSet  ) → ZFSet
      Power : ( A : ZFSet  ) → ZFSet
-     Select :  (X : ZFSet  ) → ( ψ : (x : ZFSet ) → Set m ) → ZFSet 
-     Replace : ZFSet → ( ZFSet → ZFSet ) → ZFSet
+     Select :  (X : ZFSet  ) → ( φ : (x : ZFSet ) → Set m ) → ( zψ : ZPred ZFSet _∋_ _≈_ φ ) → ZFSet 
+     Replace : ZFSet → ( φ : ZFSet → ZFSet ) → ( zψ : ZFunc ZFSet _∋_ _≈_ φ ) → ZFSet
      infinite : ZFSet
      isZF : IsZF ZFSet _∋_ _≈_ ∅ _,_ Union Power Select Replace infinite 
 

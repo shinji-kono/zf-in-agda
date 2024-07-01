@@ -1,38 +1,41 @@
+{-# OPTIONS --cubical-compatible --safe #-}
 open import Level
 open import Ordinals
 open import logic
 open import Relation.Nullary
-module LEMC {n : Level } (O : Ordinals {n} )  where
 
-open import Data.Nat renaming ( zero to Zero ; suc to Suc ;  ℕ to Nat ; _⊔_ to _n⊔_ ) 
-open import  Relation.Binary.PropositionalEquality
-open import Data.Nat.Properties 
-open import Data.Empty
-open import Relation.Binary
-open import Relation.Binary.Core
-
-open import nat
+open import Level
+open import Ordinals
+import HODBase
 import OD
+open import Relation.Nullary
+module LEMC {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho< : OD.ODAxiom-ho< O HODAxiom )( p∨¬p : ( p : Set n) → p ∨ ( ¬ p ) ) where
 
-open inOrdinal O
-open OD O
-open OD.OD
-open OD._==_
-open ODAxiom odAxiom
+open import  Relation.Binary.PropositionalEquality hiding ( [_] )
+open import Data.Empty
+
 import OrdUtil
-import ODUtil
+
 open Ordinals.Ordinals  O
 open Ordinals.IsOrdinals isOrdinal
--- open Ordinals.IsNext isNext
+import ODUtil
+
+open import logic
+open import nat
+
 open OrdUtil O
-open ODUtil O
+open ODUtil O HODAxiom  ho<
 
-open import zfc
+open _∧_
+open _∨_
+open Bool
 
-open HOD
+open  HODBase._==_
 
-postulate 
-   p∨¬p : ( p : Set n) → p ∨ ( ¬ p ) 
+open HODBase.ODAxiom HODAxiom  
+open OD O HODAxiom
+
+open HODBase.HOD
 
 decp : ( p : Set n ) → Dec p   -- assuming axiom of choice    
 decp  p with p∨¬p p
@@ -49,16 +52,6 @@ double-neg-elim  {A} notnot with decp  A                         -- assuming axi
 ... | yes p = p
 ... | no ¬p = ⊥-elim ( notnot ¬p )
 
--- by-contradiction : {A : Set n} {B : A → Set n}  → ¬ ( (a : A ) → ¬ B a ) → A    
--- by-contradiction {A} {B} not with p∨¬p A         
--- ... | case2 ¬a  = ⊥-elim (not (λ a → ⊥-elim (¬a a  )))          
--- ... | case1 a = a            
-
-power→⊆ :  ( A t : HOD) → Power A ∋ t → t ⊆ A
-power→⊆ A t  PA∋t t∋x = subst (λ k → odef A k ) &iso ( t1 (subst (λ k → odef t k ) (sym &iso) t∋x))  where
-   t1 : {x : HOD }  → t ∋ x → A ∋ x
-   t1 = power→ A t PA∋t
-
 --- With assuption of HOD is ordered,  p ∨ ( ¬ p ) <=> axiom of choice
 ---
 record choiced  ( X : Ordinal ) : Set n where
@@ -68,14 +61,13 @@ record choiced  ( X : Ordinal ) : Set n where
 
 open choiced
 
--- ∋→d : ( a : HOD  ) { x : HOD } → * (& a) ∋ x → X ∋ * (a-choice (choice-func X not))
--- ∋→d a lt = subst₂ (λ j k → odef j k) *iso (sym &iso) lt
-
 oo∋ : { a : HOD} {  x : Ordinal } → odef (* (& a)) x → a ∋ * x
-oo∋ lt = subst₂ (λ j k → odef j k) *iso (sym &iso) lt
+oo∋ {a} {x} lt = eq→   *iso (subst (λ k → odef (* (& a)) k ) (sym &iso) lt )
 
 ∋oo : { a : HOD} {  x : Ordinal } → a ∋ * x → odef (* (& a)) x 
-∋oo lt = subst₂ (λ j k → odef j k ) (sym *iso) &iso lt 
+∋oo {a} {x} lt = eq←   *iso (subst (λ k → odef a k ) &iso lt )
+
+open import zfc
 
 OD→ZFC : ZFC
 OD→ZFC   = record { 
@@ -83,12 +75,11 @@ OD→ZFC   = record {
     ; _∋_ = _∋_ 
     ; _≈_ = _=h=_ 
     ; ∅  = od∅
-    ; Select = Select
     ; isZFC = isZFC
  } where
     -- infixr  200 _∈_
     -- infixr  230 _∩_ _∪_
-    isZFC : IsZFC (HOD )  _∋_  _=h=_ od∅ Select
+    isZFC : IsZFC (HOD )  _∋_  _=h=_ od∅ 
     isZFC = record {
        choice-func = λ A {X} not A∋X → * (a-choice (choice-func X not) );
        choice = λ A {X} A∋X not → oo∋ (is-in (choice-func X not))
@@ -101,7 +92,7 @@ OD→ZFC   = record {
                  ψ : ( ox : Ordinal ) → Set n
                  ψ ox = (( x : Ordinal ) → x o< ox  → ( ¬ odef X x )) ∨ choiced (& X)
                  lemma-ord : ( ox : Ordinal  ) → ψ ox
-                 lemma-ord  ox = TransFinite0 {ψ} induction ox where
+                 lemma-ord  ox = inOrdinal.TransFinite0 O {ψ} induction ox where
                     ∀-imply-or :  {A : Ordinal  → Set n } {B : Set n }
                         → ((x : Ordinal ) → A x ∨ B) →  ((x : Ordinal ) → A x) ∨ B
                     ∀-imply-or  {A} {B} ∀AB with p∨¬p ((x : Ordinal ) → A x) -- LEM
@@ -122,7 +113,7 @@ OD→ZFC   = record {
                          lemma :  ((y : Ordinal) → y o< x → odef X y → ⊥) ∨ choiced (& X)
                          lemma = ∀-imply-or lemma1
                  odef→o< :  {X : HOD } → {x : Ordinal } → odef X x → x o< & X 
-                 odef→o<  {X} {x} lt = o<-subst  {_} {_} {x} {& X} ( c<→o< ( subst₂ (λ j k → odef j k )  (sym *iso) (sym &iso)  lt )) &iso &iso
+                 odef→o<  {X} {x} lt = o<-subst  {_} {_} {x} {& X} ( c<→o< (eq← *iso (subst (λ k → odef X k) (sym &iso) lt ))) &iso &iso
                  have_to_find : choiced (& X)
                  have_to_find = dont-or  (lemma-ord (& X )) ¬¬X∋x where
                      ¬¬X∋x : ¬ ((x : Ordinal) → x o< (& X) → odef X x → ⊥)
@@ -154,7 +145,7 @@ OD→ZFC   = record {
          ... | case2 NP =  min2 where
               p : HOD
               p  = record { od = record { def = λ y1 → odef x  y1 ∧ odef u y1 } ; odmax = omin (odmax x) (odmax u) ; <odmax = lemma } where
-                 lemma : {y : Ordinal} → OD.def (od x) y ∧ OD.def (od u) y → y o< omin (odmax x) (odmax u)
+                 lemma : {y : Ordinal} → odef x y ∧ odef u y → y o< omin (odmax x) (odmax u)
                  lemma {y} lt = min1 (<odmax x (proj1 lt)) (<odmax u (proj2 lt))
               np : ¬ (p =h= od∅)
               np p∅ =  NP (λ y p∋y → ∅< {p} {_} (d→∋ p p∋y) p∅ ) 

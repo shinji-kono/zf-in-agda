@@ -1,3 +1,13 @@
+Tue Jun 18 18:43:10 JST 2024
+
+    make safe in all case
+    stop using functional extensionality
+
+Sun Jul  9 09:42:20 JST 2023
+
+    Assume countable dense OD in Ordinal as L
+    if Power ω ∩ L is cardinal, ω c< (Power ω ∩ L) c< Power ω 
+
 Sat May 13 10:51:35 JST 2023
 
     use Filter (ZFP (Proj1 (ZFP PQ)) (Proj2 (ZFP PQ)) for projection of Ultra filter
@@ -6,12 +16,15 @@ Sat May 13 10:51:35 JST 2023
 Sat Aug  1 13:16:53 JST 2020
 
     P Generic Filter
-        as a ZF model 
-    define Definition for L
+        as a ZF model   ( -- this is no good )
+    define Definition for L  ( -- this is no good )
 
 Tue Jul 23 11:02:50 JST 2019
 
     define cardinals     ... done
+
+    scheme on CH is no good in HOD
+
     prove CH in OD→ZF
     define Ultra filter  ... done
     define L M : ZF ZFSet = M is an OD

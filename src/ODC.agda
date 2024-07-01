@@ -1,47 +1,45 @@
-{-# OPTIONS --allow-unsolved-metas #-}
+{-# OPTIONS --cubical-compatible --safe #-}
 open import Level
 open import Ordinals
-module ODC {n : Level } (O : Ordinals {n} ) where
+import HODBase
+import OD
+module ODC {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O) 
+       (AC : OD.AxiomOfChoice O HODAxiom )
+   where
 
 open import Data.Nat renaming ( zero to Zero ; suc to Suc ;  ℕ to Nat ; _⊔_ to _n⊔_ )
-open import  Relation.Binary.PropositionalEquality
+open import  Relation.Binary.PropositionalEquality hiding ( [_] )
 open import Data.Nat.Properties
 open import Data.Empty
+open import Data.Unit
 open import Relation.Nullary
-open import Relation.Binary
-open import Relation.Binary.Core
+open import Relation.Binary  hiding (_⇔_)
+open import Relation.Binary.Core hiding (_⇔_)
+import Relation.Binary.Reasoning.Setoid as EqR
 
-import OrdUtil
 open import logic
+import OrdUtil
 open import nat
-import OD
-import ODUtil
-
-open inOrdinal O
-open OD O
-open OD.OD
-open OD._==_
-open ODAxiom odAxiom
-open ODUtil O
 
 open Ordinals.Ordinals  O
 open Ordinals.IsOrdinals isOrdinal
 -- open Ordinals.IsNext isNext
 open OrdUtil O
 
+-- Ordinal Definable Set
 
-open HOD
+open HODBase.HOD 
+open HODBase.OD 
 
 open _∧_
+open _∨_
+open Bool
 
-postulate
-  -- mimimul and x∋minimal is an Axiom of choice
-  minimal : (x : HOD  ) → ¬ (x =h= od∅ )→ HOD
-  -- this should be ¬ (x =h= od∅ )→ ∃ ox → x ∋ Ord ox  ( minimum of x )
-  x∋minimal : (x : HOD  ) → ( ne : ¬ (x =h= od∅ ) ) → odef x ( & ( minimal x ne ) )
-  -- minimality (proved by ε-induction with LEM)
-  minimal-1 : (x : HOD  ) → ( ne : ¬ (x =h= od∅ ) ) → (y : HOD ) → ¬ ( odef (minimal x ne) (& y)) ∧ (odef x (&  y) )
+open  HODBase._==_
 
+open HODBase.ODAxiom HODAxiom  
+open OD O HODAxiom
+open AxiomOfChoice AC
 
 --
 -- Axiom of choice in intutionistic logic implies the exclude middle
@@ -60,15 +58,19 @@ p∨¬p  p with is-o∅ ( & (pred-od p ))
 p∨¬p  p | yes eq = case2 (¬p eq) where
    ps = pred-od p
    eqo∅ : ps =h=  od∅  → & ps ≡  o∅
-   eqo∅ eq = subst (λ k → & ps ≡ k) ord-od∅ ( cong (λ k → & k ) (==→o≡ eq))
+   eqo∅ eq = trans (==→o≡ eq) ord-od∅
    lemma : ps =h= od∅ → p → ⊥
    lemma eq p0 = ¬x<0  {& ps} (eq→ eq record { proj1 = eqo∅ eq ; proj2 = p0 } )
    ¬p : (& ps ≡ o∅) → p → ⊥
-   ¬p eq = lemma ( subst₂ (λ j k → j =h=  k ) *iso o∅≡od∅ ( o≡→== eq ))
+   ¬p eq =  lemma ( begin
+      pred-od p  ≈⟨ ==-sym  *iso ⟩
+      * ( & ps ) ≡⟨ cong (*) eq ⟩
+      * ( o∅ ) ≈⟨ o∅==od∅ ⟩
+      od∅ ∎ ) where open EqR ==-Setoid
 p∨¬p  p | no ¬p = case1 (ppp  {p} {minimal ps (λ eq →  ¬p (eqo∅ eq))} lemma) where
    ps = pred-od p
    eqo∅ : ps =h=  od∅  → & ps ≡  o∅
-   eqo∅ eq = subst (λ k → & ps ≡ k) ord-od∅ ( cong (λ k → & k ) (==→o≡ eq))
+   eqo∅ eq = trans (==→o≡ eq) ord-od∅
    lemma : ps ∋ minimal ps (λ eq →  ¬p (eqo∅ eq))
    lemma = x∋minimal ps (λ eq →  ¬p (eqo∅ eq))
 
@@ -99,26 +101,6 @@ or-exclude1 {A} {B} ab with p∨¬p A
 ... | case1 a = case1 a
 ... | case2 ¬a = case2 ( ab ¬a)
 
--- record By-contradiction (A : Set n) (B : A → Set n)  : Set (suc n) where
---  field
---     a : A
---     b : B a
--- 
--- by-contradiction : {A : Set n} {B : A → Set n}  → ¬ ( (a : A ) → ¬ B a ) → By-contradiction A B
--- by-contradiction {A} {B} not with p∨¬p A 
--- ... | case2 ¬a  = ⊥-elim (not (λ a → ⊥-elim (¬a a  )))
--- ... | case1 a with p∨¬p (B a)
--- ... | case1 b  = record { a = a ; b = b }
--- ... | case2 ¬b = ⊥-elim ( not ( λ a b → ⊥-elim ( ¬b ? )))
--- 
-power→⊆ :  ( A t : HOD) → Power A ∋ t → t ⊆ A
-power→⊆ A t  PA∋t tx = subst (λ k → odef A k ) &iso ( power→ A t PA∋t (subst (λ k → odef t k) (sym &iso) tx ) )
-
-power-∩ : { A x y : HOD } → Power A ∋ x → Power A ∋ y → Power A ∋ ( x ∩ y )
-power-∩ {A} {x} {y} ax ay = power← A (x ∩ y) p01  where
-   p01 :  {z : HOD} → (x ∩ y) ∋ z → A ∋ z
-   p01 {z} xyz = power→ A x ax (proj1 xyz )
-
 OrdP : ( x : Ordinal  ) ( y : HOD  ) → Dec ( Ord x ∋ y )
 OrdP  x y with trio< x (& y)
 OrdP  x y | tri< a ¬b ¬c = no ¬c
@@ -133,12 +115,11 @@ HOD→ZFC   = record {
     ; _∋_ = _∋_
     ; _≈_ = _=h=_
     ; ∅  = od∅
-    ; Select = Select
     ; isZFC = isZFC
  } where
     -- infixr  200 _∈_
     -- infixr  230 _∩_ _∪_
-    isZFC : IsZFC (HOD )  _∋_  _=h=_ od∅ Select
+    isZFC : IsZFC (HOD )  _∋_  _=h=_ od∅ 
     isZFC = record {
        choice-func = choice-func ;
        choice = choice

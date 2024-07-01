@@ -1,4 +1,4 @@
-{-# OPTIONS --allow-unsolved-metas #-}
+{-# OPTIONS --cubical-compatible --safe #-}
 
 module bijection where
 
@@ -46,6 +46,27 @@ bi-inject← rs {x} {y} eq = subst₂ (λ j k → j ≡ k ) (fiso→  rs _) (fis
 
 bi-inject→ : {n m : Level} {R : Set n} {S : Set m} → (rs : Bijection R S) → {x y : R} → fun→ rs x ≡ fun→ rs y → x ≡ y
 bi-inject→ rs {x} {y} eq = subst₂ (λ j k → j ≡ k ) (fiso←  rs _) (fiso← rs _) (cong (fun← rs) eq)
+
+bi-∨  : {n m n1 m1 : Level } {A : Set n} {B : Set m} {C : Set n1} {D : Set m1}  → (ab : Bijection A B) → (cd : Bijection C D )
+       → Bijection (A ∨ C) (B ∨ D)
+bi-∨  {_} {_} {_} {_} {A} {B} {C} {D} ab cd = record {
+         fun→  = fun→1
+       ; fun←  = fun←1
+       ; fiso→ = fiso→1
+       ; fiso← = fiso←1
+       } where
+    fun→1 : (A ∨ C) → (B ∨ D)
+    fun→1 (case1 a) = case1 (fun→ ab a)
+    fun→1 (case2 c) = case2 (fun→ cd c)
+    fun←1 : (B ∨ D) → (A ∨ C)
+    fun←1 (case1 a) = case1 (fun← ab a)
+    fun←1 (case2 c) = case2 (fun← cd c)
+    fiso→1 : (x : B ∨ D) → fun→1 (fun←1 x) ≡ x
+    fiso→1 (case1 a) = cong case1 (fiso→ ab a)
+    fiso→1 (case2 c) = cong case2 (fiso→ cd c)
+    fiso←1 : (x : A ∨ C) → fun←1 (fun→1 x) ≡ x
+    fiso←1 (case1 a) = cong case1 (fiso← ab a)
+    fiso←1 (case2 c) = cong case2 (fiso← cd c)
 
 open import Relation.Binary.Structures
 
@@ -217,8 +238,8 @@ nxn = record {
      --
      nn zero = record { j = 0 ; k = 0 ; k1 = refl
         ;  nn-unique = λ {j0} {k0} eq → cong₂ (λ x y → ⟪ x , y ⟫) (sym (proj1 (nxn→n0 eq))) (sym (proj2 (nxn→n0 {j0} {k0} eq))) }
-     nn (suc i) with NN.k (nn i)  | inspect  NN.k (nn i)
-     ... | zero | record { eq = eq } = record { k = suc (sum ) ; j = 0
+     nn (suc i) with NN.k (nn i)  in eq
+     ... | zero = record { k = suc (sum ) ; j = 0
          ; k1 = nn02 ; nn-unique = nn04 } where
             ---
             --- increment the stage
@@ -262,7 +283,7 @@ nxn = record {
                   i ∎   where open ≡-Reasoning
                nn06 : nxn→n j0 (suc k0) ≡ i → ⟪ NN.j (nn i) , NN.k (nn i) ⟫ ≡ ⟪ j0 , suc k0 ⟫
                nn06 = NN.nn-unique (nn i)
-     ... | suc k  | record {eq = eq} = record { k = k ; j = suc (NN.j (nn i)) ; k1 = nn11 ;  nn-unique = nn13 } where
+     ... | suc k  = record { k = k ; j = suc (NN.j (nn i)) ; k1 = nn11 ;  nn-unique = nn13 } where
             ---
             --- increment in a stage
             ---
@@ -438,8 +459,8 @@ LBℕ = record {
      lb zero = record { nlist = [] ; isBin = refl ; isUnique = lb05 } where
          lb05 : (x : List Bool) → lton x ≡ zero → [] ≡ x
          lb05 x eq = lb=b [] x (sym eq)
-     lb (suc n) with LB.nlist (lb n) | inspect LB.nlist (lb n)
-     ... | [] | record { eq = eq } = record { nlist = false ∷ [] ; isUnique = lb06 ; isBin = lb10 } where
+     lb (suc n) with LB.nlist (lb n) in eq
+     ... | [] = record { nlist = false ∷ [] ; isUnique = lb06 ; isBin = lb10 } where
          open ≡-Reasoning
          lb10 : lton1 (false ∷ []) ∸ 1 ≡ suc n
          lb10 = begin
@@ -450,7 +471,7 @@ LBℕ = record {
            suc n ∎
          lb06 :  (x : List Bool) → pred (lton1 x ) ≡ suc n → false ∷ [] ≡ x
          lb06 x eq1 = lb=b (false ∷ []) x (trans lb10 (sym eq1)) -- lton (false ∷ []) ≡ lton x
-     ... | false ∷ t | record { eq = eq } =  record { nlist = true ∷ t ; isBin = lb01 ; isUnique = lb09 } where
+     ... | false ∷ t =  record { nlist = true ∷ t ; isBin = lb01 ; isUnique = lb09 } where
         lb01 : lton (true ∷ t) ≡ suc n
         lb01 = begin
            lton (true ∷ t)  ≡⟨ refl ⟩
@@ -461,7 +482,7 @@ LBℕ = record {
            suc n ∎  where open ≡-Reasoning
         lb09 :  (x : List Bool) → lton1 x ∸ 1 ≡ suc n → true ∷ t ≡ x
         lb09 x eq1 = lb=b (true ∷ t) x (trans lb01 (sym eq1) ) --  lton (true ∷ t) ≡ lton x
-     ... | true ∷ t | record { eq = eq } = record { nlist =  lb+1 (true ∷ t) ; isBin = lb02 (true ∷ t) lb03 ; isUnique = lb07 } where
+     ... | true ∷ t = record { nlist =  lb+1 (true ∷ t) ; isBin = lb02 (true ∷ t) lb03 ; isUnique = lb07 } where
         lb03 : lton (true ∷ t) ≡ n
         lb03 = begin
            lton (true ∷ t)   ≡⟨ cong (λ k → lton k ) (sym eq ) ⟩
@@ -511,22 +532,58 @@ record Is (A C : Set) (f : A → C) (c : C) : Set where
       a : A
       fa=c : f a ≡ c
 
+record IsImage0 (A B : Set ) (f : (x : A ) → B) (x : B ) : Set  where
+   field
+      y : A
+      x=fy : x ≡ f y
+
+IsImage : (a b : Set) (iab : InjectiveF a b ) (x : b ) → Set
+IsImage a b iab x = IsImage0 a b (InjectiveF.f iab) x
+
+--   Bernstein : (A B : Set)
+--        → (fi : InjectiveF A  B ) → (gi : InjectiveF  B A )
+--        → (is-A : (b : B ) → Dec (Is A B (InjectiveF.f fi) b)  )
+--        → (is-B : (a : A ) → Dec (Is B A (InjectiveF.f gi) a)  )
+--        → Bijection A B
+--   Bernstein A B fi gi isa isb = ?  where
+--       open InjectiveF
+--       gfi : InjectiveF A A
+--       gfi = record { f = λ x → f gi (f fi x) ; inject = λ {x} {y} eq → inject fi (inject gi eq) }
+--       data gfImage :  (x : A) → Set where
+--          a-g : {x : A} → (¬ib : ¬ ( IsImage B A gi x )) → gfImage  x
+--          next-gf : {x : A} → (ix : IsImage A A gfi x) → (gfiy : gfImage (IsImage0.y ix) ) → gfImage  x
+--       data ¬gfImage :  (x : A) → Set where
+--          ngf : {x : A} → (¬gfiy : ¬ gfImage x) → ¬gfImage  x
+--       gf02 : {x : A} → IsImage B A gi x ∨ (¬ IsImage B A gi x) ∨ ((ix : IsImage A A gfi x) →  ¬  gfImage (IsImage0.y ix)  ) → ¬ gfImage x
+--       gf02 {x} c gf = ?
+--       gfi∨ : (x : A) → gfImage x ∨ ¬gfImage x
+--       gfi∨ x with isb x
+--       ... | no ¬ib = case1 ( a-g (λ ib → ¬ib (record { a = IsImage0.y ib ; fa=c = sym (IsImage0.x=fy ib) })))
+--       ... | yes ib with isa (f fi x)
+--       ... | no ¬ia = case2 ( ngf ? )
+--       ... | yes ia = case1 ( next-gf record { y = f gi (Is.a ib) ; x=fy = br00 }  (a-g br01 ) ) where
+--            br00 :  x ≡ f gi (f fi (f gi (Is.a ib)))
+--            br00 = ?
+--            br01 :  ¬ IsImage B A gi (f gi (Is.a ib))
+--            br01 record { y = y ; x=fy = x=fy } = ?
+
+
 Countable-Bernstein : (A B C : Set) → Bijection A ℕ → Bijection C ℕ
      → (fi : InjectiveF A  B ) → (gi : InjectiveF  B C )
-     → (is-A : (c : C ) → Dec (Is A C (λ x → (InjectiveF.f gi (InjectiveF.f fi x))) c )) 
+     → (is-A : (c : C ) → Dec (Is A C (λ x → (InjectiveF.f gi (InjectiveF.f fi x))) c ))
      → (is-B : (c : C ) → Dec (Is B C (InjectiveF.f gi) c)  )
      → Bijection B ℕ
 Countable-Bernstein A B C an cn fi gi is-A is-B = record {
        fun→  = λ x → bton x
      ; fun←  = λ n → ntob n
      ; fiso→ = biso
-     ; fiso← = biso1 
+     ; fiso← = biso1
    } where
     --
     --     an     f     g     cn
     --   ℕ ↔   A  →  B  →  C  ↔   ℕ
     --            B = Image A f ∪ (B \ Image A f )
-    -- 
+    --
     open Bijection
     f = InjectiveF.f fi
     g = InjectiveF.f gi
@@ -589,7 +646,7 @@ Countable-Bernstein A B C an cn fi gi is-A is-B = record {
     c-mono : (i j : ℕ ) → i ≤ j → c i ≤ c j
     c-mono i j i≤j with ≤-∨ i≤j
     ... | case1 refl = ≤-refl
-    c-mono zero (suc j) z≤n | case2 lt = ≤-trans (c-mono zero j z≤n ) (c-mono1 j) 
+    c-mono zero (suc j) z≤n | case2 lt = ≤-trans (c-mono zero j z≤n ) (c-mono1 j)
     c-mono (suc i) (suc j) (s≤s i≤j) | case2 (s≤s lt) = ≤-trans (c-mono (suc i) j lt ) (c-mono1 j)
 
     inject-cgf : {i j : ℕ} → fun→ cn (g (f (fun← an i))) ≡ fun→ cn (g (f (fun← an j))) → i ≡ j
@@ -636,7 +693,7 @@ Countable-Bernstein A B C an cn fi gi is-A is-B = record {
         lem02 zero (h ∷ t) refl with is-A (fun← cn zero)
         ... | yes _ = refl
         ... | no _ = refl
-        lem02 (suc n) (h ∷ t) refl with is-A (fun← cn (suc n)) 
+        lem02 (suc n) (h ∷ t) refl with is-A (fun← cn (suc n))
         ... | yes _ = cong suc (lem02 n t refl)
         ... | no _ = lem02 n t refl
 
@@ -648,7 +705,7 @@ Countable-Bernstein A B C an cn fi gi is-A is-B = record {
 
     --  count of a in a-list is one step reduced
     --
-    a-list-ca : (i : ℕ) → (cl : List C) → (a : Any (_≡_ (g (f (fun← an i)))) cl ) 
+    a-list-ca : (i : ℕ) → (cl : List C) → (a : Any (_≡_ (g (f (fun← an i)))) cl )
         → suc (ca-list (a-list i cl a)) ≡ ca-list cl
     a-list-ca i cl a = lem03 i cl _ a refl where
          lem03 : (i : ℕ) → (cl cal : List C) → (a : Any (_≡_ (g (f (fun← an i)))) cl )  → cal ≡  (a-list i cl a) → suc (ca-list cal)  ≡ ca-list cl
@@ -664,13 +721,13 @@ Countable-Bernstein A B C an cn fi gi is-A is-B = record {
 
     --  reduced list still have all ani j < i
     --
-    a-list-any : (i : ℕ) → (cl : List C) → (a : Any (_≡_ (g (f (fun← an i)))) cl ) 
-         → (j : ℕ) → j < i  → Any (_≡_ (g (f (fun← an j)))) cl  → Any (_≡_ (g (f (fun← an j)))) (a-list i cl a) 
+    a-list-any : (i : ℕ) → (cl : List C) → (a : Any (_≡_ (g (f (fun← an i)))) cl )
+         → (j : ℕ) → j < i  → Any (_≡_ (g (f (fun← an j)))) cl  → Any (_≡_ (g (f (fun← an j)))) (a-list i cl a)
     a-list-any i cl a j j<i b = lem03 i cl _ a refl j j<i b where
-         lem03 : (i : ℕ) → (cl cal : List C) → (a : Any (_≡_ (g (f (fun← an i)))) cl )  
-             → cal ≡  (a-list i cl a) 
+         lem03 : (i : ℕ) → (cl cal : List C) → (a : Any (_≡_ (g (f (fun← an i)))) cl )
+             → cal ≡  (a-list i cl a)
              → (j : ℕ) → j < i  → Any (_≡_ (g (f (fun← an j)))) cl  → Any (_≡_ (g (f (fun← an j)))) cal
-         lem03 i (h ∷ t) cal (here px) eq j j<i (here px₁) = ⊥-elim ( nat-≡< 
+         lem03 i (h ∷ t) cal (here px) eq j j<i (here px₁) = ⊥-elim ( nat-≡<
              (  bi-inject← an (InjectiveF.inject fi (InjectiveF.inject gi (trans px₁ (sym px))))) j<i )
          lem03 i (h ∷ t) cal (here px) eq j j<i (there b) = subst (λ k → Any (_≡_ (g (f (fun← an j)))) k) (sym eq) b
          lem03 i (h ∷ t) cal (there a) eq j j<i (here px) = subst (λ k → Any (_≡_ (g (f (fun← an j)))) k) (sym eq) (here px)
@@ -688,14 +745,14 @@ Countable-Bernstein A B C an cn fi gi is-A is-B = record {
          --
 
          del : (i : ℕ) → (cl : List C) → any-cl i cl → List C   -- del 0 contains ani 0
-         del i cl a = a-list i cl (a i ≤-refl)  
+         del i cl a = a-list i cl (a i ≤-refl)
          del-any : (i : ℕ) → (cl : List C) → (a : any-cl (suc i) cl)  → any-cl i (del (suc i) cl a )
          del-any i cl a j le = lem41 cl (del (suc i) cl a ) (a (suc i) ≤-refl ) (a j (≤-trans le a≤sa) ) refl where
-            lem41 : (cl dl : List C) 
+            lem41 : (cl dl : List C)
                  → (ai : Any (_≡_ (g (f (fun← an (suc i))))) cl)
-                 → (aj : Any (_≡_ (g (f (fun← an j)))) cl) 
+                 → (aj : Any (_≡_ (g (f (fun← an j)))) cl)
                  → dl ≡ a-list (suc i) cl ai →   Any (_≡_ (g (f (fun← an j)))) dl
-            lem41 (h ∷ t) y (here px) (here px₁) eq = ⊥-elim ( nat-≡< 
+            lem41 (h ∷ t) y (here px) (here px₁) eq = ⊥-elim ( nat-≡<
                  (  bi-inject← an (InjectiveF.inject fi (InjectiveF.inject gi (trans px₁ (sym px))))) (x≤y→x<sy le) )
             lem41 (h ∷ t) y (here px) (there b0) eq = subst (λ k →  Any (_≡_ (g (f (fun← an j)))) k) (sym eq) b0
             lem41 (h ∷ t) y (there a0) (here px) refl = here px
@@ -703,17 +760,17 @@ Countable-Bernstein A B C an cn fi gi is-A is-B = record {
 
          del-ca : (i : ℕ) → (cl : List C) → (a : any-cl i cl  )
               → suc (ca-list (del i cl a)) ≡ ca-list cl
-         del-ca i cl a = a-list-ca i cl (a i ≤-refl) 
+         del-ca i cl a = a-list-ca i cl (a i ≤-refl)
 
          lem30 : (i : ℕ) → (cl : List C) → (i≤n : i ≤ n) → (a : any-cl i cl) → i < ca-list cl
          lem30 0 cl i≤n a = begin
-             1 ≤⟨ s≤s z≤n ⟩ 
+             1 ≤⟨ s≤s z≤n ⟩
              suc (ca-list (del 0 cl a) )  ≡⟨ del-ca 0 cl a ⟩
              ca-list cl ∎ where
                 open ≤-Reasoning
          lem30 (suc i) cl i≤n a = begin
-            suc (suc i)   ≤⟨ s≤s (lem30 i _ (≤-trans a≤sa i≤n) (del-any i cl a) ) ⟩ 
-            suc (ca-list (del (suc i) cl a))  ≡⟨ del-ca (suc i) cl a ⟩ 
+            suc (suc i)   ≤⟨ s≤s (lem30 i _ (≤-trans a≤sa i≤n) (del-any i cl a) ) ⟩
+            suc (ca-list (del (suc i) cl a))  ≡⟨ del-ca (suc i) cl a ⟩
             ca-list cl ∎ where
                 open ≤-Reasoning
 
@@ -757,14 +814,14 @@ Countable-Bernstein A B C an cn fi gi is-A is-B = record {
         lem06 : (i j : ℕ ) → Is B C g (fun← cn i) → Is B C g (fun← cn j) → count-B i ≡ count-B j → i ≡ j
         lem06 i j bi bj eq = lem08  where
             lem20 : (i j : ℕ) → i < j →  Is B C g (fun← cn i) → Is B C g (fun← cn j) → count-B j ≡ count-B i → ⊥
-            lem20 zero (suc j) i<j bi bj le with  is-B (fun← cn 0) | inspect count-B 0 | is-B (fun← cn (suc j)) | inspect count-B (suc j)
-            ... | no nisc  | _ | _ | _ = ⊥-elim (nisc bi)
-            ... |  yes _ | _ | no nisc | _  = ⊥-elim (nisc bj)
-            ... | yes _ | record { eq = eq1 } | yes _ | record { eq = eq2 } = ⊥-elim ( nat-≤> lem25 a<sa) where
+            lem20 zero (suc j) i<j bi bj le with  is-B (fun← cn 0) in eq1 | is-B (fun← cn (suc j)) in eq2
+            ... | no nisc  | _ = ⊥-elim (nisc bi)
+            ... |  yes _ |  no nisc = ⊥-elim (nisc bj)
+            ... | yes _ |  yes _  = ⊥-elim ( nat-≤> lem25 a<sa) where
                  lem22 : 1 ≡ count-B 0
-                 lem22 with is-B (fun← cn 0) | inspect count-B 0
-                 ... | yes _ | record { eq = eq1 } = refl
-                 ... | no nisa | _ = ⊥-elim ( nisa bi )
+                 lem22 with is-B (fun← cn 0) in eq1
+                 ... | yes _ = refl
+                 ... | no nisa = ⊥-elim ( nisa bi )
                  lem24 : count-B j ≡ 0
                  lem24 = cong pred le
                  lem25 : 1 ≤ 0
@@ -780,18 +837,18 @@ Countable-Bernstein A B C an cn fi gi is-A is-B = record {
                  --    cb i <  suc (cb i) < cb (suc i) ≤ cb j
                  --    suc (cb i) ≡ suc (cb j) → cb i ≡ cb j
                  lem22 : suc (count-B i) ≡ count-B (suc i)
-                 lem22 with is-B (fun← cn (suc i)) | inspect count-B (suc i)
-                 ... | yes _ | record { eq = eq1 } = refl
-                 ... | no nisa | _ = ⊥-elim ( nisa bi )
+                 lem22 with is-B (fun← cn (suc i)) in eq1
+                 ... | yes _ = refl
+                 ... | no nisa = ⊥-elim ( nisa bi )
                  lem23 : suc (count-B j) ≡ count-B (suc j)
-                 lem23 with is-B (fun← cn (suc j)) | inspect count-B (suc j)
-                 ... | yes _ | record { eq = eq1 } = refl
-                 ... | no nisa | _ = ⊥-elim ( nisa bj )
+                 lem23 with is-B (fun← cn (suc j)) in eq1
+                 ... | yes _ = refl
+                 ... | no nisa = ⊥-elim ( nisa bj )
                  lem24 : count-B i ≡ count-B j
-                 lem24 with  is-B (fun← cn (suc i)) | inspect count-B (suc i) | is-B (fun← cn (suc j)) | inspect count-B (suc j)
-                 ... | no nisc  | _ | _ | _ = ⊥-elim (nisc bi)
-                 ... |  yes _ | _ | no nisc | _  = ⊥-elim (nisc bj)
-                 ... | yes _ | record { eq = eq1 } | yes _ | record { eq = eq2 } = sym (cong pred le)
+                 lem24 with  is-B (fun← cn (suc i)) in eq1 | is-B (fun← cn (suc j)) in eq2
+                 ... | no nisc  | _ = ⊥-elim (nisc bi)
+                 ... |  yes _ | no nisc  = ⊥-elim (nisc bj)
+                 ... | yes _ | yes _ = sym (cong pred le)
                  lem21 : suc (count-B i) ≤ count-B j
                  lem21 = begin
                      suc (count-B i) ≡⟨ lem22 ⟩
@@ -804,33 +861,46 @@ Countable-Bernstein A B C an cn fi gi is-A is-B = record {
             ... | tri≈ ¬a b ¬c = b
             ... | tri> ¬a ¬b c₁ = ⊥-elim ( lem20 j i c₁ bj bi eq )
 
+
         lem07 : (n i : ℕ) → count-B i ≡ suc n → CountB n
-        lem07 n 0 eq with is-B (fun← cn 0) | inspect count-B 0
-        ... | yes isb | record { eq = eq1 } = record { b = Is.a isb ; cb = 0 ; b=cn = sym (Is.fa=c isb) ; cb=n = trans eq1 eq 
-                ; cb-inject = λ cb1 iscb1 cb1eq → lem12 cb1 iscb1 (subst (λ k → k ≡ count-B cb1) eq1 cb1eq)   } where
+        lem07 n 0 eq with is-B (fun← cn 0)
+        ... | yes isb = lem13 where
+            cb1 = count-B 0
+            lem14 : count-B 0 ≡ 1
+            lem14 with  is-B (fun← cn 0)
+            ... | yes _ = refl
+            ... | no ne = ⊥-elim (ne isb)
             lem12 : (cb1 : ℕ) →  Is B C g (fun← cn cb1)  → 1 ≡ count-B cb1 → 0 ≡ cb1
-            lem12 cb1 iscb1 cbeq = lem06 0 cb1 isb iscb1 (trans eq1 cbeq) 
-        ... | no nisb | record { eq = eq1 } = ⊥-elim ( nat-≡< eq (s≤s z≤n ) )
-        lem07 n (suc i) eq with is-B (fun← cn (suc i)) | inspect count-B (suc i)
-        ... | yes isb | record { eq = eq1 } = record { b = Is.a isb ; cb = suc i ; b=cn = sym (Is.fa=c isb) ; cb=n = trans eq1 eq
-                 ; cb-inject = λ cb1 iscb1 cb1eq → lem12 cb1 iscb1 (subst (λ k → k ≡ count-B cb1) eq1 cb1eq)   } where
+            lem12 cb1 iscb1 cbeq = lem06 0 cb1 isb iscb1 (trans lem14 cbeq)
+            lem13 : CountB n
+            lem13 = record { b = Is.a isb ; cb = 0 ; b=cn = sym (Is.fa=c isb) ; cb=n = trans lem14 eq
+                ; cb-inject = λ cb1 iscb1 cb1eq → lem12 cb1 iscb1 (subst (λ k → k ≡ count-B cb1) lem14 cb1eq)   }
+        ... | no nisb = ⊥-elim ( nat-≡< eq (s≤s z≤n ) )
+        lem07 n (suc i) eq with is-B (fun← cn (suc i))
+        ... | yes isb = record { b = Is.a isb ; cb = suc i ; b=cn = sym (Is.fa=c isb) ; cb=n = trans lem14 eq
+                 ; cb-inject = λ cb1 iscb1 cb1eq → lem12 cb1 iscb1 (subst (λ k → k ≡ count-B cb1) lem14 cb1eq)   } where
+            cbs = count-B (suc i)
+            lem14 : count-B (suc i) ≡ suc (count-B i)
+            lem14 with  is-B (fun← cn (suc i))
+            ... | yes _ = refl
+            ... | no ne = ⊥-elim (ne isb)
             lem12 : (cb1 : ℕ) → Is B C g (fun← cn cb1) → suc (count-B i)  ≡ count-B cb1 → suc i ≡ cb1
-            lem12 cb1 iscb1 cbeq = lem06 (suc i) cb1 isb iscb1 (trans eq1 cbeq)
-        ... | no nisb | record { eq = eq1 } = lem07 n i  eq
+            lem12 cb1 iscb1 cbeq = lem06 (suc i) cb1 isb iscb1 (trans lem14 cbeq)
+        ... | no nisb = lem07 n i eq
 
         -- starting from 0, if count B i ≡ suc n, this is it
 
         lem09 : (i j : ℕ) → suc n ≤ j → j ≡ count-B i →  CountB n
         lem09 0 (suc j) (s≤s le) eq with ≤-∨ (s≤s le)
         ... | case1 eq1 = lem07 n 0 (sym (trans eq1 eq ))
-        ... | case2 (s≤s lt) with is-B (fun← cn 0) | inspect count-B 0
-        ... | yes isb | record { eq = eq1 } = ⊥-elim ( nat-≤> (≤-trans (s≤s lt) (refl-≤≡ eq) ) (s≤s (s≤s z≤n)) )
-        ... | no nisb | record { eq = eq1 } = ⊥-elim (nat-≡< (sym eq) (s≤s z≤n))
+        ... | case2 (s≤s lt) with is-B (fun← cn 0) in eq1
+        ... | yes isb = ⊥-elim ( nat-≤> (≤-trans (s≤s lt) (refl-≤≡ eq) ) (s≤s (s≤s z≤n)) )
+        ... | no nisb = ⊥-elim (nat-≡< (sym eq) (s≤s z≤n))
         lem09 (suc i) (suc j) (s≤s le) eq with ≤-∨ (s≤s le)
         ... | case1 eq1 = lem07 n (suc i) (sym (trans eq1 eq ))
-        ... | case2 (s≤s lt) with is-B (fun← cn (suc i)) | inspect count-B (suc i)
-        ... | yes isb | record { eq = eq1 } = lem09 i j lt (cong pred eq)
-        ... | no nisb | record { eq = eq1 } = lem09 i (suc j) (≤-trans lt a≤sa) eq
+        ... | case2 (s≤s lt) with is-B (fun← cn (suc i)) in eq1
+        ... | yes isb = lem09 i j lt (cong pred eq)
+        ... | no nisb = lem09 i (suc j) (≤-trans lt a≤sa) eq
 
     bton : B → ℕ
     bton b = pred (count-B (fun→ cn (g b)))
@@ -839,7 +909,7 @@ Countable-Bernstein A B C an cn fi gi is-A is-B = record {
     ntob n = CountB.b (lem01 n (maxAC.ac (lem02 n)) (≤-trans (maxAC.n<ca (lem02 n)) (ca≤cb0 (maxAC.ac (lem02 n))) ))
 
     biso : (n : ℕ) → bton (ntob n) ≡ n
-    biso n = begin  
+    biso n = begin
         bton (ntob n) ≡⟨ refl ⟩
         pred (count-B (fun→ cn (g (CountB.b CB)))) ≡⟨ sym ( cong (λ k → pred (count-B (fun→ cn k))) ( CountB.b=cn CB)) ⟩
         pred (count-B (fun→ cn (fun← cn (CountB.cb CB)))) ≡⟨ cong (λ k → pred (count-B k)) (fiso→ cn _) ⟩
@@ -853,18 +923,18 @@ Countable-Bernstein A B C an cn fi gi is-A is-B = record {
     -- uniqueness of ntob is proved by injection
     --
     biso1 : (b : B) → ntob (bton b) ≡ b
-    biso1 b with count-B (fun→ cn (g b)) | inspect count-B (fun→ cn (g b)) 
-    ... | zero  | record { eq = eq1 } = ⊥-elim ( nat-≡< (sym lem20) (lem21 _ refl) ) where
+    biso1 b with count-B (fun→ cn (g b)) in eq1
+    ... | zero  = ⊥-elim ( nat-≡< (sym lem20) (lem21 _ refl) ) where
         lem20 : count-B (fun→ cn (InjectiveF.f gi b)) ≡ zero
         lem20 = eq1
         lem21 : (i : ℕ) → i ≡ fun→ cn (InjectiveF.f gi b) → 0 < count-B  i
-        lem21 0 eq with is-B (fun← cn 0) | inspect count-B 0
-        ... | yes isb | record { eq = eq1 } = ≤-refl
-        ... | no nisb | record{ eq = eq1 } = ⊥-elim ( nisb record { a = b ; fa=c = trans (sym (fiso← cn _)) (cong (fun← cn) (sym eq)) } )
-        lem21 (suc i) eq with is-B (fun← cn (suc i)) | inspect count-B (suc i)
-        ... | yes isb | record{ eq = eq2 } = s≤s z≤n
-        ... | no nisb | record{ eq = eq2 } = ⊥-elim ( nisb record { a = b ; fa=c = trans (sym (fiso← cn _)) (cong (fun← cn) (sym eq)) } )
-    ... | suc n | record { eq = eq1 } = begin 
+        lem21 0 eq with is-B (fun← cn 0) in eq1
+        ... | yes isb = ≤-refl
+        ... | no nisb = ⊥-elim ( nisb record { a = b ; fa=c = trans (sym (fiso← cn _)) (cong (fun← cn) (sym eq)) } )
+        lem21 (suc i) eq with is-B (fun← cn (suc i)) in eq1
+        ... | yes isb = s≤s z≤n
+        ... | no nisb = ⊥-elim ( nisb record { a = b ; fa=c = trans (sym (fiso← cn _)) (cong (fun← cn) (sym eq)) } )
+    ... | suc n = begin
            CountB.b CB  ≡⟨ InjectiveF.inject gi (bi-inject→ cn (begin
               fun→ cn (g (CountB.b CB)) ≡⟨ cong (fun→ cn) (sym (CountB.b=cn CB)) ⟩
               fun→ cn (fun← cn (CountB.cb CB)) ≡⟨ fiso→ cn _ ⟩
@@ -974,7 +1044,7 @@ LMℕ A Ln = Countable-Bernstein (List A) (List (Maybe A)) (List A ∧ List Bool
    ... | yes y = yes record { a = just h ∷ Is.a y ; fa=c = cong₂ (λ j k → ⟪ h ∷ j , true ∷ k ⟫ ) (cong proj1 (Is.fa=c y)) (cong proj2 (Is.fa=c y))   }
    ... | no n = no lem00 where
         lem00 : ¬ Is (List (Maybe A)) (List A ∧ List Bool) g ⟪ h ∷ t , true ∷ bt ⟫
-        lem00 record { a = (just x ∷ a) ; fa=c = refl } = n record { a = a ; fa=c = refl } 
+        lem00 record { a = (just x ∷ a) ; fa=c = refl } = n record { a = a ; fa=c = refl }
    dec1 ⟪ h ∷ t , false ∷ bt ⟫  with dec1 ⟪ h ∷ t , bt ⟫
    ... | yes record { a = a ; fa=c = fa=c } = yes record { a = nothing ∷ a ; fa=c = cong₂ (λ j k → ⟪ j , false ∷ k ⟫) (cong proj1 fa=c) (cong proj2 fa=c) }
    ... | no n = no lem00 where
@@ -984,34 +1054,21 @@ LMℕ A Ln = Countable-Bernstein (List A) (List (Maybe A)) (List A ∧ List Bool
             lem01 with cong proj2 eq
             ... | refl = refl
 
+-- we may need substraction
 --
---  (     Bool ∷      Bool ∷ [] )    (      Bool ∷      Bool ∷ []   )  (      Bool ∷ [] )
---        true ∷      true ∷ false ∷        true ∷      true ∷ false ∷        true ∷ []
+-- bi-subtract : (A B : Set ) → Bijection (A ∨ B) ℕ → finiteSet B → Bijection A ℕ
+--
+-- Maybeℕ : (A : Set ) → Bijection (Maybe A) ℕ → Bijection A ℕ
+--
+--  (     Bool ∷      Bool ∷ [] )  ∷ (      Bool ∷      Bool ∷ []   ) ∷     (      Bool ∷ [] )    ∷ []
+--   just true ∷ just true ∷ nothing ∷ just true ∷ just true ∷ nothing ∷      just true ∷ nothing ∷ []
+--
+-- LBBℕ : Bijection (List (List Bool)) ℕ
+--
+-- Lℕ=ℕ : Bijection (List ℕ) ℕ
+--
 
--- LMℕ A Ln = Countable-Bernstein (List A) (List (Maybe A)) (List A ∧ List Bool) Ln (LM1 A Ln)  fi gi dec0 dec1 where
---    someday ...
 
-LBBℕ : Bijection (List (List Bool)) ℕ
-LBBℕ = Countable-Bernstein (List Bool ∧ List Bool) (List (List Bool)) (List Bool ∧ List Bool ) (LM1 Bool (bi-sym _ _ LBℕ)) (LM1 Bool (bi-sym _ _ LBℕ))  
-        ? ? ? ? where
 
-    atob : List (List Bool) →  List Bool ∧ List Bool 
-    atob [] = ⟪ [] , [] ⟫
-    atob ( [] ∷  t ) = ⟪ false  ∷ proj1 ( atob t ) , false ∷ proj2 ( atob t ) ⟫
-    atob ( (h ∷ t1) ∷ t ) = ⟪ h ∷ proj1 ( atob t ) , true  ∷ proj2 ( atob t ) ⟫
 
-    btoa : List Bool ∧ List Bool → List (List Bool) 
-    btoa ⟪ [] , _ ⟫ = []
-    btoa ⟪ _ ∷ _  , [] ⟫ = []
-    btoa ⟪ _ ∷ t0 ,  false ∷ t1  ⟫ = [] ∷ btoa ⟪ t0 , t1 ⟫ 
-    btoa ⟪ h ∷ t0 ,  true  ∷ t1  ⟫ with btoa ⟪ t0 , t1 ⟫
-    ... | [] = ( h ∷ [] ) ∷ []
-    ... | x ∷ y = (h ∷ x ) ∷ y
 
-Lℕ=ℕ : Bijection (List ℕ) ℕ
-Lℕ=ℕ = record {
-       fun→  = λ x → ?
-     ; fun←  = λ n → ?
-     ; fiso→ = ?
-     ; fiso← = ?
-     }

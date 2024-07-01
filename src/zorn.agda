@@ -1,11 +1,58 @@
-{-# OPTIONS --allow-unsolved-metas #-}
-open import Level hiding ( suc ; zero )
+{-# OPTIONS --cubical-compatible --safe #-}
+open import Level renaming (zero to Zero ; suc to Suc)
 open import Ordinals
+open import logic
+open import Relation.Nullary
+
+import HODBase
+import OD
 open import Relation.Binary
-open import Relation.Binary.Core
-open import Relation.Binary.PropositionalEquality
-import OD 
-module zorn {n : Level } (O : Ordinals {n}) (_<_ : (x y : OD.HOD O ) → Set n ) (PO : IsStrictPartialOrder _≡_ _<_ ) where
+open import  Relation.Binary.PropositionalEquality hiding ( [_] )
+
+module zorn {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho< : OD.ODAxiom-ho< O HODAxiom )
+       (AC : OD.AxiomOfChoice O HODAxiom ) 
+        (_<_ : (x y : OD.HOD O HODAxiom) → Set n ) 
+        (<-cong : {x y w z : OD.HOD O HODAxiom} 
+            → HODBase._==_ O (HODBase.HOD.od x) (HODBase.HOD.od w) → HODBase._==_ O (HODBase.HOD.od  y) (HODBase.HOD.od z) → x < y  → w < z )
+        (PO : IsStrictPartialOrder _≡_ _<_ ) where
+
+
+-- open import  Relation.Binary.Structures
+open import Data.Empty
+open import Data.Nat hiding ( _≤_  ; _<_ )
+
+import OrdUtil
+open inOrdinal O
+
+open Ordinals.Ordinals  O
+open Ordinals.IsOrdinals isOrdinal
+import ODUtil
+
+open import logic
+open import nat
+
+open OrdUtil O
+open ODUtil O HODAxiom  ho<
+
+open _∧_
+open _∨_
+open Bool
+
+open  HODBase._==_
+
+open HODBase.ODAxiom HODAxiom  
+open OD O HODAxiom
+
+open HODBase.HOD
+
+open AxiomOfChoice AC
+open import ODC O HODAxiom AC as ODC
+
+open import filter O HODAxiom ho< AC
+open import ZProduct O HODAxiom ho<
+
+open Filter
+
 
 --
 -- Zorn-lemma : { A : HOD }
@@ -14,35 +61,6 @@ module zorn {n : Level } (O : Ordinals {n}) (_<_ : (x y : OD.HOD O ) → Set n )
 --     → Maximal A
 --
 
-open import logic
-
-open import Relation.Nullary
-open import Data.Empty
-import BAlgebra
-
-open import Data.Nat hiding ( _<_ ; _≤_ )
-open import Data.Nat.Properties
-open import nat
-
-open inOrdinal O
-open OD O
-open OD.OD
-open ODAxiom odAxiom
-import OrdUtil
-import ODUtil
-open Ordinals.Ordinals  O
-open Ordinals.IsOrdinals isOrdinal
--- open Ordinals.IsNext isNext
-open OrdUtil O
-open ODUtil O
-
-import ODC
-
-open _∧_
-open _∨_
-open Bool
-
-open HOD
 
 --
 -- Partial Order on HOD ( possibly limited in A )
@@ -74,8 +92,8 @@ ftrans<-≤ : {x y z : Ordinal } →  x <<  y →  y ≤ z →  x <<  z
 ftrans<-≤ {x} {y} {z} x<y (case1 eq) = subst (λ k → * x < k ) ((cong (*) eq)) x<y
 ftrans<-≤ {x} {y} {z} x<y (case2 lt) = IsStrictPartialOrder.trans PO x<y lt
 
-<-irr : {a b : HOD} → (a ≡ b ) ∨ (a < b ) → b < a → ⊥
-<-irr {a} {b} (case1 a=b) b<a = IsStrictPartialOrder.irrefl PO   (sym a=b) b<a
+<-irr : {a b : Ordinal} → (a ≡ b ) ∨ (* a < * b ) → * b < * a → ⊥
+<-irr {a} {b} (case1 a=b) b<a = IsStrictPartialOrder.irrefl PO   (sym (cong (*) a=b) ) b<a
 <-irr {a} {b} (case2 a<b) b<a = IsStrictPartialOrder.irrefl PO   refl
           (IsStrictPartialOrder.trans PO     b<a a<b)
 
@@ -85,7 +103,7 @@ ftrans<-≤ {x} {y} {z} x<y (case2 lt) = IsStrictPartialOrder.trans PO x<y lt
 
 ptrans =  IsStrictPartialOrder.trans PO
 
-open _==_
+-- open _==_
 -- open _⊆_ -- we use different definition
 
 -- We cannot prove this without Well foundedness of A
@@ -131,46 +149,45 @@ fcn {A} s {x} {f} mf (fsuc y p) with proj1 (mf y (A∋fc s f mf p))
 ... | case2 y<fy = suc (fcn s mf p )
 
 fcn-inject : {A : HOD} (s : Ordinal) { x y : Ordinal} {f : Ordinal → Ordinal} → (mf : ≤-monotonic-f A f)
-     → (cx : FClosure A f s x ) (cy : FClosure A f s y ) → fcn s mf cx  ≡ fcn s mf cy → * x ≡ * y
+     → (cx : FClosure A f s x ) (cy : FClosure A f s y ) → fcn s mf cx  ≡ fcn s mf cy → x ≡ y
 fcn-inject {A} s {x} {y} {f} mf cx cy eq = fc00 (fcn s mf cx) (fcn s mf cy) eq cx cy refl refl where
      fc06 : {y : Ordinal } { as : odef A s } (eq : s ≡ y  ) { j : ℕ } →  ¬ suc j ≡ fcn {A} s {y} {f} mf (init as eq )
      fc06 {x} {y} refl {j} not = fc08 not where
         fc08 :  {j : ℕ} → ¬ suc j ≡ 0
         fc08 ()
-     fc07 : {x : Ordinal } (cx : FClosure A f s x ) → 0 ≡ fcn s mf cx → * s ≡ * x
+     fc07 : {x : Ordinal } (cx : FClosure A f s x ) → 0 ≡ fcn s mf cx → s ≡ x
      fc07 {x} (init as refl) eq = refl
      fc07 {.(f x)} (fsuc x cx) eq with proj1 (mf x (A∋fc s f mf cx ) )
-     ... | case1 x=fx = subst (λ k → * s ≡  k ) (cong (*) x=fx) ( fc07 cx eq )
-     -- ... | case2 x<fx = ?
-     fc00 :  (i j : ℕ ) → i ≡ j  →  {x y : Ordinal } → (cx : FClosure A f s x ) (cy : FClosure A f s y ) → i ≡ fcn s mf cx  → j ≡ fcn s mf cy → * x ≡ * y
+     ... | case1 x=fx = trans (fc07 cx eq ) x=fx
+     fc00 :  (i j : ℕ ) → i ≡ j  →  {x y : Ordinal } → (cx : FClosure A f s x ) (cy : FClosure A f s y ) → i ≡ fcn s mf cx  → j ≡ fcn s mf cy → x ≡ y
      fc00 (suc i) (suc j) x cx (init x₃ x₄) x₁ x₂ = ⊥-elim ( fc06 x₄ x₂ )
      fc00 (suc i) (suc j) x (init x₃ x₄) (fsuc x₅ cy) x₁ x₂ = ⊥-elim ( fc06 x₄ x₁ )
      fc00 zero zero refl (init _ refl) (init x₁ refl) i=x i=y = refl
      fc00 zero zero refl (init as refl) (fsuc y cy) i=x i=y with proj1 (mf y (A∋fc s f mf cy ) )
-     ... | case1 y=fy = subst (λ k → * s ≡ * k ) y=fy (fc07 cy i=y) -- ( fc00 zero zero refl (init as refl) cy i=x i=y )
+     ... | case1 y=fy = trans (fc07 cy i=y) y=fy 
      fc00 zero zero refl (fsuc x cx) (init as refl) i=x i=y with proj1 (mf x (A∋fc s f mf cx ) )
-     ... | case1 x=fx = subst (λ k → * k ≡ * s ) x=fx (sym (fc07 cx i=x)) -- ( fc00 zero zero refl cx (init as refl) i=x i=y )
+     ... | case1 x=fx = sym (trans (fc07 cx i=x) x=fx ) 
      fc00 zero zero refl (fsuc x cx) (fsuc y cy) i=x i=y with proj1 (mf x (A∋fc s f mf cx ) ) | proj1 (mf y (A∋fc s f mf cy ) )
-     ... | case1 x=fx  | case1 y=fy = subst₂ (λ j k → * j ≡ * k ) x=fx y=fy ( fc00 zero zero refl cx cy  i=x i=y )
+     ... | case1 x=fx  | case1 y=fy = trans (sym x=fx) (trans ( fc00 zero zero refl cx cy  i=x i=y ) y=fy)
      fc00 (suc i) (suc j) i=j {.(f x)} {.(f y)} (fsuc x cx) (fsuc y cy) i=x j=y with proj1 (mf x (A∋fc s f mf cx ) ) | proj1 (mf y (A∋fc s f mf cy ) )
-     ... | case1 x=fx | case1 y=fy = subst₂ (λ j k → * j ≡ * k ) x=fx y=fy ( fc00 (suc i) (suc j) i=j cx cy  i=x j=y )
-     ... | case1 x=fx | case2 y<fy = subst (λ k → * k ≡ * (f y)) x=fx (fc02 x cx i=x) where
-          fc02 : (x1 : Ordinal) → (cx1 : FClosure A f s x1 ) →  suc i ≡ fcn s mf cx1 → * x1 ≡ * (f y)
+     ... | case1 x=fx | case1 y=fy = trans (sym x=fx) (trans ( fc00 (suc i) (suc j) i=j cx cy  i=x j=y ) y=fy )
+     ... | case1 x=fx | case2 y<fy = trans (sym x=fx) (fc02 x cx i=x) where
+          fc02 : (x1 : Ordinal) → (cx1 : FClosure A f s x1 ) →  suc i ≡ fcn s mf cx1 → x1 ≡ f y
           fc02 x1 (init x₁ x₂) x = ⊥-elim (fc06 x₂ x)
           fc02 .(f x1) (fsuc x1 cx1) i=x1 with proj1 (mf x1 (A∋fc s f mf cx1 ) )
-          ... | case1 eq = trans (sym (cong (*) eq )) ( fc02  x1 cx1 i=x1 )  -- derefence while f x ≡ x
-          ... | case2 lt = subst₂ (λ j k → * (f j) ≡ * (f k )) &iso &iso ( cong (λ k → * ( f (& k ))) fc04) where
-               fc04 : * x1 ≡ * y
+          ... | case1 eq = trans (sym eq ) ( fc02  x1 cx1 i=x1 )  -- derefence while f x ≡ x
+          ... | case2 lt = cong f fc04  where
+               fc04 : x1 ≡ y
                fc04 = fc00 i j (cong pred i=j) cx1 cy (cong pred i=x1) (cong pred j=y)
-     ... | case2 x<fx | case1 y=fy = subst (λ k → * (f x) ≡ * k ) y=fy (fc03 y cy j=y) where
-          fc03 : (y1 : Ordinal) → (cy1 : FClosure A f s y1 ) →  suc j ≡ fcn s mf cy1 → * (f x)  ≡ * y1
+     ... | case2 x<fx | case1 y=fy = trans (fc03 y cy j=y) y=fy where
+          fc03 : (y1 : Ordinal) → (cy1 : FClosure A f s y1 ) →  suc j ≡ fcn s mf cy1 → f x  ≡ y1
           fc03 y1 (init x₁ x₂) x = ⊥-elim (fc06 x₂ x)
           fc03 .(f y1) (fsuc y1 cy1) j=y1 with proj1 (mf y1 (A∋fc s f mf cy1 ) )
-          ... | case1 eq = trans ( fc03  y1 cy1 j=y1 ) (cong (*) eq)
-          ... | case2 lt = subst₂ (λ j k → * (f j) ≡ * (f k )) &iso &iso ( cong (λ k → * ( f (& k ))) fc05) where
-               fc05 : * x ≡ * y1
+          ... | case1 eq = trans ( fc03  y1 cy1 j=y1 ) eq
+          ... | case2 lt = cong f fc05 where 
+               fc05 : x ≡ y1
                fc05 = fc00 i j (cong pred i=j) cx cy1 (cong pred i=x) (cong pred j=y1)
-     ... | case2 x₁ | case2 x₂ = subst₂ (λ j k → * (f j) ≡ * (f k) ) &iso &iso (cong (λ k → * (f (& k))) (fc00 i j (cong pred i=j) cx cy (cong pred i=x) (cong pred j=y)))
+     ... | case2 x₁ | case2 x₂ = cong f  (fc00 i j (cong pred i=j) cx cy (cong pred i=x) (cong pred j=y))
 
 
 fcn-< : {A : HOD} (s : Ordinal ) { x y : Ordinal} {f : Ordinal → Ordinal} → (mf : ≤-monotonic-f A f)
@@ -186,7 +203,7 @@ fcn-< {A} s {x} {y} {f} mf cx cy x<y = fc01 (fcn s mf cy) cx cy refl x<y where
      ... | case1 y=fy = subst (λ k → * x < k ) (cong (*) y=fy) ( fc01 (suc i) {y1} cx cy i=y (s≤s x<i)  )
      ... | case2 y<fy with <-cmp (fcn s mf cx ) i
      ... | tri> ¬a ¬b c = ⊥-elim ( nat-≤> x<i c )
-     ... | tri≈ ¬a b ¬c = subst (λ k → k < * (f y1) ) (fcn-inject s mf cy cx (sym (trans b (cong pred i=y) ))) y<fy
+     ... | tri≈ ¬a b ¬c = subst (λ k → * k < * (f y1) ) (fcn-inject s mf cy cx (sym (trans b (cong pred i=y) ))) y<fy
      ... | tri< a ¬b ¬c = IsStrictPartialOrder.trans PO fc02 y<fy where
           fc03 :  suc i ≡ suc (fcn s mf cy) → i ≡ fcn s mf cy
           fc03 eq = cong pred eq
@@ -195,13 +212,13 @@ fcn-< {A} s {x} {y} {f} mf cx cy x<y = fc01 (fcn s mf cy) cx cy refl x<y where
 
 
 fcn-cmp : {A : HOD} (s : Ordinal) { x y : Ordinal } (f : Ordinal → Ordinal) (mf : ≤-monotonic-f A f)
-    → (cx : FClosure A f s x) → (cy : FClosure A f s y ) → Tri (* x < * y) (* x ≡ * y) (* y < * x )
+    → (cx : FClosure A f s x) → (cy : FClosure A f s y ) → Tri (* x < * y) (x ≡ y) (* y < * x )
 fcn-cmp {A} s {x} {y} f mf cx cy with <-cmp ( fcn s mf cx ) (fcn s mf cy )
 ... | tri< a ¬b ¬c = tri< fc11 (λ eq → <-irr (case1 (sym eq)) fc11) (λ lt → <-irr (case2 fc11) lt) where
       fc11 : * x < * y
       fc11 = fcn-< {A} s {x} {y} {f} mf cx cy a
 ... | tri≈ ¬a b ¬c = tri≈ (λ lt → <-irr (case1 (sym fc10)) lt) fc10 (λ lt → <-irr (case1 fc10) lt) where
-      fc10 : * x ≡ * y
+      fc10 : x ≡ y
       fc10 = fcn-inject {A} s {x} {y} {f} mf cx cy b
 ... | tri> ¬a ¬b c = tri> (λ lt → <-irr (case2 fc12) lt) (λ eq → <-irr (case1 eq) fc12) fc12  where
       fc12 : * y < * x
@@ -211,8 +228,8 @@ fcn-cmp {A} s {x} {y} f mf cx cy with <-cmp ( fcn s mf cx ) (fcn s mf cy )
 
 -- open import Relation.Binary.Properties.Poset as Poset
 
-IsTotalOrderSet : ( A : HOD ) → Set (Level.suc n)
-IsTotalOrderSet A = {a b : HOD} → odef A (& a) → odef A (& b)  → Tri (a < b) (a ≡ b) (b < a )
+IsTotalOrderSet : ( A : HOD ) → Set n
+IsTotalOrderSet A = {a b : Ordinal } → odef A a → odef A b  → Tri (* a < * b) (a ≡ b) (* b < * a )
 
 ⊆-IsTotalOrderSet : { A B : HOD } →  B ⊆ A  → IsTotalOrderSet A → IsTotalOrderSet B
 ⊆-IsTotalOrderSet {A} {B} B⊆A T  ax ay = T (B⊆A ax) (B⊆A ay)
@@ -255,7 +272,7 @@ fc-stop : ( A : HOD )    ( f : Ordinal → Ordinal ) (mf : ≤-monotonic-f A f) 
     → (aa : odef A a ) →(  {y : Ordinal} → FClosure A f a y → (y ≡ b ) ∨ (y << b )) → a ≡ b → f a ≡ a
 fc-stop A f mf {a} {b} aa x≤sup a=b with x≤sup (fsuc a (init aa refl ))
 ... | case1 eq = trans eq (sym a=b)
-... | case2 lt = ⊥-elim (<-irr (case1 (cong (λ k → * (f k) ) (sym a=b))) (ftrans<-≤ lt fc00 ) ) where
+... | case2 lt = ⊥-elim (<-irr (case1 (cong f (sym a=b))) (ftrans<-≤ lt fc00 ) ) where
      fc00 :   b ≤  (f b)
      fc00 = proj1 (mf _ (subst (λ k → odef A k) a=b aa ))
 
@@ -391,19 +408,19 @@ record ZChain ( A : HOD )    ( f : Ordinal → Ordinal )  (mf< : <-monotonic-f A
    --
    -- supf is minsup, so its UniofCF are equal, these are equal
    -- 
-   supfeq : {a b : Ordinal } → a o≤ z →  b o≤ z → UnionCF A f ay supf a ≡ UnionCF A f ay supf b → supf a ≡ supf b
+   supfeq : {a b : Ordinal } → a o≤ z →  b o≤ z → UnionCF A f ay supf a =h= UnionCF A f ay supf b → supf a ≡ supf b
    supfeq {a} {b} a≤z b≤z ua=ub with trio< (supf a) (supf b)
    ... | tri< sa<sb ¬b ¬c = ⊥-elim ( o≤> (
-             IsMinSUP.minsup (is-minsup b≤z) asupf (λ {z} uzb → IsMinSUP.x≤sup (is-minsup a≤z) (subst (λ k → odef k z) (sym ua=ub) uzb)) ) sa<sb )
+             IsMinSUP.minsup (is-minsup b≤z) asupf (λ {z} uzb → IsMinSUP.x≤sup (is-minsup a≤z) (eq←  ua=ub uzb) )) sa<sb )
    ... | tri≈ ¬a b ¬c = b
    ... | tri> ¬a ¬b sb<sa = ⊥-elim ( o≤> (
-             IsMinSUP.minsup (is-minsup a≤z) asupf (λ {z} uza → IsMinSUP.x≤sup (is-minsup b≤z) (subst (λ k → odef k z) ua=ub uza)) ) sb<sa )
+             IsMinSUP.minsup (is-minsup a≤z) asupf (λ {z} uza → IsMinSUP.x≤sup (is-minsup b≤z) (eq→ ua=ub uza) )) sb<sa )
 
    --
    -- supf a over b and supf a is not included in UnionCF a nor UnionCF b, so UnionCF b is equal to the UnionCF a
    --
-   union-max : {a b : Ordinal } → b o≤ supf a → b o≤ z → supf a o< supf b → UnionCF A f ay supf a ≡ UnionCF A f ay supf b
-   union-max {a} {b} b≤sa b≤z sa<sb = ==→o≡ record { eq→ = z47 ; eq← = z48 } where
+   union-max : {a b : Ordinal } → b o≤ supf a → b o≤ z → supf a o< supf b → UnionCF A f ay supf a =h= UnionCF A f ay supf b
+   union-max {a} {b} b≤sa b≤z sa<sb = record { eq→ = z47 ; eq← = z48 } where
           z47 : {w : Ordinal } → odef (UnionCF A f ay supf a ) w → odef ( UnionCF A f ay supf b ) w
           z47 {w} ⟪ aw , ch-init fc ⟫ = ⟪ aw , ch-init fc ⟫
           z47 {w} ⟪ aw , ch-is-sup u u<a su=u fc ⟫ = ⟪ aw , ch-is-sup u u<b su=u fc ⟫ where
@@ -447,43 +464,29 @@ record ZChain ( A : HOD )    ( f : Ordinal → Ordinal )  (mf< : <-monotonic-f A
    ... | case1 eq = ⊥-elim ( o<¬≡ eq sa<sb )
 
    f-total : IsTotalOrderSet chain
-   f-total {a} {b} ⟪ uaa , ch-is-sup ua sua<x sua=ua fca ⟫ ⟪ uab , ch-is-sup ub sub<x sub=ub fcb ⟫ =
-     subst₂ (λ j k → Tri (j < k) (j ≡ k) (k < j)) *iso *iso fc-total where
-         fc-total : Tri (* (& a) < * (& b)) (* (& a) ≡ * (& b)) (* (& b) < * (& a) )
+   f-total {a} {b} ⟪ uaa , ch-is-sup ua sua<x sua=ua fca ⟫ ⟪ uab , ch-is-sup ub sub<x sub=ub fcb ⟫ = fc-total where
+         fc-total : Tri (* a < * b) (a ≡ b) (* b < * a )
          fc-total with trio< ua ub
          ... | tri< a₁ ¬b ¬c with ≤-ftrans  (order (o<→≤ sub<x) (subst₂ (λ j k → j o< k) (sym sua=ua) (sym sub=ub) a₁) fca ) (s≤fc (supf ub) f mf fcb )
-         ... | case1 eq1 = tri≈ (λ lt → ⊥-elim (<-irr (case1 (sym ct00)) lt)) ct00  (λ lt → ⊥-elim (<-irr (case1 ct00) lt)) where
-                  ct00 : * (& a) ≡ * (& b)
-                  ct00 = cong (*) eq1
+         ... | case1 eq1 = tri≈ (λ lt → ⊥-elim (<-irr (case1 (sym eq1)) lt)) eq1  (λ lt → ⊥-elim (<-irr (case1 eq1) lt)) 
          ... | case2 a<b =  tri< a<b (λ eq → <-irr (case1 (sym eq)) a<b ) (λ lt → <-irr (case2 a<b ) lt)
          fc-total | tri≈ _ refl _ = fcn-cmp _ f mf fca fcb
          fc-total | tri> ¬a ¬b c with ≤-ftrans  (order (o<→≤ sua<x) (subst₂ (λ j k → j o< k) (sym sub=ub) (sym sua=ua) c) fcb ) (s≤fc (supf ua) f mf fca )
-         ... | case1 eq1 = tri≈ (λ lt → ⊥-elim (<-irr (case1 (sym ct00)) lt)) ct00  (λ lt → ⊥-elim (<-irr (case1 ct00) lt)) where
-                  ct00 : * (& a) ≡ * (& b)
-                  ct00 = cong (*) (sym eq1)
+         ... | case1 eq1 = tri≈ (λ lt → ⊥-elim (<-irr (case1 eq1) lt)) (sym eq1)  (λ lt → ⊥-elim (<-irr (case1 (sym eq1)) lt)) 
          ... | case2 b<a =  tri> (λ lt → <-irr (case2 b<a ) lt)  (λ eq → <-irr (case1 eq) b<a )  b<a
    f-total {a} {b} ⟪ uaa , ch-init fca ⟫ ⟪ uab , ch-is-sup ub sub<x sub=ub fcb ⟫ = ft00 where
-      ft01 : (& a) ≤ (& b) → Tri ( a <  b) ( a ≡  b) ( b <  a )
-      ft01 (case1 eq) = tri≈ (λ lt → ⊥-elim (<-irr (case1 (sym a=b)) lt)) a=b  (λ lt → ⊥-elim (<-irr (case1 a=b) lt))  where
-         a=b : a ≡ b
-         a=b = subst₂ (λ j k → j ≡ k ) *iso *iso (cong (*) eq)
-      ft01 (case2 lt) = tri< a<b (λ eq → <-irr (case1 (sym eq)) a<b ) (λ lt → <-irr (case2 a<b ) lt)  where
-         a<b : a < b
-         a<b = subst₂ (λ j k → j < k ) *iso *iso lt
-      ft00 :   Tri ( a <  b) ( a ≡  b) ( b <  a )
+      ft01 : a ≤ b → Tri ( * a <  * b) ( a ≡  b) ( * b <  * a )
+      ft01 (case1 eq) = tri≈ (λ lt → ⊥-elim (<-irr (case1 (sym eq)) lt)) eq  (λ lt → ⊥-elim (<-irr (case1 eq) lt))  
+      ft01 (case2 a<b) = tri< a<b (λ eq → <-irr (case1 (sym eq)) a<b ) (λ lt → <-irr (case2 a<b ) lt)  
+      ft00 :   Tri ( * a <  * b) ( a ≡  b) ( * b <  * a )
       ft00 = ft01 (≤-ftrans (fcy<sup (o<→≤ sub<x) fca) (s≤fc {A} _ f mf fcb))
    f-total {a} {b} ⟪ uaa , ch-is-sup ua sua<x sua=ua fca ⟫ ⟪ uab , ch-init fcb ⟫ = ft00 where
-      ft01 : (& b) ≤ (& a) → Tri ( a <  b) ( a ≡  b) ( b <  a )
-      ft01 (case1 eq) = tri≈ (λ lt → ⊥-elim (<-irr (case1 (sym a=b)) lt)) a=b  (λ lt → ⊥-elim (<-irr (case1 a=b) lt))  where
-         a=b : a ≡ b
-         a=b = subst₂ (λ j k → j ≡ k ) *iso *iso (cong (*) (sym eq))
-      ft01 (case2 lt) = tri> (λ lt → <-irr (case2 b<a ) lt) (λ eq → <-irr (case1 eq) b<a ) b<a where
-         b<a : b < a
-         b<a = subst₂ (λ j k → j < k ) *iso *iso lt
-      ft00 :   Tri ( a <  b) ( a ≡  b) ( b <  a )
+      ft01 : b ≤ a → Tri ( * a <  * b) ( a ≡  b) ( * b <  * a )
+      ft01 (case1 eq) = tri≈ (λ lt → ⊥-elim (<-irr (case1 eq) lt)) (sym eq) (λ lt → ⊥-elim (<-irr (case1 (sym eq)) lt))  
+      ft01 (case2 b<a) = tri> (λ lt → <-irr (case2 b<a ) lt) (λ eq → <-irr (case1 eq) b<a ) b<a 
+      ft00 :   Tri ( * a <  * b) ( a ≡  b) ( * b <  * a )
       ft00 = ft01 (≤-ftrans (fcy<sup (o<→≤ sua<x) fcb) (s≤fc {A} _ f mf fca))
-   f-total {a} {b} ⟪ uaa , ch-init fca ⟫ ⟪ uab , ch-init fcb ⟫ =
-      subst₂ (λ j k → Tri (j < k) (j ≡ k) (k < j)) *iso *iso  (fcn-cmp y f mf fca fcb )
+   f-total {a} {b} ⟪ uaa , ch-init fca ⟫ ⟪ uab , ch-init fcb ⟫ = fcn-cmp y f mf fca fcb 
 
 record ZChain1 ( A : HOD )    ( f : Ordinal → Ordinal )  (mf< : <-monotonic-f A f)
         {y : Ordinal} (ay : odef A y)  (zc : ZChain A f mf< ay (& A)) ( z : Ordinal ) : Set (Level.suc n) where
@@ -505,7 +508,8 @@ record Maximal ( A : HOD )  : Set (Level.suc n) where
 supf-unique :  ( A : HOD )    ( f : Ordinal → Ordinal )  (mf< : <-monotonic-f A f)
         {y xa xb : Ordinal} → (ay : odef A y) →  (xa o≤ xb ) → (za : ZChain A f mf< ay xa ) (zb : ZChain A f mf< ay xb )
       → {z : Ordinal } → z o≤ xa → ZChain.supf za z ≡ ZChain.supf zb z
-supf-unique A f mf< {y} {xa} {xb} ay xa≤xb za zb {z} z≤xa = TransFinite0 {λ z → z o≤ xa → ZChain.supf za z ≡ ZChain.supf zb z } ind z z≤xa  where
+supf-unique A f mf< {y} {xa} {xb} ay xa≤xb za zb {z} z≤xa = 
+  TransFinite0 {λ z → z o≤ xa → ZChain.supf za z ≡ ZChain.supf zb z } ind z z≤xa  where
        supfa = ZChain.supf za
        supfb = ZChain.supf zb
        ind : (x : Ordinal) → ((w : Ordinal) → w o< x → w o≤ xa → supfa w ≡ supfb w) → x o≤ xa → supfa x ≡ supfb x
@@ -555,18 +559,14 @@ Zorn-lemma : { A : HOD }
     → ( ( B : HOD) → (B⊆A : B ⊆ A) → IsTotalOrderSet B → SUP A B   ) -- SUP condition
     → Maximal A
 Zorn-lemma {A}  0<A supP = zorn00 where
-     <-irr0 : {a b : HOD} → A ∋ a → A ∋ b  → (a ≡ b ) ∨ (a < b ) → b < a → ⊥
-     <-irr0 {a} {b} A∋a A∋b = <-irr
      z07 :   {y : Ordinal} {A : HOD } → {P : Set n} → odef A y ∧ P → y o< & A
      z07 {y} {A} p = subst (λ k → k o< & A) &iso ( c<→o< (subst (λ k → odef A k ) (sym &iso ) (proj1 p )))
      s : HOD
-     s = ODC.minimal O A (λ eq → ¬x<0 ( subst (λ k → o∅ o< k ) (=od∅→≡o∅ eq) 0<A ))
-     as : A ∋ * ( & s  )
-     as =  subst (λ k → odef A (& k) ) (sym *iso) ( ODC.x∋minimal O A (λ eq → ¬x<0 ( subst (λ k → o∅ o< k ) (=od∅→≡o∅ eq) 0<A ))  )
-     as0 : odef A  (& s  )
-     as0 =  subst (λ k → odef A k ) &iso as
+     s = minimal A (λ eq → ¬x<0 ( subst (λ k → o∅ o< k ) (=od∅→≡o∅ eq) 0<A ))
+     as : A ∋ s
+     as =  x∋minimal A (λ eq → ¬x<0 ( subst (λ k → o∅ o< k ) (=od∅→≡o∅ eq) 0<A ))  
      s<A : & s o< & A
-     s<A = c<→o< (subst (λ k → odef A (& k) ) *iso as )
+     s<A = c<→o< as
      HasMaximal : HOD
      HasMaximal = record { od = record { def = λ x → odef A x ∧ ( (m : Ordinal) →  odef A m → ¬ (* x < * m)) }  ; odmax = & A ; <odmax = z07 }
      no-maximum : HasMaximal =h= od∅ → (x : Ordinal) → odef A x ∧ ((m : Ordinal) →  odef A m →  odef A x ∧ (¬ (* x < * m) )) →  ⊥
@@ -575,7 +575,7 @@ Zorn-lemma {A}  0<A supP = zorn00 where
      Gtx {x} ax = record { od = record { def = λ y → odef A y ∧ (x < (* y)) } ; odmax = & A ; <odmax = z07 }
      z08  : ¬ Maximal A →  HasMaximal =h= od∅
      z08 nmx  = record { eq→  = λ {x} lt → ⊥-elim ( nmx record {maximal = * x ; as = subst (λ k → odef A k) (sym &iso) (proj1 lt)
-         ; ¬maximal<x = λ {y} ay → subst (λ k → ¬ (* x < k)) *iso (proj2 lt (& y) ay) } ) ; eq← =  λ {y} lt → ⊥-elim ( ¬x<0 lt )}
+         ; ¬maximal<x = λ {y} ay x<y → proj2 lt (& y) ay (<-cong ==-refl (==-sym *iso) x<y) } ) ; eq← =  λ {y} lt → ⊥-elim ( ¬x<0 lt )}
      x-is-maximal : ¬ Maximal A → {x : Ordinal} → (ax : odef A x) → & (Gtx (subst (λ k → odef A k ) (sym &iso) ax)) ≡ o∅ → (m : Ordinal) → odef A m → odef A x ∧ (¬ (* x < * m))
      x-is-maximal nmx {x} ax nogt m am  = ⟪ subst (λ k → odef A k) &iso (subst (λ k → odef A k ) (sym &iso) ax) ,  ¬x<m  ⟫ where
         ¬x<m :  ¬ (* x < * m)
@@ -590,11 +590,11 @@ Zorn-lemma {A}  0<A supP = zorn00 where
          xsup sup = {w : Ordinal } → odef B w → (w ≡ sup ) ∨ (w << sup )
          ∀-imply-or :  {A : Ordinal  → Set n } {B : Set n }
                         → ((x : Ordinal ) → A x ∨ B) →  ((x : Ordinal ) → A x) ∨ B
-         ∀-imply-or  {A} {B} ∀AB with ODC.p∨¬p O ((x : Ordinal ) → A x) -- LEM
+         ∀-imply-or  {A} {B} ∀AB with p∨¬p ((x : Ordinal ) → A x) -- LEM
          ∀-imply-or  {A} {B} ∀AB | case1 t = case1 t
          ∀-imply-or  {A} {B} ∀AB | case2 x  = case2 (lemma (λ not → x not )) where
                lemma : ¬ ((x : Ordinal ) → A x) →  B
-               lemma not with ODC.p∨¬p O B
+               lemma not with p∨¬p B
                lemma not | case1 b = b
                lemma not | case2 ¬b = ⊥-elim  (not (λ x → dont-orb (∀AB x) ¬b ))
          m00 : (x : Ordinal ) → ( ( z : Ordinal) → z o< x →  ¬ (odef A z ∧ xsup z) ) ∨ MinSUP A B
@@ -608,7 +608,7 @@ Zorn-lemma {A}  0<A supP = zorn00 where
                 ... | tri> ¬a ¬b c = case1 ( λ lt →  ⊥-elim ( ¬a lt )  )
                 ... | tri< a ¬b ¬c with prev z a
                 ... | case2 mins = case2 mins
-                ... | case1 not with ODC.p∨¬p O (odef A z ∧ xsup z)
+                ... | case1 not with p∨¬p (odef A z ∧ xsup z)
                 ... | case1 mins = case2 record { sup = z ; isMinSUP = record { as = proj1 mins ; x≤sup = proj2 mins ; minsup = m04 } } where
                   m04 : {sup1 : Ordinal} → odef A sup1 → ({w : Ordinal} → odef B w → (w ≡ sup1) ∨ (w << sup1)) → z o≤ sup1
                   m04 {s} as lt with trio< z s
@@ -630,18 +630,18 @@ Zorn-lemma {A}  0<A supP = zorn00 where
 
      -- Uncountable ascending chain by axiom of choice
      cf : ¬ Maximal A → Ordinal → Ordinal
-     cf  nmx x with ODC.∋-p O A (* x)
+     cf  nmx x with ∋-p A (* x)
      ... | no _ = o∅
      ... | yes ax with is-o∅ (& ( Gtx ax ))
      ... | yes nogt = -- no larger element, so it is maximal
          ⊥-elim (no-maximum (z08 nmx) x ⟪ subst (λ k → odef A k) &iso ax , x-is-maximal nmx (subst (λ k → odef A k ) &iso ax) nogt ⟫ )
-     ... | no not =  & (ODC.minimal O (Gtx ax) (λ eq → not (=od∅→≡o∅ eq)))
+     ... | no not =  & (minimal (Gtx ax) (λ eq → not (=od∅→≡o∅ eq)))
      is-cf : (nmx : ¬ Maximal A ) → {x : Ordinal} → odef A x → odef A (cf nmx x) ∧ ( * x < * (cf nmx x) )
-     is-cf nmx {x} ax with ODC.∋-p O A (* x)
+     is-cf nmx {x} ax with ∋-p A (* x)
      ... | no not = ⊥-elim ( not (subst (λ k → odef A k ) (sym &iso) ax ))
      ... | yes ax with is-o∅ (& ( Gtx ax ))
      ... | yes nogt = ⊥-elim (no-maximum (z08 nmx) x ⟪ subst (λ k → odef A k) &iso ax , x-is-maximal nmx (subst (λ k → odef A k ) &iso ax) nogt ⟫ )
-     ... | no not = ODC.x∋minimal O (Gtx ax) (λ eq → not (=od∅→≡o∅ eq))
+     ... | no not = x∋minimal (Gtx ax) (λ eq → not (=od∅→≡o∅ eq))
 
      ---
      --- infintie ascention sequence of f
@@ -681,7 +681,7 @@ Zorn-lemma {A}  0<A supP = zorn00 where
                   b o< x → (ab : odef A b) →
                   HasPrev A (UnionCF A f ay supf x) f b  ∨ IsSUP A (UnionCF A f ay supf b) b →
                   * a < * b → odef (UnionCF A f ay supf x) b
-               is-max {a} {b} ua b<x ab P a<b with ODC.or-exclude O P
+               is-max {a} {b} ua b<x ab P a<b with or-exclude P
                is-max {a} {b} ua b<x ab P a<b | case1 has-prev = is-max-hp x {a} {b} ua ab has-prev a<b
                is-max {a} {b} ua b<x ab P a<b | case2 is-sup with osuc-≡< (ZChain.supf-mono zc (o<→≤ b<x))
                ... | case2 sb<sx = m10 where
@@ -691,7 +691,7 @@ Zorn-lemma {A}  0<A supP = zorn00 where
                   m05 =  ZChain.sup=u zc ab (o<→≤ (odef< ab) )  record { ax = ab ; x≤sup = λ {z} uz → IsSUP.x≤sup (proj2 is-sup) uz  }
                   m10 : odef (UnionCF A f ay supf x) b
                   m10 = ZChain.cfcs zc b<x x≤A (subst (λ k → k o< x) (sym m05) b<x) (init (ZChain.asupf zc) m05)
-               ... | case1 sb=sx = ⊥-elim (<-irr (case1 (cong (*) m10)) (proj1 (mf< (supf b) (ZChain.asupf zc)))) where
+               ... | case1 sb=sx = ⊥-elim (<-irr (case1 m10) (proj1 (mf< (supf b) (ZChain.asupf zc)))) where
                   m17 : MinSUP A (UnionCF A f ay supf x) -- supf z o< supf ( supf x )
                   m17 = ZChain.minsup zc x≤A
                   m18 : supf x ≡ MinSUP.sup m17
@@ -715,7 +715,7 @@ Zorn-lemma {A}  0<A supP = zorn00 where
                   b o< x → (ab : odef A b) →
                   HasPrev A (UnionCF A f ay supf x) f b  ∨ IsSUP A (UnionCF A f ay supf b) b →
                   * a < * b → odef (UnionCF A f ay supf x) b
-               is-max {a} {b} ua b<x ab P a<b with ODC.or-exclude O P
+               is-max {a} {b} ua b<x ab P a<b with or-exclude P
                is-max {a} {b} ua b<x ab P a<b | case1 has-prev = is-max-hp x {a} {b} ua ab has-prev a<b
                is-max {a} {b} ua b<x ab P a<b | case2 is-sup with IsSUP.x≤sup (proj2 is-sup) (ZChain.chain∋init zc  )
                ... | case1 b=y = ⟪ subst (λ k → odef A k ) b=y ay ,  ch-init (subst (λ k → FClosure A f y k ) b=y (init ay refl ))  ⟫
@@ -727,7 +727,7 @@ Zorn-lemma {A}  0<A supP = zorn00 where
                   m05 = ZChain.sup=u zc ab (o<→≤  m09) record { ax = ab ; x≤sup = λ lt → IsSUP.x≤sup (proj2 is-sup) lt }
                   m10 : odef (UnionCF A f ay supf x) b
                   m10 = ZChain.cfcs zc b<x x≤A (subst (λ k → k o< x) (sym m05) b<x) (init (ZChain.asupf zc) m05)
-               ... | case1 sb=sx = ⊥-elim (<-irr (case1 (cong (*) m10)) (proj1 (mf< (supf b) (ZChain.asupf zc)))) where
+               ... | case1 sb=sx = ⊥-elim (<-irr (case1 m10) (proj1 (mf< (supf b) (ZChain.asupf zc)))) where
                   m17 : MinSUP A (UnionCF A f ay supf x) -- supf z o< supf ( supf x )
                   m17 = ZChain.minsup zc x≤A
                   m18 : supf x ≡ MinSUP.sup m17
@@ -748,9 +748,7 @@ Zorn-lemma {A}  0<A supP = zorn00 where
 
      utotal : ( f : Ordinal → Ordinal ) → (mf : ≤-monotonic-f A f ) {y : Ordinal} (ay : odef A y)
         → IsTotalOrderSet (uchain f mf ay)
-     utotal f mf {y} ay {a} {b} ca cb = subst₂ (λ j k → Tri (j < k) (j ≡ k) (k < j)) *iso *iso uz01 where
-               uz01 : Tri (* (& a) < * (& b)) (* (& a) ≡ * (& b)) (* (& b) < * (& a) )
-               uz01 = fcn-cmp y f mf ca cb
+     utotal f mf {y} ay {a} {b} ca cb = fcn-cmp y f mf ca cb
 
      ysup : ( f : Ordinal → Ordinal ) → (mf : ≤-monotonic-f A f ) {y : Ordinal} (ay : odef A y)
        →  MinSUP A (uchain f mf ay)
@@ -819,20 +817,12 @@ Zorn-lemma {A}  0<A supP = zorn00 where
           ptotal : IsTotalOrderSet pchainpx
           ptotal (case1 a) (case1 b) =  ZChain.f-total zc a b
           ptotal {a0} {b0} (case1 a) (case2 b) with zc02 a b
-          ... | case1 eq = tri≈ (<-irr (case1 (sym eq1))) eq1 (<-irr (case1 eq1)) where
-               eq1 : a0 ≡ b0
-               eq1 = subst₂ (λ j k → j ≡ k ) *iso *iso (cong (*) eq )
-          ... | case2 lt = tri< lt1 (λ eq → <-irr (case1 (sym eq)) lt1) (<-irr (case2 lt1)) where
-               lt1 : a0 < b0
-               lt1 = subst₂ (λ j k → j < k ) *iso *iso lt
+          ... | case1 eq = tri≈ (<-irr (case1 (sym eq))) eq (<-irr (case1 eq)) 
+          ... | case2 lt = tri< lt (λ eq → <-irr (case1 (sym eq)) lt) (<-irr (case2 lt)) 
           ptotal {b0} {a0} (case2 b) (case1 a) with zc02 a b
-          ... | case1 eq = tri≈ (<-irr (case1 eq1)) (sym eq1) (<-irr (case1 (sym eq1))) where
-               eq1 : a0 ≡ b0
-               eq1 = subst₂ (λ j k → j ≡ k ) *iso *iso (cong (*) eq )
-          ... | case2 lt = tri> (<-irr (case2 lt1)) (λ eq → <-irr (case1 eq) lt1) lt1  where
-               lt1 : a0 < b0
-               lt1 = subst₂ (λ j k → j < k ) *iso *iso lt
-          ptotal (case2 a) (case2 b) = subst₂ (λ j k → Tri (j < k) (j ≡ k) (k < j)) *iso *iso (fcn-cmp (supf0 px) f mf (proj1 a) (proj1 b))
+          ... | case1 eq = tri≈ (<-irr (case1 eq)) (sym eq) (<-irr (case1 (sym eq))) 
+          ... | case2 lt = tri> (<-irr (case2 lt)) (λ eq → <-irr (case1 eq) lt) lt  
+          ptotal (case2 a) (case2 b) = fcn-cmp (supf0 px) f mf (proj1 a) (proj1 b)
 
           pcha : pchainpx ⊆ A
           pcha (case1 lt) = proj1 lt
@@ -1156,8 +1146,8 @@ Zorn-lemma {A}  0<A supP = zorn00 where
       zeq {xa} {xb} {z} xa<x xb<x xa≤xb z≤xa =  supf-unique A f mf< ay xa≤xb
           (pzc xa<x)  (pzc xb<x)  z≤xa
 
-      iceq : {ix iy : Ordinal } → ix ≡ iy → {i<x : ix o< x } {i<y : iy o< x } → supfz i<x ≡ supfz i<y
-      iceq refl = cong supfz  o<-irr
+      -- iceq : {ix iy : Ordinal } → ix ≡ iy → {i<x : ix o< x } {i<y : iy o< x } → supfz i<x ≡ supfz i<y
+      -- iceq refl = cong supfz  o<-irr
 
       IChain-i : {z : Ordinal } → IChain ay supfz z → Ordinal
       IChain-i (ic-init fc) = o∅
@@ -1200,39 +1190,40 @@ Zorn-lemma {A}  0<A supP = zorn00 where
       ptotalU : IsTotalOrderSet pchainU
       ptotalU {a} {b} ia ib with trio< (IChain-i (proj2 ia)) (IChain-i (proj2 ib))
       ... | tri< ia<ib ¬b ¬c = ZChain.f-total (pzc (pic<x (proj2 ib))) (IC⊆ (proj2 ia) (proj2 ib) ia<ib) (pchainU⊆chain ib)
-      ... | tri≈ ¬a ia=ib ¬c = subst₂ (λ j k → Tri (j < k) (j ≡ k) (k < j)) *iso *iso ( pcmp (proj2 ia) (proj2 ib) ia=ib ) where
-           pcmp : (ia : IChain ay supfz (& a)) → (ib : IChain ay supfz (& b)) → IChain-i ia ≡ IChain-i ib
-               → Tri (* (& a) < * (& b)) (* (& a) ≡ * (& b)) (* (& b) < * (& a) )
+      ... | tri≈ ¬a ia=ib ¬c = pcmp (proj2 ia) (proj2 ib) ia=ib  where
+           pcmp : (ia : IChain ay supfz a) → (ib : IChain ay supfz b) → IChain-i ia ≡ IChain-i ib
+               → Tri (* a < * b) (a ≡ b) (* b < * a )
            pcmp (ic-init fca) (ic-init fcb) eq = fcn-cmp _ f mf fca fcb
            pcmp (ic-init fca) (ic-isup i i<x s<x fcb) eq with ZChain.fcy<sup (pzc i<x) o≤-refl fca
            ... | case1 eq1 = ct22 where
-               ct22 : Tri (* (& a) < * (& b)) (* (& a) ≡ * (& b)) (* (& b) < * (& a) )
-               ct22 with subst (λ k → k ≤ & b) (sym (zeq _ _ (o<→≤ <-osuc) o≤-refl )) (s≤fc _ f mf fcb )
+               ct22 : Tri (* a < * b) (a ≡ b) (* b < * a )
+               ct22 with subst (λ k → k ≤ b) (sym (zeq _ _ (o<→≤ <-osuc) o≤-refl )) (s≤fc _ f mf fcb )
                ... | case1 eq2 =  tri≈ (λ lt → ⊥-elim (<-irr (case1 (sym ct00)) lt)) ct00  (λ lt → ⊥-elim (<-irr (case1 ct00) lt)) where
-                   ct00 : * (& a) ≡ * (& b)
-                   ct00 = cong (*) (trans eq1 eq2)
+                   ct00 : a ≡ b
+                   ct00 = trans eq1 eq2
                ... | case2 lt = tri< fc11 (λ eq → <-irr (case1 (sym eq)) fc11) (λ lt → <-irr (case2 fc11) lt) where
-                   fc11 : * (& a) < * (& b)
-                   fc11 = subst (λ k →  k < * (& b) ) (cong (*) (sym eq1)) lt
+                   fc11 : * a < * b
+                   fc11 = subst (λ k →  k < * b ) (cong (*) (sym eq1)) lt
            ... | case2 lt = tri< fc11 (λ eq → <-irr (case1 (sym eq)) fc11) (λ lt → <-irr (case2 fc11) lt) where
-               fc11 : * (& a) < * (& b)
-               fc11 = ftrans<-≤ lt (subst (λ k → k ≤ & b) (sym (zeq _ _ (o<→≤ <-osuc) o≤-refl )) (s≤fc _ f mf fcb ) )
+               fc11 : * a < * b
+               fc11 = ftrans<-≤ lt (subst (λ k → k ≤ b) (sym (zeq _ _ (o<→≤ <-osuc) o≤-refl )) (s≤fc _ f mf fcb ) )
            pcmp (ic-isup i i<x s<x fca) (ic-init fcb) eq with ZChain.fcy<sup (pzc i<x) o≤-refl fcb
            ... | case1 eq1 =  ct22 where
-               ct22 : Tri (* (& a) < * (& b)) (* (& a) ≡ * (& b)) (* (& b) < * (& a) )
-               ct22 with subst (λ k → k ≤ & a) (sym (zeq _ _ (o<→≤ <-osuc) o≤-refl )) (s≤fc _ f mf fca )
+               ct22 : Tri (* a < * b) (a ≡ b) (* b < * a )
+               ct22 with subst (λ k → k ≤ a) (sym (zeq _ _ (o<→≤ <-osuc) o≤-refl )) (s≤fc _ f mf fca )
                ... | case1 eq2 =  tri≈ (λ lt → ⊥-elim (<-irr (case1 (sym ct00)) lt)) ct00  (λ lt → ⊥-elim (<-irr (case1 ct00) lt)) where
-                   ct00 : * (& a) ≡ * (& b)
-                   ct00 = cong (*) (sym (trans eq1 eq2))
+                   ct00 : a ≡ b
+                   ct00 = sym (trans eq1 eq2)
                ... | case2 lt = tri> (λ lt → <-irr (case2 fc11) lt) (λ eq → <-irr (case1 eq) fc11) fc11  where
-                   fc11 : * (& b) < * (& a)
-                   fc11 = subst (λ k →  k < * (& a) ) (cong (*) (sym eq1)) lt
+                   fc11 : * b < * a
+                   fc11 = subst (λ k →  k < * a ) (cong (*) (sym eq1)) lt
            ... | case2 lt = tri> (λ lt → <-irr (case2 fc12) lt) (λ eq → <-irr (case1 eq) fc12) fc12  where
-               fc12 : * (& b) < * (& a)
-               fc12 = ftrans<-≤ lt (subst (λ k → k ≤ & a) (sym (zeq _ _ (o<→≤ <-osuc) o≤-refl )) (s≤fc _ f mf fca ) )
-           pcmp (ic-isup i i<x s<x fca) (ic-isup i i<y s<y fcb) refl = fcn-cmp _ f mf fca (subst (λ k → FClosure A f k (& b)) pc01 fcb ) where
+               fc12 : * b < * a
+               fc12 = ftrans<-≤ lt (subst (λ k → k ≤ a) (sym (zeq _ _ (o<→≤ <-osuc) o≤-refl )) (s≤fc _ f mf fca ) )
+           pcmp (ic-isup i i<x s<x fca) (ic-isup i i<y s<y fcb) refl = fcn-cmp _ f mf fca (subst (λ k → FClosure A f k b) pc01 fcb ) where
                pc01 : supfz i<y ≡ supfz i<x
                pc01 = cong supfz  o<-irr
+               -- zeq does not work here
       ... | tri> ¬a ¬b ib<ia = ZChain.f-total (pzc (pic<x (proj2 ia))) (pchainU⊆chain ia) (IC⊆ (proj2 ib) (proj2 ia) ib<ia)
 
 
@@ -1259,20 +1250,12 @@ Zorn-lemma {A}  0<A supP = zorn00 where
       ptotalS : IsTotalOrderSet pchainS
       ptotalS (case1 a) (case1 b) =  ptotalU a b
       ptotalS {a0} {b0} (case1 a) (case2 b) with zc02 a b
-      ... | case1 eq = tri≈ (<-irr (case1 (sym eq1))) eq1 (<-irr (case1 eq1)) where
-           eq1 : a0 ≡ b0
-           eq1 = subst₂ (λ j k → j ≡ k ) *iso *iso (cong (*) eq )
-      ... | case2 lt = tri< lt1 (λ eq → <-irr (case1 (sym eq)) lt1) (<-irr (case2 lt1)) where
-           lt1 : a0 < b0
-           lt1 = subst₂ (λ j k → j < k ) *iso *iso lt
+      ... | case1 eq = tri≈ (<-irr (case1 (sym eq))) eq (<-irr (case1 eq)) 
+      ... | case2 lt = tri< lt (λ eq → <-irr (case1 (sym eq)) lt) (<-irr (case2 lt)) 
       ptotalS {b0} {a0} (case2 b) (case1 a) with zc02 a b
-      ... | case1 eq = tri≈ (<-irr (case1 eq1)) (sym eq1) (<-irr (case1 (sym eq1))) where
-           eq1 : a0 ≡ b0
-           eq1 = subst₂ (λ j k → j ≡ k ) *iso *iso (cong (*) eq )
-      ... | case2 lt = tri> (<-irr (case2 lt1)) (λ eq → <-irr (case1 eq) lt1) lt1  where
-           lt1 : a0 < b0
-           lt1 = subst₂ (λ j k → j < k ) *iso *iso lt
-      ptotalS (case2 a) (case2 b) = subst₂ (λ j k → Tri (j < k) (j ≡ k) (k < j)) *iso *iso (fcn-cmp spu0 f mf (proj1 a) (proj1 b))
+      ... | case1 eq = tri≈ (<-irr (case1 eq)) (sym eq) (<-irr (case1 (sym eq))) 
+      ... | case2 lt = tri> (<-irr (case2 lt)) (λ eq → <-irr (case1 eq) lt) lt  
+      ptotalS (case2 a) (case2 b) = fcn-cmp spu0 f mf (proj1 a) (proj1 b)
 
       S⊆A : pchainS ⊆ A
       S⊆A (case1 lt) = proj1 lt
@@ -1401,16 +1384,14 @@ Zorn-lemma {A}  0<A supP = zorn00 where
                sa = ZChain.supf (pzc  (ob<x lim a<x)) a
                m =  omax a sa     -- x is limit ordinal, so we have sa o< m o< x
                m<x : m o< x
-               m<x with trio< a sa | inspect (omax a) sa
-               ... | tri< a<sa ¬b ¬c | record { eq = eq } = ob<x lim (ordtrans<-≤ sa<b b≤x )
-               ... | tri≈ ¬a a=sa ¬c | record { eq = eq } = subst (λ k → k o< x) eq zc41 where
-                   zc41 : omax a sa o< x
+               m<x with trio< a sa 
+               ... | tri< a<sa ¬b ¬c = ob<x lim (ordtrans<-≤ sa<b b≤x )
+               ... | tri≈ ¬a a=sa ¬c = zc41 where 
+                   zc41 : osuc a o< x
                    zc41 = osucprev ( begin
-                       osuc ( omax a sa ) ≡⟨ cong (λ k → osuc (omax a k)) (sym a=sa) ⟩
-                       osuc ( omax a a ) ≡⟨ cong osuc (omxx _) ⟩
                        osuc ( osuc  a ) ≤⟨ o<→≤ (ob<x lim (ob<x lim a<x))  ⟩
                        x ∎ ) where open o≤-Reasoning O
-               ... | tri> ¬a ¬b c | record { eq = eq } = ob<x lim a<x
+               ... | tri> ¬a ¬b c = ob<x lim a<x
                sam = ZChain.supf (pzc (ob<x lim m<x)) a
                zc42 : osuc a o≤ osuc m
                zc42 = osucc (o<→≤ ( omax-x _ _ ) )
@@ -1491,7 +1472,6 @@ Zorn-lemma {A}  0<A supP = zorn00 where
                    z48 = ⟪  proj2 (mf _ (MinSUP.as usup) ) , ic-isup _ (subst (λ k → k o< x) refl spu<x) z50
                         (fsuc _ (init (ZChain.asupf (pzc (ob<x lim spu<x))) z49)) ⟫
 
-
      ---
      --- the maximum chain  has fix point of any ≤-monotonic function
      ---
@@ -1507,7 +1487,7 @@ Zorn-lemma {A}  0<A supP = zorn00 where
      -- f eventualy stop
      --    we can prove contradict here, it is here for a historical reason
      --
-     fixpoint :  ( f : Ordinal → Ordinal ) → (mf : ≤-monotonic-f A f ) (mf< : <-monotonic-f A f )  (zc : ZChain A f mf< as0 (& A) )
+     fixpoint :  ( f : Ordinal → Ordinal ) → (mf : ≤-monotonic-f A f ) (mf< : <-monotonic-f A f )  (zc : ZChain A f mf< as (& A) )
             → (sp1 : MinSUP A (ZChain.chain zc))
             → f (MinSUP.sup sp1)  ≡ MinSUP.sup sp1
      fixpoint f mf mf< zc sp1 = z14 where
@@ -1517,17 +1497,17 @@ Zorn-lemma {A}  0<A supP = zorn00 where
            sp = MinSUP.sup sp1
            asp : odef A sp
            asp = MinSUP.as sp1
-           ay = as0
+           ay = as
            z10 :  {a b : Ordinal } → (ca : odef chain a ) → b o< (& A) → (ab : odef A b )
               →  HasPrev A chain f b  ∨  IsSUP A (UnionCF A f ay (ZChain.supf zc) b) b
               → * a < * b  → odef chain b
-           z10 = ZChain1.is-max (SZ1 f mf mf< as0 zc (& A) o≤-refl )
+           z10 = ZChain1.is-max (SZ1 f mf mf< as zc (& A) o≤-refl )
            z22 : sp o< & A
            z22 = odef< asp
            z12 : odef chain sp
            z12 with o≡? (& s) sp
            ... | yes eq = subst (λ k → odef chain k) eq ( ZChain.chain∋init zc )
-           ... | no ne = ZChain1.is-max (SZ1 f mf mf< as0 zc (& A) o≤-refl) {& s} {sp} ( ZChain.chain∋init zc ) (odef< asp) asp (case2 z19 ) z13 where
+           ... | no ne = ZChain1.is-max (SZ1 f mf mf< as zc (& A) o≤-refl) {& s} {sp} ( ZChain.chain∋init zc ) (odef< asp) asp (case2 z19 ) z13 where
                z13 :  * (& s) < * sp
                z13 with MinSUP.x≤sup sp1 ( ZChain.chain∋init zc )
                ... | case1 eq = ⊥-elim ( ne eq )
@@ -1536,7 +1516,7 @@ Zorn-lemma {A}  0<A supP = zorn00 where
                z19 = record { ax = asp ;   x≤sup = z20 }  where
                    z20 : {y : Ordinal} → odef (UnionCF A f ay (ZChain.supf zc) sp) y → (y ≡ sp) ∨ (y << sp)
                    z20 {y} zy with MinSUP.x≤sup sp1
-                       (subst (λ k → odef chain k ) (sym &iso) (chain-mono f mf as0 supf (ZChain.supf-mono zc) (o<→≤ z22)  zy ))
+                       (subst (λ k → odef chain k ) (sym &iso) (chain-mono f mf as supf (ZChain.supf-mono zc) (o<→≤ z22)  zy ))
                    ... | case1 y=p = case1 (subst (λ k → k ≡ _ ) &iso y=p )
                    ... | case2 y<p = case2 (subst (λ k → * k < _ ) &iso y<p )
            z14 :  f sp ≡ sp
@@ -1544,16 +1524,16 @@ Zorn-lemma {A}  0<A supP = zorn00 where
            ... | tri< a ¬b ¬c = ⊥-elim z16 where
                z16 : ⊥
                z16 with proj1 (mf (( MinSUP.sup sp1)) ( MinSUP.as sp1 ))
-               ... | case1 eq = ⊥-elim (¬b (sym (cong (*) eq ) ))
-               ... | case2 lt = ⊥-elim (¬c lt )
-           ... | tri≈ ¬a b ¬c = subst₂ (λ j k → j ≡ k ) &iso &iso ( cong (&) b )
+               ... | case1 eq = ⊥-elim (¬b (sym (trans &iso (trans eq (sym &iso) ))))
+               ... | case2 lt = ⊥-elim (¬c (<-cong (==-sym *iso) (==-sym *iso) lt) )
+           ... | tri≈ ¬a b ¬c = trans (sym &iso) (trans b &iso )
            ... | tri> ¬a ¬b c = ⊥-elim z17 where
                z15 : (f sp ≡ MinSUP.sup sp1) ∨ (* (f sp) < * (MinSUP.sup sp1) )
                z15  = MinSUP.x≤sup sp1 (ZChain.f-next zc z12 )
                z17 : ⊥
                z17 with z15
-               ... | case1 eq = ¬b (cong (*) eq)
-               ... | case2 lt = ¬a lt
+               ... | case1 eq = ¬b (trans &iso (trans eq (sym &iso)))
+               ... | case2 lt = ¬a (<-cong (==-sym *iso) (==-sym *iso) lt )
 
      -- ZChain contradicts ¬ Maximal
      --
@@ -1561,35 +1541,34 @@ Zorn-lemma {A}  0<A supP = zorn00 where
      -- ¬ Maximal create cf which is a <-monotonic function by axiom of choice. This contradicts fix point of ZChain
      --
 
-     ¬Maximal→¬cf-mono :  (nmx : ¬ Maximal A ) → (zc : ZChain A (cf nmx) (cf-is-<-monotonic nmx) as0 (& A)) → ⊥
-     ¬Maximal→¬cf-mono nmx zc = <-irr0  {* (cf nmx c)} {* c}
-           (subst (λ k → odef A k ) (sym &iso) (proj1 (is-cf nmx (MinSUP.as  msp1 ))))
-           (subst (λ k → odef A k) (sym &iso) (MinSUP.as msp1) )
-           (case1 ( cong (*)( fixpoint (cf nmx) (cf-is-≤-monotonic nmx ) (cf-is-<-monotonic nmx ) zc msp1  ))) -- x ≡ f x ̄
-                (proj1 (cf-is-<-monotonic nmx c (MinSUP.as msp1 ))) where          -- x < f x
-
+     ¬Maximal→¬cf-mono :  (nmx : ¬ Maximal A ) → (zc : ZChain A (cf nmx) (cf-is-<-monotonic nmx) as (& A)) → ⊥
+     ¬Maximal→¬cf-mono nmx zc = <-irr  {cf nmx c} {c}
+           -- (subst (λ k → odef A k ) (sym &iso) (proj1 (is-cf nmx (MinSUP.as  msp1 ))))
+           -- (subst (λ k → odef A k) (sym &iso) (MinSUP.as msp1) )
+           (case1 ( fixpoint (cf nmx) (cf-is-≤-monotonic nmx ) (cf-is-<-monotonic nmx ) zc msp1 )) -- x ≡ f x ̄
+           (proj1 (cf-is-<-monotonic nmx c (MinSUP.as msp1)))  where          -- x < f x
           supf = ZChain.supf zc
           msp1 : MinSUP A (ZChain.chain zc)
-          msp1 = msp0 (cf nmx) (cf-is-<-monotonic nmx) as0 zc
+          msp1 = msp0 (cf nmx) (cf-is-<-monotonic nmx) as zc
           c : Ordinal
           c = MinSUP.sup msp1
 
      zorn00 : Maximal A
      zorn00 with is-o∅ ( & HasMaximal )  
-     ... | no not = record { maximal = ODC.minimal O HasMaximal  (λ eq → not (=od∅→≡o∅ eq)) ; as = zorn01 ; ¬maximal<x  = zorn02 } where
+     ... | no not = record { maximal = minimal HasMaximal  (λ eq → not (=od∅→≡o∅ eq)) ; as = zorn01 ; ¬maximal<x  = zorn02 } where
          -- yes we have the maximal because of the axiom of choice 
-         zorn03 :  odef HasMaximal ( & ( ODC.minimal O HasMaximal  (λ eq → not (=od∅→≡o∅ eq)) ) )
-         zorn03 =  ODC.x∋minimal  O HasMaximal  (λ eq → not (=od∅→≡o∅ eq))   -- Axiom of choice
-         zorn01 :  A ∋ ODC.minimal O HasMaximal (λ eq → not (=od∅→≡o∅ eq))
+         zorn03 :  odef HasMaximal ( & ( minimal HasMaximal  (λ eq → not (=od∅→≡o∅ eq)) ) )
+         zorn03 =  x∋minimal  HasMaximal  (λ eq → not (=od∅→≡o∅ eq))   -- Axiom of choice
+         zorn01 :  A ∋ minimal HasMaximal (λ eq → not (=od∅→≡o∅ eq))
          zorn01  = proj1  zorn03
-         zorn02 : {x : HOD} → A ∋ x → ¬ (ODC.minimal O HasMaximal (λ eq → not (=od∅→≡o∅ eq)) < x)
-         zorn02 {x} ax m<x = proj2 zorn03 (& x) ax (subst₂ (λ j k → j < k) (sym *iso) (sym *iso) m<x )
-     ... | yes ¬Maximal = ⊥-elim ( ¬Maximal→¬cf-mono nmx (SZ (cf nmx) (cf-is-<-monotonic nmx) as0 (& A) )) where
+         zorn02 : {x : HOD} → A ∋ x → ¬ (minimal HasMaximal (λ eq → not (=od∅→≡o∅ eq)) < x)
+         zorn02 {x} ax m<x = proj2 zorn03 (& x) ax (<-cong (==-sym *iso) (==-sym *iso) m<x )
+     ... | yes ¬Maximal = ⊥-elim ( ¬Maximal→¬cf-mono nmx (SZ (cf nmx) (cf-is-<-monotonic nmx) as (& A) )) where
          -- if we have no maximal, make ZChain, which contradict SUP condition
          nmx : ¬ Maximal A
          nmx mx =  ∅< {HasMaximal} zc5 ( ≡o∅→=od∅  ¬Maximal ) where
               zc5 : odef A (& (Maximal.maximal mx)) ∧ (( y : Ordinal ) →  odef A y → ¬ (* (& (Maximal.maximal mx)) < * y))
-              zc5 = ⟪  Maximal.as mx , (λ y ay mx<y → Maximal.¬maximal<x mx (subst (λ k → odef A k ) (sym &iso) ay) (subst (λ k → k < * y) *iso mx<y) ) ⟫
+              zc5 = ⟪  Maximal.as mx , (λ y ay mx<y → Maximal.¬maximal<x mx (subst (λ k → odef A k ) (sym &iso) ay) (<-cong *iso ==-refl mx<y) ) ⟫
 
 -- usage (see filter.agda )
 --
@@ -1609,3 +1588,4 @@ Zorn-lemma {A}  0<A supP = zorn00 where
 --        → Maximal P (_⊆_)
 -- MaximumSubset {L} {P} 0<L 0<P P⊆L PO SP  = Zorn-lemma {P} {_⊆_} 0<P PO SP
 --
+

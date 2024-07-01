@@ -1,4 +1,5 @@
-{-# OPTIONS --allow-unsolved-metas #-}
+{-# OPTIONS --cubical-compatible --safe #-}
+
 module nat where
 
 open import Data.Nat 
@@ -104,15 +105,15 @@ div2-rev ⟪ x , false ⟫ = x + x
 div2-eq : (x : ℕ ) → div2-rev ( div2 x ) ≡ x
 div2-eq zero = refl
 div2-eq (suc zero) = refl
-div2-eq (suc (suc x)) with div2 x | inspect div2 x 
-... | ⟪ x1 , true ⟫ | record { eq = eq1 } = begin -- eq1 : div2 x ≡ ⟪ x1 , true ⟫
+div2-eq (suc (suc x)) with div2 x in eq1 
+... | ⟪ x1 , true ⟫ = begin -- eq1 : div2 x ≡ ⟪ x1 , true ⟫
      div2-rev ⟪ suc x1 , true ⟫ ≡⟨⟩
      suc (suc (x1 + suc x1)) ≡⟨ cong (λ k → suc (suc k )) (+-comm x1  _ ) ⟩
      suc (suc (suc (x1 + x1))) ≡⟨⟩    
      suc (suc (div2-rev ⟪ x1 , true ⟫)) ≡⟨ cong (λ k → suc (suc (div2-rev k ))) (sym eq1) ⟩ 
      suc (suc (div2-rev (div2 x)))      ≡⟨ cong (λ k → suc (suc k)) (div2-eq x) ⟩ 
      suc (suc x) ∎  where open ≡-Reasoning
-... | ⟪ x1 , false ⟫ | record { eq = eq1 } = begin
+... | ⟪ x1 , false ⟫ = begin
      div2-rev ⟪ suc x1 , false ⟫ ≡⟨⟩
      suc (x1 + suc x1) ≡⟨ cong (λ k → (suc k )) (+-comm x1  _ ) ⟩
      suc (suc (x1 + x1)) ≡⟨⟩    
@@ -137,6 +138,40 @@ minus zero (suc b) = zero
 minus (suc a) (suc b) = minus a b
 
 _-_ = minus
+
+sn-m=sn-m : {m n : ℕ } →  m ≤ n → suc n - m ≡ suc ( n - m )
+sn-m=sn-m {0} {n} z≤n = refl
+sn-m=sn-m {suc m} {suc n} (s≤s m<n) = sn-m=sn-m m<n
+
+si-sn=i-n : {i n : ℕ } → n < i  → suc (i - suc n) ≡ (i - n)
+si-sn=i-n {i} {n} n<i = begin
+   suc (i - suc n) ≡⟨ sym (sn-m=sn-m n<i )  ⟩
+   suc i - suc n ≡⟨⟩
+   i - n
+   ∎  where
+      open ≡-Reasoning
+
+refl-≤s : {x : ℕ } → x ≤ suc x
+refl-≤s {zero} = z≤n
+refl-≤s {suc x} = s≤s (refl-≤s {x})
+
+a≤sa = refl-≤s
+
+n-m<n : (n m : ℕ ) →  n - m ≤ n
+n-m<n zero zero = z≤n
+n-m<n (suc n) zero = s≤s (n-m<n n zero)
+n-m<n zero (suc m) = z≤n
+n-m<n (suc n) (suc m) = ≤-trans (n-m<n n m ) refl-≤s
+
+n-n-m=m : {m n : ℕ } → m ≤ n  → m ≡ (n - (n - m))
+n-n-m=m {0} {zero} z≤n = refl
+n-n-m=m {0} {suc n} z≤n = n-n-m=m {0} {n} z≤n
+n-n-m=m {suc m} {suc n} (s≤s m≤n) = sym ( begin
+   suc n - ( n - m )    ≡⟨ sn-m=sn-m (n-m<n  n m) ⟩
+   suc (n - ( n - m ))  ≡⟨ cong (λ k → suc k ) (sym (n-n-m=m m≤n)) ⟩
+   suc m
+   ∎  ) where
+      open ≡-Reasoning
 
 m+= : {i j  m : ℕ } → m + i ≡ m + j → i ≡ j
 m+= {i} {j} {zero} refl = refl
@@ -238,12 +273,6 @@ x+y<z→x<z {suc x} {y} {suc z} (s≤s lt1) = s≤s ( x+y<z→x<z {x} {y} {z} lt
 ... | tri≈ ¬a refl ¬c = case2 ≤-refl
 ... | tri> ¬a ¬b c = case2 (<to≤ c)
 
-refl-≤s : {x : ℕ } → x ≤ suc x
-refl-≤s {zero} = z≤n
-refl-≤s {suc x} = s≤s (refl-≤s {x})
-
-a≤sa = refl-≤s
-
 refl-≤ : {x : ℕ } → x ≤ x
 refl-≤ {zero} = z≤n
 refl-≤ {suc x} = s≤s (refl-≤ {x})
@@ -287,6 +316,9 @@ x≤y→x<sy : {x y : ℕ } → x ≤ y → x < suc y
 x≤y→x<sy {.zero} {y} z≤n = ≤-trans a<sa (s≤s z≤n)
 x≤y→x<sy {.(suc _)} {.(suc _)} (s≤s le) = s≤s ( x≤y→x<sy le) 
 
+sx≤y→x<y : {x y : ℕ } → suc x ≤ y → x < y 
+sx≤y→x<y {zero} {suc y} (s≤s le) = s≤s z≤n
+sx≤y→x<y {suc x} {suc y} (s≤s le) = s≤s ( sx≤y→x<y {x} {y} le )
 
 open import Data.Product
 
@@ -693,15 +725,15 @@ div<k {m} {k} k>1 m>0 m<k d = ⊥-elim ( nat-≤> (div<k1 (Dividable.factor d) (
           m ∎  where open ≤-Reasoning  
 
 0<factor : { m k : ℕ } → k > 0 → m > 0 →  (d :  Dividable k m ) → Dividable.factor d > 0
-0<factor {m} {k} k>0 m>0 d with Dividable.factor d | inspect Dividable.factor d 
-... | zero | record { eq = eq1 } = ⊥-elim ( nat-≡< ff1 m>0 ) where
+0<factor {m} {k} k>0 m>0 d with Dividable.factor d in eq1 
+... | zero = ⊥-elim ( nat-≡< ff1 m>0 ) where
     ff1 : 0 ≡ m 
     ff1 = begin
           0 ≡⟨⟩
           0 * k + 0 ≡⟨ cong  (λ j → j * k + 0) (sym eq1) ⟩
           Dividable.factor d * k + 0 ≡⟨ Dividable.is-factor d  ⟩
           m ∎  where open ≡-Reasoning  
-... | suc t | _ = s≤s z≤n 
+... | suc t = s≤s z≤n 
 
 div→k≤m : { m k : ℕ } → k > 1 → m > 0 →  Dividable k m → m ≥ k
 div→k≤m {m} {k} k>1 m>0 d with <-cmp m k
