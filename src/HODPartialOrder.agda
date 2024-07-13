@@ -56,4 +56,4 @@ open Bool
      → ({x : HOD} → ({y : HOD} → y < x → ψ y) → ψ x ) → (x : HOD) → ψ x
 <-TransFinite {ψ} wfa ind x = induction x (wfa x) where
      induction : (x : HOD) → Acc _<_ x → ψ x
-     induction x (acc rs) = ind {x} (λ {y} y<x → induction y (rs y y<x) ) 
+     induction x (acc rs) = ind {x} (λ {y} y<x → induction y (rs y<x) ) 

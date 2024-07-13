@@ -434,7 +434,7 @@ record ZChain ( A : HOD )    ( f : Ordinal → Ordinal )  (mf< : <-monotonic-f A
                  osuc (supf u)  ≡⟨ cong osuc su=u ⟩
                  osuc u  ≤⟨ osucc u<b ⟩
                  b  ≤⟨ b≤sa ⟩
-                 supf a ∎ )) where open o≤-Reasoning O
+                 supf a ∎ )) where open o≤-Reasoning 
 
    x≤supfx→¬sa<sa : {a b : Ordinal } → b o≤ z → b o≤ supf a → ¬ (supf a o< supf b )
    x≤supfx→¬sa<sa {a} {b} b≤z b≤sa sa<sb = ⊥-elim ( o<¬≡ z27 sa<sb ) where -- x o≤ supf a ∧ supf a o< supf b → ⊥, because it defines the same UnionCF
@@ -531,7 +531,7 @@ supf-unique A f mf< {y} {xa} {xb} ay xa≤xb za zb {z} z≤xa =
                  spb  ≤⟨ MinSUP.minsup mb (MinSUP.as ma) (λ {z} uzb → MinSUP.x≤sup ma (z53 uzb)) ⟩
                  spa ≡⟨ sym sax=spa ⟩
                  supfa x ∎ ) a ) where
-                    open o≤-Reasoning O
+                    open o≤-Reasoning 
                     z53 : {z : Ordinal } →  odef (UnionCF A f ay (ZChain.supf zb) x) z →  odef (UnionCF A f ay (ZChain.supf za) x) z
                     z53 ⟪ as , ch-init fc ⟫ = ⟪ as , ch-init fc ⟫
                     z53 {z} ⟪ as , ch-is-sup u u<x su=u fc ⟫ = ⟪ as , ch-is-sup u u<x (trans ua=ub su=u) z55 ⟫ where
@@ -545,7 +545,7 @@ supf-unique A f mf< {y} {xa} {xb} ay xa≤xb za zb {z} z≤xa =
                  spa  ≤⟨ MinSUP.minsup ma (MinSUP.as mb) (λ uza → MinSUP.x≤sup mb (z53 uza)) ⟩
                  spb  ≡⟨ sym sbx=spb ⟩
                  supfb x ∎ ) c ) where
-                    open o≤-Reasoning O
+                    open o≤-Reasoning 
                     z53 : {z : Ordinal } →  odef (UnionCF A f ay (ZChain.supf za) x) z →  odef (UnionCF A f ay (ZChain.supf zb) x) z
                     z53 ⟪ as , ch-init fc ⟫ = ⟪ as , ch-init fc ⟫
                     z53 {z} ⟪ as , ch-is-sup u u<x su=u fc ⟫ =  ⟪ as , ch-is-sup u u<x (trans ub=ua su=u) z55  ⟫ where
@@ -1006,7 +1006,7 @@ Zorn-lemma {A}  0<A supP = zorn00 where
                              osuc (supf0 u) ≡⟨ cong osuc  (sym (sf1=sf0 (zc-b<x _ u<x) ))  ⟩
                              osuc (supf1 u) ≡⟨ cong osuc  su=u ⟩
                              osuc u ≤⟨ osucc u<x ⟩
-                             x ∎ ) where open o≤-Reasoning O
+                             x ∎ ) where open o≤-Reasoning 
                     ... | tri> ¬a ¬b c = ⊥-elim ( ¬p<x<op ⟪ ZChain.supf-inject zc c , subst (λ k → u o< k ) (sym (Oprev.oprev=x op)) u<x  ⟫ )
 
                  is-minsup :  {z : Ordinal} → z o≤ x → IsMinSUP A (UnionCF A f ay supf1 z) (supf1 z)
@@ -1070,14 +1070,14 @@ Zorn-lemma {A}  0<A supP = zorn00 where
                      osuc px ≤⟨ osucc (ZChain.zo≤sz zc o≤-refl)  ⟩
                      osuc (supf0 px) ≡⟨ sym (cong osuc (sf1=sf0 o≤-refl )) ⟩
                      osuc (supf1 px) ≤⟨ osucc lt ⟩
-                     supf1 x ∎ where open o≤-Reasoning O
+                     supf1 x ∎ where open o≤-Reasoning 
                  ... | case1 spx=sx with osuc-≡< ( ZChain.zo≤sz zc o≤-refl )
                  ... | case2 lt = begin
                      x ≡⟨ sym (Oprev.oprev=x op) ⟩
                      osuc px ≤⟨ osucc lt ⟩
                      supf0 px ≡⟨ sym (sf1=sf0 o≤-refl)  ⟩
                      supf1 px ≤⟨ supf1-mono (o<→≤ px<x)  ⟩
-                     supf1 x ∎ where open o≤-Reasoning O
+                     supf1 x ∎ where open o≤-Reasoning 
                  ... | case1 px=spx =  ⊥-elim ( <<-irr zc40 (proj1 ( mf< (supf0 px) (ZChain.asupf zc))) ) where
                      zc37 : supf0 px ≡ px
                      zc37 = sym px=spx
@@ -1310,7 +1310,7 @@ Zorn-lemma {A}  0<A supP = zorn00 where
           supf-mono : {z y : Ordinal } → z o≤ y → supf1 z o≤ supf1 y
           supf-mono {z} {y} z≤y with trio< y x
           ... | tri< y<x ¬b ¬c = zc01 where
-               open o≤-Reasoning O
+               open o≤-Reasoning 
                zc01 : supf1 z o≤ ZChain.supf (pzc  (ob<x lim y<x)) y
                zc01 = begin
                   supf1 z ≡⟨ sf1=sf (ordtrans≤-< z≤y y<x)  ⟩
@@ -1318,7 +1318,7 @@ Zorn-lemma {A}  0<A supP = zorn00 where
                   ZChain.supf (pzc  (ob<x lim y<x)) z ≤⟨ ZChain.supf-mono (pzc  (ob<x lim y<x)) z≤y  ⟩
                   ZChain.supf (pzc  (ob<x lim y<x)) y ∎
           ... | tri≈ ¬a b ¬c = zc01 where  -- supf1 z o≤ spu
-               open o≤-Reasoning O
+               open o≤-Reasoning 
                zc01 : supf1 z o≤ spu
                zc01 with osuc-≡< (subst (λ k → z o≤ k) b z≤y)
                ... | case1 z=x = o≤-refl0 (sf1=spu (sym z=x))
@@ -1390,7 +1390,7 @@ Zorn-lemma {A}  0<A supP = zorn00 where
                    zc41 : osuc a o< x
                    zc41 = osucprev ( begin
                        osuc ( osuc  a ) ≤⟨ o<→≤ (ob<x lim (ob<x lim a<x))  ⟩
-                       x ∎ ) where open o≤-Reasoning O
+                       x ∎ ) where open o≤-Reasoning 
                ... | tri> ¬a ¬b c = ob<x lim a<x
                sam = ZChain.supf (pzc (ob<x lim m<x)) a
                zc42 : osuc a o≤ osuc m
@@ -1410,7 +1410,7 @@ Zorn-lemma {A}  0<A supP = zorn00 where
                        osuc u ≤⟨ osucc u<x ⟩
                        osuc m ≤⟨ osucc m<x ⟩
                        x ≡⟨ sym b=x ⟩
-                       b ∎ ) where open o≤-Reasoning O
+                       b ∎ ) where open o≤-Reasoning 
                    zc45 : supf1 u ≡  ZChain.supf (pzc  (ob<x lim m<x)) u
                    zc45 = begin
                        supf1 u ≡⟨ sf1=sf (subst (λ k → u o< k) b=x u<b )  ⟩
@@ -1452,7 +1452,7 @@ Zorn-lemma {A}  0<A supP = zorn00 where
                    ... | case2 spu≤z =  begin   -- x ≡ supf1 spu ≡ spu ≡ supf1 x
                       x ≤⟨ x≤ssp ⟩
                       supf1 spu ≤⟨ supf-mono spu≤z ⟩
-                      supf1 x ∎   where open o≤-Reasoning O
+                      supf1 x ∎   where open o≤-Reasoning 
           ... | case1 ssp<x = subst (λ k → x o≤ k) (sym (sf1=spu refl)) z47 where
                z47 : x o≤ spu
                z47 with x<y∨y≤x spu x

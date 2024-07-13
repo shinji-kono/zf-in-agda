@@ -160,7 +160,7 @@ open import Induction.WellFounded
 
 
 ordWF : WellFounded _o<_
-ordWF x = TransFinite {Zero} {λ y → Acc _o<_ y} (λ x ind → acc (λ x rs → ind x rs  ) )  x
+ordWF x = TransFinite {Zero} {λ y → Acc _o<_ y} (λ x ind → acc (λ rs → ind _ rs  ) )  x
 
 TransFiniteWF : {m : Level} 
   → ( (x : Ordinal)  → ( (y : Ordinal  ) → y o< x → Acc _o<_ y ) → Acc _o<_ x )

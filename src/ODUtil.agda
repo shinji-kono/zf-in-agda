@@ -178,15 +178,17 @@ pair=∨ {a} {b} {c} (case2 c=b) = case2 ( sym (trans c=b &iso))
         ; ox = eq→ (==-sym *iso) (case1 refl) }   --  (* x , (* x , * x)) ∋ * y
 ... | record { owner = u ; ao = xxx∋u ; ox = uy } with xxx∋u
 ... | case1 u=x = ⊥-elim ( o<> x<y (osucprev (begin
-       osuc y ≡⟨ sym (cong osuc  &iso) ⟩
-       osuc (& (* y)) ≤⟨ osucc (c<→o< {* y} {* u} uy) ⟩ -- * x ≡ * u ∋ * y
-       & (* u) ≡⟨ &iso ⟩
-       u ≡⟨ u=x ⟩
-       & (* x) ≡⟨ &iso ⟩
-       x ∎ ))) where open o≤-Reasoning O
+     osuc y ≡⟨ sym (cong osuc  &iso) ⟩ 
+     osuc (& (* y)) ≤⟨ osucc (c<→o< {* y} {* u} uy) ⟩ -- * x ≡ * u ∋ * y
+     & (* u) ≡⟨ &iso ⟩
+     u ≡⟨ u=x ⟩
+     & (* x) ≡⟨ &iso ⟩
+     x ∎ ))) 
+      where 
+         open o≤-Reasoning 
 ... | case2 u=xx = ⊥-elim (o<¬≡ ( begin
         x ≡⟨ single& ( eq← (==-sym *iso)  (subst₂ (λ j k → odef j k ) (cong (*) u=xx ) &iso uy)) ⟩
-        y ∎ ) x<y)  where open ≡-Reasoning
+        y ∎ ) x<y)  where open ≡-Reasoning 
 
 Omega-inject : {x y : Ordinal} →  & (Union (* y , (* y , * y))) ≡ & (Union (* x , (* x , * x))) → y ≡ x
 Omega-inject {x} {y} eq with trio< x y

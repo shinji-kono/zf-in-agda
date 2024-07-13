@@ -642,7 +642,7 @@ Compact→FIP {L} top compact with trio< (& L) o∅
                f25 : & od∅ o< (& (L ＼  Union (* (Compact.finCover compact (OOX CX) cov))) )
                f25 = ordtrans<-≤ (subst (λ k → k o< & (L ＼ * (SB.i sb))) (sym ord-od∅) (0<sb (SB.sb sb) ) )  ( begin
                   & (L ＼ * (SB.i sb))  ≤⟨ ⊆→o≤ f23 ⟩ 
-                  & (L ＼  Union (* (Compact.finCover compact (OOX CX) cov)))  ∎  ) where open o≤-Reasoning O
+                  & (L ＼  Union (* (Compact.finCover compact (OOX CX) cov)))  ∎  ) where open o≤-Reasoning 
       -- if we have no cover, we can consruct NC
       intersection : NC CX fip 0<X
       intersection with p∨¬p (NC CX fip 0<X)

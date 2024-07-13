@@ -241,7 +241,7 @@ OrdTrans a≤b b≤c | case2 a<b | case2 b<c = ordtrans (ordtrans a<b  b<c) <-os
 OrdPreorder :   Preorder n n n
 OrdPreorder  = record { Carrier = Ordinal
    ; _≈_  = _≡_
-   ; _∼_   = _o≤_
+   ; _≲_ = _o≤_  -- _∼_   = _o≤_
    ; isPreorder   = record {
         isEquivalence = record { refl = refl  ; sym = sym ; trans = trans }
         ; reflexive     = o≤-refl0
@@ -266,7 +266,9 @@ record OrdinalSubset (maxordinal : Ordinal) : Set (suc n) where
     os-iso← : {x : Ordinal} →  os→  (os← x) (os←limit x) ≡ x
     os-iso→ : {x : Ordinal} → (lt : x o< maxordinal ) →  os← (os→ x lt) ≡ x
 
-module o≤-Reasoning {n : Level}  (O : Ordinals {n} )  where
+open import Relation.Binary.Reasoning.Syntax
+
+module o≤-Reasoning  where
 
     -- open inOrdinal O
 
@@ -284,12 +286,13 @@ module o≤-Reasoning {n : Level}  (O : Ordinals {n} )  where
     trans2 {i} {j} {k} i<oj j<k | case2 i<j = ordtrans i<j j<k
 
     open import Relation.Binary.Reasoning.Base.Triple
-      (Preorder.isPreorder OrdPreorder)
-         ordtrans --<-trans
-         (resp₂ _o<_) --(resp₂ _<_)
-         (λ x → ordtrans x <-osuc ) --<⇒≤
-         trans1 --<-transˡ
-         trans2 --<-transʳ
-         public
-         -- hiding (_≈⟨_⟩_)
-
+        (Preorder.isPreorder OrdPreorder)
+        (λ {x} {y} x<y y<x → o<> x<y y<x )
+        ordtrans 
+        (resp₂ _o<_) 
+        (λ x → ordtrans x <-osuc ) 
+        trans1 
+        trans2
+        public
+        hiding (step-≈; step-≈˘; step-≈-⟩; step-≈-⟨)
+        

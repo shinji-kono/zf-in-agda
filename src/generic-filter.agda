@@ -4,7 +4,7 @@ open import Level renaming (zero to lzero; suc to lsuc)
 open import Ordinals
 open import logic
 open import Relation.Nullary
-open import Relation.Binary
+open import Relation.Binary hiding (Dense)
 
 import HODBase
 import OD
@@ -366,7 +366,7 @@ val< {x} {y} {p} xyp = osucprev ( begin
        v00 _ _ = case1 refl
        v01 : (x y : HOD) → < x , y > ∋ (x , x)
        v01 _ _ = case1 refl
-       open o≤-Reasoning O
+       open o≤-Reasoning 
 
 record valS (G : HOD) (x z : Ordinal) (val : (y : Ordinal) → y o< x → HOD): Set n where
    field
