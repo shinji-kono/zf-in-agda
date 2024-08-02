@@ -54,8 +54,8 @@ _⊆_ : (a b : NSet ) → Set
 _⊆_ a b  = ∀ {x : ℕ} → def a x → def b x
 
 eq2⊆eq1 : eqa2 ⊆ eqa1
-eq2⊆eq1 {2} (case1 refl) = refl
-eq2⊆eq1 {3} (case2 refl) = refl
+eq2⊆eq1 {_} (case1 refl) = refl
+eq2⊆eq1 {_} (case2 refl) = refl
 
 -- the other way is slightly difficut
 

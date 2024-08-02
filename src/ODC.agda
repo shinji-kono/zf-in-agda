@@ -55,7 +55,7 @@ ppp  {p} {a} d = proj2 d
 
 p∨¬p : ( p : Set n ) → p ∨ ( ¬ p )         -- assuming axiom of choice
 p∨¬p  p with is-o∅ ( & (pred-od p ))
-p∨¬p  p | yes eq = case2 (¬p eq) where
+p∨¬p  p | yes0 eq = case2 (¬p eq) where
    ps = pred-od p
    eqo∅ : ps =h=  od∅  → & ps ≡  o∅
    eqo∅ eq = trans (==→o≡ eq) ord-od∅
@@ -67,27 +67,27 @@ p∨¬p  p | yes eq = case2 (¬p eq) where
       * ( & ps ) ≡⟨ cong (*) eq ⟩
       * ( o∅ ) ≈⟨ o∅==od∅ ⟩
       od∅ ∎ ) where open EqR ==-Setoid
-p∨¬p  p | no ¬p = case1 (ppp  {p} {minimal ps (λ eq →  ¬p (eqo∅ eq))} lemma) where
+p∨¬p  p | no0 ¬p = case1 (ppp  {p} {minimal ps (λ eq →  ¬p (eqo∅ eq))} lemma) where
    ps = pred-od p
    eqo∅ : ps =h=  od∅  → & ps ≡  o∅
    eqo∅ eq = trans (==→o≡ eq) ord-od∅
    lemma : ps ∋ minimal ps (λ eq →  ¬p (eqo∅ eq))
    lemma = x∋minimal ps (λ eq →  ¬p (eqo∅ eq))
 
-decp : ( p : Set n ) → Dec p   -- assuming axiom of choice
+decp : ( p : Set n ) → Dec0 p   -- assuming axiom of choice
 decp  p with p∨¬p p
-decp  p | case1 x = yes x
-decp  p | case2 x = no x
+decp  p | case1 x = yes0 x
+decp  p | case2 x = no0 x
 
-∋-p : (A x : HOD ) → Dec ( A ∋ x )
+∋-p : (A x : HOD ) → Dec0 ( A ∋ x )
 ∋-p A x with p∨¬p ( A ∋ x ) -- LEM
-∋-p A x | case1 t  = yes t
-∋-p A x | case2 t  = no (λ x → t x)
+∋-p A x | case1 t  = yes0 t
+∋-p A x | case2 t  = no0 (λ x → t x)
 
 double-neg-elim : {A : Set n} → ¬ ¬ A → A      -- we don't have this in intutionistic logic
 double-neg-elim  {A} notnot with decp  A                         -- assuming axiom of choice
-... | yes p = p
-... | no ¬p = ⊥-elim ( notnot ¬p )
+... | yes0 p = p
+... | no0 ¬p = ⊥-elim ( notnot ¬p )
 
 or-exclude : {A B : Set n} → A ∨ B → A ∨ ( (¬ A)  ∧  B )
 or-exclude {A} {B} ab with p∨¬p A
@@ -101,11 +101,11 @@ or-exclude1 {A} {B} ab with p∨¬p A
 ... | case1 a = case1 a
 ... | case2 ¬a = case2 ( ab ¬a)
 
-OrdP : ( x : Ordinal  ) ( y : HOD  ) → Dec ( Ord x ∋ y )
+OrdP : ( x : Ordinal  ) ( y : HOD  ) → Dec0 ( Ord x ∋ y )
 OrdP  x y with trio< x (& y)
-OrdP  x y | tri< a ¬b ¬c = no ¬c
-OrdP  x y | tri≈ ¬a refl ¬c = no ( o<¬≡ refl )
-OrdP  x y | tri> ¬a ¬b c = yes c
+OrdP  x y | tri< a ¬b ¬c = no0 ¬c
+OrdP  x y | tri≈ ¬a refl ¬c = no0 ( o<¬≡ refl )
+OrdP  x y | tri> ¬a ¬b c = yes0 c
 
 open import zfc
 

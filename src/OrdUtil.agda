@@ -105,11 +105,11 @@ proj1 (osuc2 x y) ox<ooy with osuc-≡< ox<ooy
 proj1 (osuc2 x y) ox<ooy | case1 ox=oy = o<-subst <-osuc refl ox=oy
 proj1 (osuc2 x y) ox<ooy | case2 ox<oy = ordtrans <-osuc ox<oy
 
-o≡? : (x y : Ordinal) → Dec ( x ≡ y )
+o≡? : (x y : Ordinal) → Dec0 ( x ≡ y )
 o≡? x y with trio< x y
-... | tri< a ¬b ¬c = no ¬b
-... | tri≈ ¬a b ¬c = yes b
-... | tri> ¬a ¬b c = no ¬b
+... | tri< a ¬b ¬c = no0 ¬b
+... | tri≈ ¬a b ¬c = yes0 b
+... | tri> ¬a ¬b c = no0 ¬b
 
 _o≤_ :  Ordinal → Ordinal → Set  n
 a o≤ b  = a o< osuc b -- (a ≡ b)  ∨ ( a o< b )
@@ -205,11 +205,11 @@ o≤-refl0 {i} {j} eq = subst (λ k → i o< osuc k ) eq <-osuc
 o≤-refl :  { i : Ordinal } → i o≤ i
 o≤-refl {i} = subst (λ k → i o< osuc k ) refl <-osuc
 
-o≤? : (x y : Ordinal) → Dec ( x o≤ y )
+o≤? : (x y : Ordinal) → Dec0 ( x o≤ y )
 o≤? x y with trio< x y
-... | tri< a ¬b ¬c = yes (ordtrans a <-osuc)
-... | tri≈ ¬a b ¬c = yes (o≤-refl0 b)
-... | tri> ¬a ¬b c = no (λ n → o≤> n c )
+... | tri< a ¬b ¬c = yes0 (ordtrans a <-osuc)
+... | tri≈ ¬a b ¬c = yes0 (o≤-refl0 b)
+... | tri> ¬a ¬b c = no0 (λ n → o≤> n c )
 
 o¬≤→< : {x z : Ordinal} →  ¬ (x o< osuc z) → z o< x
 o¬≤→< {x} {z} not with trio< z x

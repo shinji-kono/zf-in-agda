@@ -80,7 +80,7 @@ record CountableModel : Set (Level.suc (Level.suc n)) where
        ctl-iso→ : { x : Ordinal } → (lt : odef (ctl-M) x )  → ctl→ (ctl← x lt ) ≡ x
        TC : {x y : Ordinal} → odef ctl-M x → odef (* x) y → odef ctl-M y
        is-model : (x : HOD) → & x o< & ctl-M → ctl-M ∋ (x ∩ ctl-M)
-       -- we have no otherway round
+       -- we have no0 otherway round
        -- ctl-iso← : { x : ℕ }  →  ctl← (ctl→ x ) (ctl<M x)  ≡ x
 --
 -- almmost universe
@@ -106,8 +106,8 @@ PGHOD i L C p = record { od = record { def = λ x  →
 find-p :  (L : HOD ) (C : CountableModel )  (i : ℕ) → (x : Ordinal) → Ordinal
 find-p L C zero x = x
 find-p L C (suc i) x with is-o∅ ( & ( PGHOD i L C (find-p L C i x)) )
-... | yes y  = find-p L C i x
-... | no not  = & (minimal ( PGHOD i L C (find-p L C i x)) (λ eq → not (=od∅→≡o∅ eq)))  -- axiom of choice
+... | yes0 y  = find-p L C i x
+... | no0 not  = & (minimal ( PGHOD i L C (find-p L C i x)) (λ eq → not (=od∅→≡o∅ eq)))  -- axiom of choice
 
 ---
 -- G = { r ∈ L ⊆ Power P | ∃ n → r ⊆ p(n) }
@@ -143,8 +143,8 @@ gf05 {a} {b} {x} (case2 bx) nax nbx = nbx bx
 
 p-monotonic1 :  (L p : HOD ) (C : CountableModel  ) → {n : ℕ} → (* (find-p L C n (& p))) ⊆ (* (find-p L C (suc n) (& p)))
 p-monotonic1 L p C {n} {x} with is-o∅ (& (PGHOD n L C (find-p L C n (& p))))
-... | yes y =  refl-⊆ {* (find-p L C n (& p))}
-... | no not = λ  lt →   proj2 (proj2 fmin∈PGHOD) _ lt   where
+... | yes0 y =  refl-⊆ {* (find-p L C n (& p))}
+... | no0 not = λ  lt →   proj2 (proj2 fmin∈PGHOD) _ lt   where
     fmin : HOD
     fmin = minimal (PGHOD n L C (find-p L C n (& p))) (λ eq → not (=od∅→≡o∅ eq))
     fmin∈PGHOD : PGHOD n L C (find-p L C n (& p)) ∋ fmin
@@ -152,11 +152,11 @@ p-monotonic1 L p C {n} {x} with is-o∅ (& (PGHOD n L C (find-p L C n (& p))))
 
 p-monotonic :  (L p : HOD ) (C : CountableModel  ) → {n m : ℕ} → n ≤ m → (* (find-p L C n (& p))) ⊆ (* (find-p L C m (& p)))
 p-monotonic L p C {zero} {zero} n≤m = refl-⊆ {* (find-p L C zero (& p))}
-p-monotonic L p C {zero} {suc m} z≤n lt = p-monotonic1 L p C {m} (p-monotonic L p C {zero} {m} z≤n lt )
-p-monotonic L p C {suc n} {suc m} (s≤s n≤m) with <-cmp n m
+p-monotonic L p C {zero} {suc m} lt0 lt = p-monotonic1 L p C {m} (p-monotonic L p C {zero} {m} z≤n lt )
+p-monotonic L p C {suc n} {suc m} lt with <-cmp n m
 ... | tri< a ¬b ¬c = λ lt → p-monotonic1 L p C {m} (p-monotonic L p C {suc n} {m} a lt)
 ... | tri≈ ¬a refl ¬c = λ x → x
-... | tri> ¬a ¬b c = ⊥-elim ( nat-≤> n≤m c )
+... | tri> ¬a ¬b c = ⊥-elim ( nat-≤> (px≤py lt) c )
 
 record Expansion  (p : HOD) (dense : HOD)  : Set (Level.suc n) where
    field
@@ -210,8 +210,8 @@ P-GenericFilter P L p0 L⊆PP Lp0 C = record {
        Lan : (i : ℕ ) →  odef L (find-p L C i (& p0))
        Lan zero = Lp0
        Lan (suc i) with is-o∅ ( & ( PGHOD i L C (find-p L C i (& p0))) )
-       ... | yes y  = Lan i
-       ... | no not  = proj1 ( x∋minimal ( PGHOD i L C (find-p L C i (& p0))) (λ eq → not (=od∅→≡o∅ eq)))
+       ... | yes0 y  = Lan i
+       ... | no0 not  = proj1 ( x∋minimal ( PGHOD i L C (find-p L C i (& p0))) (λ eq → not (=od∅→≡o∅ eq)))
        exp1 : {p q : HOD} → (ip : PDHOD L p0 C ∋ p) → (ip : PDHOD L p0 C ∋ q) → Exp2 (PDHOD L p0 C) p q
        exp1 {p} {q} record { gr = pgr ; pn<gr = ppn ; x∈PP = PPp }
                       record { gr = qgr ; pn<gr = qpn ; x∈PP = PPq } = gf01 where
@@ -253,7 +253,7 @@ P-GenericFilter P L p0 L⊆PP Lp0 C = record {
                     * (ctl→ C an) ∎  where open EqHOD ==-Setoid
            fd07 : odef (dense D) pn+1
            fd07 with is-o∅ ( & ( PGHOD an L C (find-p L C an (& p0))) )
-           ... | yes y = ⊥-elim ( ¬x<0 (eq→ fd10 fd21 ) ) where
+           ... | yes0 y = ⊥-elim ( ¬x<0 (eq→ fd10 fd21 ) ) where
               L∋pn : L ∋ * (find-p L C an (& p0))
               L∋pn = subst (λ k → odef L k) (sym &iso) (Lan an )
               ex = has-exp D L∋pn
@@ -267,7 +267,7 @@ P-GenericFilter P L p0 L⊆PP Lp0 C = record {
               fd21 = ⟪ L∋df , ⟪ pn∋df , pn⊆df ⟫ ⟫
               fd10 :  PGHOD an L C (find-p L C an (& p0)) =h= od∅
               fd10 = ≡o∅→=od∅ y
-           ... | no not = fd27 where
+           ... | no0 not = fd27 where
               fd29 =  minimal ( PGHOD an L C (find-p L C an (& p0))) (λ eq → not (=od∅→≡o∅ eq))
               fd28 : PGHOD an L C (find-p L C an (& p0)) ∋ fd29
               fd28 = x∋minimal (PGHOD an L C (find-p L C an (& p0))) (λ eq → not (=od∅→≡o∅ eq))

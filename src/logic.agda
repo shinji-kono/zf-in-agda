@@ -50,19 +50,19 @@ infixr  130 _∧_
 infixr  140 _∨_
 infixr  150 _⇔_
 
-_/\_ : Bool → Bool → Bool 
+_/\_ : Bool → Bool → Bool
 true /\ true = true
 _ /\ _ = false
 
-_\/_ : Bool → Bool → Bool 
+_\/_ : Bool → Bool → Bool
 false \/ false = false
 _ \/ _ = true
 
-not : Bool → Bool 
+not : Bool → Bool
 not true = false
-not false = true 
+not false = true
 
-_<=>_ : Bool → Bool → Bool  
+_<=>_ : Bool → Bool → Bool
 true <=> true = true
 false <=> false = true
 _ <=> _ = false
@@ -83,11 +83,22 @@ injection :  {n m : Level} (R : Set n) (S : Set m) (f : R → S ) → Set (n Lev
 injection R S f = (x y : R) → f x ≡ f y → x ≡ y
 
 
+-- Cubical Agda has trouble with std-lib's Dec
+-- we sometimes use simpler version of Dec
+
+data Dec0 {n : Level} (A : Set n) : Set n where
+  yes0 : A → Dec0 A
+  no0  : (A → ⊥) → Dec0 A
+
+open _∧_ 
+∧-injective : {n m : Level} {A : Set n} {B : Set m} → {a b : A ∧ B}  → proj1 a ≡ proj1 b → proj2 a ≡ proj2 b → a ≡ b
+∧-injective refl refl = refl
+
 not-not-bool : { b : Bool } → not (not b) ≡ b
 not-not-bool {true} = refl
 not-not-bool {false} = refl
 
-¬t=f : (t : Bool ) → ¬ ( not t ≡ t) 
+¬t=f : (t : Bool ) → ¬ ( not t ≡ t)
 ¬t=f true ()
 ¬t=f false ()
 
@@ -99,11 +110,11 @@ not-not-bool {false} = refl
 ... | ()
 ≡-Bool-func {false} {false} a→b b→a = refl
 
-bool-≡-? : (a b : Bool) → Dec ( a ≡ b )
-bool-≡-? true true = yes refl
-bool-≡-? true false = no (λ ())
-bool-≡-? false true = no (λ ())
-bool-≡-? false false = yes refl
+bool-≡-? : (a b : Bool) → Dec0 ( a ≡ b )
+bool-≡-? true true = yes0 refl
+bool-≡-? true false = no0 (λ ())
+bool-≡-? false true = no0 (λ ())
+bool-≡-? false false = yes0 refl
 
 ¬-bool-t : {a : Bool} →  ¬ ( a ≡ true ) → a ≡ false
 ¬-bool-t {true} ne = ⊥-elim ( ne refl )
@@ -131,35 +142,35 @@ lemma-∧-1 {true} {true} eq1 ()
 bool-and-tt : {a b : Bool} → a ≡ true → b ≡ true → ( a /\ b ) ≡ true
 bool-and-tt refl refl = refl
 
-bool-∧→tt-0 : {a b : Bool} → ( a /\ b ) ≡ true → a ≡ true 
+bool-∧→tt-0 : {a b : Bool} → ( a /\ b ) ≡ true → a ≡ true
 bool-∧→tt-0 {true} {true} eq =  refl
 bool-∧→tt-0 {false} {_} ()
 
-bool-∧→tt-1 : {a b : Bool} → ( a /\ b ) ≡ true → b ≡ true 
+bool-∧→tt-1 : {a b : Bool} → ( a /\ b ) ≡ true → b ≡ true
 bool-∧→tt-1 {true} {true} eq = refl
 bool-∧→tt-1 {true} {false} ()
 bool-∧→tt-1 {false} {false} ()
 
-bool-or-1 : {a b : Bool} → a ≡ false → ( a \/ b ) ≡ b 
+bool-or-1 : {a b : Bool} → a ≡ false → ( a \/ b ) ≡ b
 bool-or-1 {false} {true} eq = refl
 bool-or-1 {false} {false} eq = refl
-bool-or-2 : {a b : Bool} → b ≡ false → (a \/ b ) ≡ a 
+bool-or-2 : {a b : Bool} → b ≡ false → (a \/ b ) ≡ a
 bool-or-2 {true} {false} eq = refl
 bool-or-2 {false} {false} eq = refl
 
-bool-or-3 : {a : Bool} → ( a \/ true ) ≡ true 
+bool-or-3 : {a : Bool} → ( a \/ true ) ≡ true
 bool-or-3 {true} = refl
 bool-or-3 {false} = refl
 
-bool-or-31 : {a b : Bool} → b ≡ true  → ( a \/ b ) ≡ true 
+bool-or-31 : {a b : Bool} → b ≡ true  → ( a \/ b ) ≡ true
 bool-or-31 {true} {true} eq = refl
 bool-or-31 {false} {true} eq = refl
 
-bool-or-4 : {a : Bool} → ( true \/ a ) ≡ true 
+bool-or-4 : {a : Bool} → ( true \/ a ) ≡ true
 bool-or-4 {true} = refl
 bool-or-4 {false} = refl
 
-bool-or-41 : {a b : Bool} → a ≡ true  → ( a \/ b ) ≡ true 
+bool-or-41 : {a b : Bool} → a ≡ true  → ( a \/ b ) ≡ true
 bool-or-41 {true} {b} eq = refl
 
 bool-and-1 : {a b : Bool} →  a ≡ false → (a /\ b ) ≡ false

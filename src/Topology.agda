@@ -61,7 +61,7 @@ open import filter O HODAxiom ho< AC
 
 import Relation.Binary.Reasoning.Setoid as EqHOD
 
-LDec : (L : HOD) (P : HOD) → P ⊆ L → (x : HOD) → Dec (x ∈ P)
+LDec : (L : HOD) (P : HOD) → P ⊆ L → (x : HOD) → Dec0 (x ∈ P)
 LDec L P _ x = ∋-p P x
 
 record Topology  ( L : HOD ) : Set (suc n) where
@@ -128,8 +128,8 @@ CS∋Cl {L} top A = subst (λ k → odef (CS top)  k) (==→o≡ cc00) (P＼OS=C
         cc01 {x} ⟪ Lx , nul ⟫ = ⟪ Lx , ( λ c cc ac → cc02 c cc ac nul ) ⟫ where 
            cc02 : (c : Ordinal) → odef (CS top) c → A ⊆ * c → ¬ odef (Union OCl) x  → odef (* c) x
            cc02 c cc ac nox with ODC.∋-p (* c) (* x)
-           ... | yes y = subst (λ k → odef (* c) k) &iso y
-           ... | no ncx = ⊥-elim ( nox record { owner = & ( L ＼ * c) ; ao = ⟪ proj2 cc , cc07 ⟫ ; ox = eq← *iso cc06  } ) where
+           ... | yes0 y = subst (λ k → odef (* c) k) &iso y
+           ... | no0 ncx = ⊥-elim ( nox record { owner = & ( L ＼ * c) ; ao = ⟪ proj2 cc , cc07 ⟫ ; ox = eq← *iso cc06  } ) where
                 cc06 : odef (L ＼ * c) x 
                 cc06 = ⟪ Lx , subst (λ k → ¬ odef (* c) k) &iso ncx ⟫
                 cc08 : * c ⊆ L
@@ -459,8 +459,8 @@ FIP→Compact {L} top fip with trio< (& L) o∅
                ; isCover = isCover cov } 
             fip45 : {L a b : HOD} → (L ＼ (a ∩ b)) ⊆ ( (L ＼ a) ∪  (L ＼ b))
             fip45 {L} {a} {b} {x} Lab with ∋-p  b (* x)
-            ... | yes bx = case1 ⟪ proj1 Lab , (λ ax → proj2 Lab ⟪ ax , subst (λ k → odef b k) &iso bx ⟫ )  ⟫
-            ... | no ¬bx = case2 ⟪ proj1 Lab , subst (λ k → ¬ ( odef b k)) &iso ¬bx  ⟫
+            ... | yes0 bx = case1 ⟪ proj1 Lab , (λ ax → proj2 Lab ⟪ ax , subst (λ k → odef b k) &iso bx ⟫ )  ⟫
+            ... | no0 ¬bx = case2 ⟪ proj1 Lab , subst (λ k → ¬ ( odef b k)) &iso ¬bx  ⟫
             fip43 : {A L a b : HOD } → A covers (L ＼ a) → A covers (L ＼ b ) → A covers ( L ＼ ( a ∩ b ) )
             fip43 {A} {L} {a} {b} ca cb = record { cover = fip44 ; P∋cover = fip46 ; isCover = fip47 } where
                 fip44 :  {x : Ordinal} → odef (L ＼ (a ∩ b)) x → Ordinal

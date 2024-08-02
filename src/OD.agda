@@ -182,17 +182,17 @@ eq← ∅0 {w} lt = lift (¬x<0 lt)
 ... | tri≈ ¬a b ¬c = ⊥-elim ( ∅< {x} {* y} (subst (λ k → odef x k ) (sym &iso) d )  ( ≡o∅→=od∅ (sym b) ) )
 ... | tri> ¬a ¬b c = ⊥-elim (  ¬x<0 c  )
 
-∅6 : { x : HOD  }  → ¬ ( x ∋ x )    --  no Russel paradox
+∅6 : { x : HOD  }  → ¬ ( x ∋ x )    --  no0 Russel paradox
 ∅6  {x} x∋x = o<¬≡ refl ( c<→o<  {x} {x} x∋x )
 
 odef-iso : {A B : HOD } {x y : Ordinal } → x ≡ y  → (odef A y → odef B y)  → odef A x → odef B x
 odef-iso refl t = t
 
-is-o∅ : ( x : Ordinal  ) → Dec ( x ≡ o∅  )
+is-o∅ : ( x : Ordinal  ) → Dec0 ( x ≡ o∅  )
 is-o∅ x with trio< x o∅
-is-o∅ x | tri< a ¬b ¬c = no ¬b
-is-o∅ x | tri≈ ¬a b ¬c = yes b
-is-o∅ x | tri> ¬a ¬b c = no ¬b
+is-o∅ x | tri< a ¬b ¬c = no0 ¬b
+is-o∅ x | tri≈ ¬a b ¬c = yes0 b
+is-o∅ x | tri> ¬a ¬b c = no0 ¬b
 
 odef< : {b : Ordinal } { A : HOD } → odef A b → b o< & A
 odef< {b} {A} ab = subst (λ k → k o< & A) &iso ( c<→o< (subst (λ k → odef A k ) (sym &iso ) ab))
@@ -213,7 +213,7 @@ pair<y {x} {y} y∋x = ⊆→o≤ lemma where
    lemma (case1 refl) = y∋x
    lemma (case2 refl) = y∋x
 
--- another possible restriction. We require no minimality on odmax, so it may arbitrary larger.
+-- another possible restriction. We require no0 minimality on odmax, so it may arbitrary larger.
 odmax<&  : { x y : HOD } → x ∋ y →  Set n
 odmax<& {x} {y} x∋y = odmax x o< & x
 
@@ -332,7 +332,7 @@ replacement→ {ψ} X x {C} rc lt eq = eq (* (Replaced.z lt)) (ord→== (Replace
 -- If we have LEM, Replace' is equivalent to Replace
 --
 -- we should remove Replace' and Replace'-iso1?
--- the reason why we need Replace' is we cannot have Dec on X ∋ x without LEM.
+-- the reason why we need Replace' is we cannot have Dec0 on X ∋ x without LEM.
 
 record RXCod (X COD : HOD) (ψ : (x : HOD) → X ∋ x → HOD)  : Set (suc n) where
  field
@@ -423,7 +423,7 @@ data Omega-d  : ( x : Ordinal  ) → Set n where
     isuc : {x : Ordinal  } →   Omega-d  x  →
             Omega-d  (& ( Union (* x , (* x , * x ) ) ))
 
--- ω can be diverged in our case, since we have no restriction on the corresponding ordinal of a pair.
+-- ω can be diverged in our case, since we have no0 restriction on the corresponding ordinal of a pair.
 -- We simply assumes Omega-d y has a maximum.
 --
 -- This means that many of OD may not be HODs because of the & mapping divergence.

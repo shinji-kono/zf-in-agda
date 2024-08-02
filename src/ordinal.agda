@@ -44,8 +44,8 @@ o<¬≡ {ox} {.ox} refl (case1 lt) = ⊥-elim ( nat-<≡  lt )
 o<¬≡ {ox} {.ox} refl (case2 x) = ⊥-elim ( nat-<≡  (proj2 x) )
 
 ¬x<0 : { x  : Ordinal } → ¬ ( x o< o∅  )
-¬x<0 {x} (case1 ())
-¬x<0 {x} (case2 ())
+¬x<0 {x} (case1 s) = nat-≤> z≤n s
+¬x<0 {x} (case2 s) = nat-≤> z≤n (proj2  s)
 
 trio< :  Trichotomous  _≡_  _o<_
 trio< a b with <-cmp (lv a) (lv b)
@@ -115,15 +115,16 @@ TransFinite  {m} {ψ} ind x = proj1 (TransFinite1 (lv x) (ord x) ) where
   TransFinite1 : (lx : ℕ) (ox : ℕ ) → ψ (ordinal lx ox) ∧ ( ( (x : Ordinal  ) → x o< ordinal lx ox  → ψ x ) )
   TransFinite1 zero zero = ⟪  caseΦ zero lemma , lemma1 ⟫ where
       lemma : (x : Ordinal) → x o< ordinal zero zero → ψ x
-      lemma x (case1 ())
-      lemma x (case2 ())
+      lemma x (case1 s) = ⊥-elim ( nat-≤> z≤n s )
+      lemma x (case2 s) = ⊥-elim (nat-≤> z≤n (proj2  s))
       lemma1 : (x : Ordinal) → x o< ordinal zero zero → ψ x
-      lemma1 x (case1 ())
-      lemma1 x (case2 ())
+      lemma1 x (case1 s) = ⊥-elim ( nat-≤> z≤n s )
+      lemma1 x (case2 s) = ⊥-elim (nat-≤> z≤n (proj2  s))
   TransFinite1 (suc lx) zero = ⟪ caseΦ (suc lx) (λ x → lemma (lv x) (ord x)) , (λ x → lemma (lv x) (ord x)) ⟫ where
       lemma0 : (ly : ℕ) (oy : ℕ ) → ordinal ly oy  o< ordinal lx zero → ψ (ordinal ly oy)
       lemma0 ly oy lt = proj2 ( TransFinite1 lx zero ) (ordinal ly oy) lt
       lemma : (ly : ℕ) (oy : ℕ ) → ordinal ly oy  o< ordinal (suc lx) zero → ψ (ordinal ly oy)
+      lemma lx1 ox1   (case2 lt) = ⊥-elim (nat-≤> z≤n (proj2  lt))
       lemma lx1 ox1   (case1 lt) with <-∨ lt
       lemma lx zero   (case1 lt) | case1 refl = proj1 ( TransFinite1 lx zero )
       lemma lx zero   (case1 lt) | case2 lt1 = lemma0  lx zero (case1 lt1)
@@ -175,15 +176,16 @@ TransFiniteWF  {m} ind x = proj1 (TransFinite1 (lv x) (ord x) ) where
   TransFinite1 : (lx : ℕ) (ox : ℕ ) → Acc _o<_ (ordinal lx ox) ∧ ( ( (x : Ordinal  ) → x o< ordinal lx ox  → Acc _o<_ x ) )
   TransFinite1 zero zero = ⟪  caseΦ zero lemma , lemma1 ⟫ where
       lemma : (x : Ordinal) → x o< ordinal zero zero → Acc _o<_ x
-      lemma x (case1 ())
-      lemma x (case2 ())
+      lemma x (case1 s) = ⊥-elim ( nat-≤> z≤n s )
+      lemma x (case2 s) = ⊥-elim (nat-≤> z≤n (proj2  s))
       lemma1 : (x : Ordinal) → x o< ordinal zero zero → Acc _o<_ x
-      lemma1 x (case1 ())
-      lemma1 x (case2 ())
+      lemma1 x (case1 s) = ⊥-elim ( nat-≤> z≤n s )
+      lemma1 x (case2 s) = ⊥-elim (nat-≤> z≤n (proj2  s))
   TransFinite1 (suc lx) zero = ⟪ caseΦ (suc lx) (λ x → lemma (lv x) (ord x)) , (λ x → lemma (lv x) (ord x)) ⟫ where
       lemma0 : (ly : ℕ) (oy : ℕ ) → ordinal ly oy  o< ordinal lx zero → Acc _o<_ (ordinal ly oy)
       lemma0 ly oy lt = proj2 ( TransFinite1 lx zero ) (ordinal ly oy) lt
       lemma : (ly : ℕ) (oy : ℕ ) → ordinal ly oy  o< ordinal (suc lx) zero → Acc _o<_ (ordinal ly oy)
+      lemma lx1 ox1   (case2 s) = ⊥-elim (nat-≤> z≤n (proj2  s))
       lemma lx1 ox1   (case1 lt) with <-∨ lt
       lemma lx zero   (case1 lt) | case1 refl = proj1 ( TransFinite1 lx zero )
       lemma lx zero   (case1 lt) | case2 lt1 = lemma0  lx zero (case1 lt1)
@@ -237,12 +239,13 @@ C-Ordinal  = record {
      next (ordinal lv ord) = ordinal (suc lv) zero
      x<nx :    { y : Ordinal } → (y o< next y )
      x<nx = case1 a<sa
-     osuc<nx : { x y : Ordinal } → x o< next y → osuc x o< next y
-     osuc<nx {x} {Y} (case1 lv<) = case1 lv<
+     -- osuc<nx : { x y : Ordinal } → x o< next y → osuc x o< next y
+     -- osuc<nx {x} {Y} (case2 lv<) = ?
+     -- osuc<nx {x} {Y} (case1 lv<) = case1 lv<
      open Oprev
-     Oprev-p  : (x : Ordinal) → Dec ( Oprev (Ordinal )  osuc x )
-     Oprev-p (ordinal lv₁ zero) = no (λ ())
-     Oprev-p (ordinal lv₁ (suc ord₁)) = yes (record { oprev = ordinal lv₁ ord₁  ; oprev=x = refl })
+     Oprev-p  : (x : Ordinal) → Dec0 ( Oprev (Ordinal )  osuc x )
+     Oprev-p (ordinal lv₁ zero) = no0 (λ ())
+     Oprev-p (ordinal lv₁ (suc ord₁)) = yes0 (record { oprev = ordinal lv₁ ord₁  ; oprev=x = refl })
      ord1 : Set
      ord1 = Ordinal
      TransFinite2 : {m : Level } { ψ : ord1  → Set m }

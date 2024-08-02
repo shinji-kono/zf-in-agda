@@ -37,20 +37,20 @@ open OD O HODAxiom
 
 open HODBase.HOD
 
-decp : ( p : Set n ) → Dec p   -- assuming axiom of choice    
+decp : ( p : Set n ) → Dec0 p   -- assuming axiom of choice    
 decp  p with p∨¬p p
-decp  p | case1 x = yes x
-decp  p | case2 x = no x
+decp  p | case1 x = yes0 x
+decp  p | case2 x = no0 x
 
-∋-p : (A x : HOD ) → Dec ( A ∋ x ) 
+∋-p : (A x : HOD ) → Dec0 ( A ∋ x ) 
 ∋-p A x with p∨¬p ( A ∋ x)  -- LEM
-∋-p A x | case1 t  = yes t
-∋-p A x | case2 t  = no (λ x → t x)
+∋-p A x | case1 t  = yes0 t
+∋-p A x | case2 t  = no0 (λ x → t x)
 
 double-neg-elim : {A : Set n} → ¬ ¬ A → A      -- we don't have this in intutionistic logic
 double-neg-elim  {A} notnot with decp  A                         -- assuming axiom of choice
-... | yes p = p
-... | no ¬p = ⊥-elim ( notnot ¬p )
+... | yes0 p = p
+... | no0 ¬p = ⊥-elim ( notnot ¬p )
 
 --- With assuption of HOD is ordered,  p ∨ ( ¬ p ) <=> axiom of choice
 ---
@@ -104,12 +104,12 @@ OD→ZFC   = record {
                          lemma not | case2 ¬b = ⊥-elim  (not (λ x → dont-orb (∀AB x) ¬b ))
                     induction : (x : Ordinal) → ((y : Ordinal) → y o< x → ψ y) → ψ x
                     induction x prev with ∋-p X ( * x) 
-                    ... | yes p = case2 ( record { a-choice = x ; is-in = ∋oo  p } )
-                    ... | no ¬p = lemma where
+                    ... | yes0 p = case2 ( record { a-choice = x ; is-in = ∋oo  p } )
+                    ... | no0 ¬p = lemma where
                          lemma1 : (y : Ordinal) → (y o< x → odef X y → ⊥) ∨ choiced (& X)
                          lemma1 y with ∋-p X (* y)
-                         lemma1 y | yes y<X = case2 ( record { a-choice = y ; is-in = ∋oo y<X } )
-                         lemma1 y | no ¬y<X = case1 ( λ lt y<X → ¬y<X (d→∋ X y<X) )
+                         lemma1 y | yes0 y<X = case2 ( record { a-choice = y ; is-in = ∋oo y<X } )
+                         lemma1 y | no0 ¬y<X = case1 ( λ lt y<X → ¬y<X (d→∋ X y<X) )
                          lemma :  ((y : Ordinal) → y o< x → odef X y → ⊥) ∨ choiced (& X)
                          lemma = ∀-imply-or lemma1
                  odef→o< :  {X : HOD } → {x : Ordinal } → odef X x → x o< & X 

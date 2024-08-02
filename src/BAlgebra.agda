@@ -4,8 +4,9 @@ open import Ordinals
 import HODBase
 import OD
 open import Relation.Nullary
+open import logic
 module BAlgebra {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho< : OD.ODAxiom-ho< O HODAxiom )
-   (L : HODBase.HOD O) (∋-p : (P : HODBase.HOD O) → OD._⊆_ O HODAxiom P L → (x : HODBase.HOD O) → Dec ( OD._∈_ O HODAxiom x P )) where
+   (L : HODBase.HOD O) (∋-p : (P : HODBase.HOD O) → OD._⊆_ O HODAxiom P L → (x : HODBase.HOD O) → Dec0 ( OD._∈_ O HODAxiom x P )) where
 
 open import  Relation.Binary.PropositionalEquality hiding ( [_] )
 open import Data.Empty
@@ -47,12 +48,12 @@ L＼Lx=x : {x : HOD} →  x ⊆ L   → (L ＼ ( L ＼ x )) =h= x
 L＼Lx=x {x} x⊆L = record { eq→ = lem03 ; eq← = lem04 }  where
     lem03 :  {z : Ordinal} → odef (L ＼ (L ＼ x)) z → odef x z
     lem03 {z} ⟪ Lz , Lxz ⟫ with ∋-p x x⊆L (* z)
-    ... | yes y = subst (λ k → odef x k ) &iso y
-    ... | no n = ⊥-elim ( Lxz ⟪ Lz , ( subst (λ k → ¬ odef x k ) &iso n ) ⟫ )
+    ... | yes0 y = subst (λ k → odef x k ) &iso y
+    ... | no0 n = ⊥-elim ( Lxz ⟪ Lz , ( subst (λ k → ¬ odef x k ) &iso n ) ⟫ )
     lem04 :  {z : Ordinal} → odef x z → odef (L ＼ (L ＼ x)) z
     lem04 {z} xz with ∋-p L  (λ x → x) (* z)
-    ... | yes y = ⟪ subst (λ k → odef L k ) &iso y  , ( λ p → proj2 p xz )  ⟫
-    ... | no  n = ⊥-elim ( n (subst (λ k → odef L k ) (sym &iso) ( x⊆L xz) ))
+    ... | yes0 y = ⟪ subst (λ k → odef L k ) &iso y  , ( λ p → proj2 p xz )  ⟫
+    ... | no0  n = ⊥-elim ( n (subst (λ k → odef L k ) (sym &iso) ( x⊆L xz) ))
 
 L＼0=L :  (L ＼ od∅) =h= L
 L＼0=L  = record { eq→ = lem05 ; eq← = lem06 }  where
@@ -63,15 +64,15 @@ L＼0=L  = record { eq→ = lem05 ; eq← = lem06 }  where
 
 ∨L＼X : { X : HOD } → {x : Ordinal } → odef L x → odef X x ∨ odef (L ＼ X) x
 ∨L＼X {X} {x} Lx with ∋-p (X ∩ L) (λ lt → proj2 lt ) (* x)
-... | yes y = case1 ( subst (λ k → odef X k ) &iso (proj1 y)  )
-... | no  n = case2 ⟪ Lx , subst (λ k → ¬ odef X k) &iso (λ lt → ⊥-elim ( n ⟪ lt , subst (λ k → odef L k) (sym &iso) Lx ⟫ ) )  ⟫
+... | yes0 y = case1 ( subst (λ k → odef X k ) &iso (proj1 y)  )
+... | no0  n = case2 ⟪ Lx , subst (λ k → ¬ odef X k) &iso (λ lt → ⊥-elim ( n ⟪ lt , subst (λ k → odef L k) (sym &iso) Lx ⟫ ) )  ⟫
 
 ＼-⊆ : { A B : HOD } →  A ⊆ L → ( A ⊆ B → ( L ＼ B ) ⊆ ( L ＼ A )) ∧ (( L ＼ B ) ⊆ ( L ＼ A ) → A ⊆ B )
 ＼-⊆ {A} {B} A⊆L = ⟪ ( λ a<b {x} pbx → ⟪ proj1 pbx  , (λ ax → proj2 pbx (a<b ax))   ⟫ )  , lem07 ⟫ where
     lem07 : (L ＼ B) ⊆ (L ＼ A) → A ⊆ B
     lem07 pba {x} ax with ∋-p (B ∩ L) proj2 (* x)
-    ... | yes bx = subst (λ k → odef B k ) &iso (proj1 bx)
-    ... | no ¬bx = ⊥-elim ( proj2 ( pba ⟪ A⊆L ax  , (λ bx → ¬bx ⟪ d→∋ B bx , subst (λ k → odef L k) (sym &iso) ( A⊆L ax)  ⟫) ⟫ ) ax )
+    ... | yes0 bx = subst (λ k → odef B k ) &iso (proj1 bx)
+    ... | no0 ¬bx = ⊥-elim ( proj2 ( pba ⟪ A⊆L ax  , (λ bx → ¬bx ⟪ d→∋ B bx , subst (λ k → odef L k) (sym &iso) ( A⊆L ax)  ⟫) ⟫ ) ax )
 
 RC＼ :  RCod (Power (Union L)) (λ z → L ＼ z )
 RC＼ = record { ≤COD = λ {x} lt z xz → lemm {x} lt z xz ; ψ-eq = λ {x} {y} → wdf {x} {y}  } where
@@ -90,8 +91,8 @@ U-F=∅→F⊆U : {F U : HOD} → U ⊆ L  →  ((x : Ordinal) →  ¬ ( odef F 
 U-F=∅→F⊆U {F} {U} U⊆L not = gt02  where
     gt02 : { x : Ordinal } → odef F x → odef U x
     gt02 {x} fx with ∋-p U  U⊆L (* x)
-    ... | yes y = subst (λ k → odef U k ) &iso y
-    ... | no  n = ⊥-elim ( not x ⟪ fx , subst (λ k → ¬ odef U k ) &iso n ⟫ )
+    ... | yes0 y = subst (λ k → odef U k ) &iso y
+    ... | no0  n = ⊥-elim ( not x ⟪ fx , subst (λ k → ¬ odef U k ) &iso n ⟫ )
 
 ∪-Union : { A B : HOD } → Union (A , B) =h= ( A ∪ B )
 ∪-Union {A} {B} = ( record { eq→ =  lemma4 ; eq← = lemma2 } )  where
@@ -181,7 +182,7 @@ record BooleanAlgebra {n m : Level} ( L : Set n) : Set (n ⊔ suc m) where
        isBooleanAlgebra : IsBooleanAlgebra L _≈_ b1 b0 -_ _+_ _x_
 
 
-HODBA : (P : HODBase.HOD O)  (∋-p : (Q : HODBase.HOD O) → OD._⊆_ O HODAxiom  Q P → ( x : HODBase.HOD O ) → Dec ( OD._∈_ O HODAxiom x Q )) 
+HODBA : (P : HODBase.HOD O)  (∋-p : (Q : HODBase.HOD O) → OD._⊆_ O HODAxiom  Q P → ( x : HODBase.HOD O ) → Dec0 ( OD._∈_ O HODAxiom x Q )) 
      → BooleanAlgebra (PowerP P) 
 HODBA P ∋-p = record { _≈_ = λ x y → hod x =h= hod y ; b1 = ⟦ P , (λ x → x) ⟧   ; b0 = ⟦ od∅ , (λ x →  ⊥-elim (¬x<0 x)) ⟧
   ; -_ = λ x → ⟦  P ＼ hod x , proj1 ⟧
@@ -231,8 +232,8 @@ HODBA P ∋-p = record { _≈_ = λ x y → hod x =h= hod y ; b1 = ⟦ P , (λ x
      ba06 a {x} (case2 nax) = proj1 nax
      ba07 : (a : PowerP P ) → { x : Ordinal} → odef P x → odef (hod a) x ∨ odef (P ＼ hod a) x
      ba07 a {x} px with ∋-p (hod a) (x⊆P a) (* x)
-     ... | yes y = case1 (subst (λ k → odef (hod a) k) &iso y)
-     ... | no n = case2 ⟪ px , subst (λ k → ¬ odef (hod a) k) &iso n ⟫
+     ... | yes0 y = case1 (subst (λ k → odef (hod a) k) &iso y)
+     ... | no0 n = case2 ⟪ px , subst (λ k → ¬ odef (hod a) k) &iso n ⟫
      ba08 : (a : PowerP P) → {x : Ordinal} → odef (hod a ∩ (P ＼ hod a)) x → odef od∅ x
      ba08 a {x} ⟪ ax , ⟪ px , nax ⟫ ⟫ = ⊥-elim ( nax ax )
 

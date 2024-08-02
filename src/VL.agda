@@ -57,8 +57,8 @@ V1 x V0 with trio< x o∅
 V1 x V0 | tri< a ¬b ¬c = ⊥-elim ( ¬x<0 a)
 V1 x V0 | tri≈ ¬a refl ¬c = Ord o∅
 V1 x V0 | tri> ¬a ¬b c with Oprev-p  x
-V1 x V0 | tri> ¬a ¬b c | yes p = Power ( V0 (Oprev.oprev p ) (subst (λ k → _ o< k) (Oprev.oprev=x  p) <-osuc ))
-V1 x V0 | tri> ¬a ¬b c | no ¬p = 
+V1 x V0 | tri> ¬a ¬b c | yes0 p = Power ( V0 (Oprev.oprev p ) (subst (λ k → _ o< k) (Oprev.oprev=x  p) <-osuc ))
+V1 x V0 | tri> ¬a ¬b c | no0 ¬p = 
     record { od = record { def = λ y → (y o< x ) ∧ ((lt : y o< x ) →  odef (V0 y lt) x ) } ; odmax = x; <odmax = λ {x} lt → proj1 lt }
 
 record VOrd (x : Ordinal) : Set n where

@@ -86,48 +86,49 @@ open Hω2r
 hw⊆POmega :  {x : Ordinal} → Hω2r x → odef (Power (Power (Omega ho<))) x
 hw⊆POmega {x} r = odmax1 (Hω2r.count r) (Hω2r.hω2 r) where
     odmax1 : {y : Ordinal} (i : Nat)  →  Hω2 i y → odef (Power (Power (Omega ho<) )) y
-    odmax1 0 hφ z xz = ⊥-elim ( ¬x<0 (eq→  o∅==od∅  xz ))
-    odmax1 (Suc i) (h0 {_} {y} hw) = pf01 where
-        pf00 : odef ( Power (Power (Omega ho<))) y
-        pf00 = odmax1 i hw
-        pf01 : odef (Power (Power (Omega ho<))) (& (Union (< nat→ω i , nat→ω 0 > , * y)))
-        pf01 z xz with eq→  *iso xz
-        ... | record { owner = owner ; ao = case1 refl ; ox = ox } = pf02 where
-             pf02 : (w : Ordinal) → odef (* z) w → Omega-d w
-             pf02 w zw with eq→  *iso ox  
-             ... | case2 refl with eq→ *iso zw
-             ... | case1 refl = ω∋nat→ω {i}
-             ... | case2 refl = ω∋nat→ω {0}
-             pf02 w zw | case1 refl with eq→  *iso zw
-             ... | case1 refl = ω∋nat→ω {i}
-             ... | case2 refl = ω∋nat→ω {i} 
-        ... | record { owner = owner ; ao = case2 refl ; ox = ox } = pf02 where
-             pf03 : odef ( Power (Power (Omega ho<))) y
-             pf03 = odmax1 i hw
-             pf02 : (w : Ordinal) → odef (* z) w → Omega-d w
-             pf02 w zw = odmax1 i hw _ (subst (λ k → odef (* k) z) (&iso) ox)  _ zw
-    odmax1 (Suc i) (h1 {_} {y} hw) = pf01 where
-        pf00 : odef ( Power (Power (Omega ho<))) y
-        pf00 = odmax1 i hw
-        pf01 : odef (Power (Power (Omega ho<))) (& (Union (< nat→ω i , nat→ω 1 > , * y)))
-        pf01 z xz with eq→ *iso xz
-        ... | record { owner = owner ; ao = case1 refl ; ox = ox } = pf02 where
-             pf02 : (w : Ordinal) → odef (* z) w → Omega-d w
-             pf02 w zw with eq→ *iso ox  
-             ... | case2 refl with eq→ *iso zw
-             ... | case1 refl = ω∋nat→ω {i}
-             ... | case2 refl = ω∋nat→ω {1}
-             pf02 w zw | case1 refl with eq→ *iso zw
-             ... | case1 refl = ω∋nat→ω {i}
-             ... | case2 refl = ω∋nat→ω {i}
-        ... | record { owner = owner ; ao = case2 refl ; ox = ox } = pf02 where
-             pf03 : odef ( Power (Power (Omega ho<))) y
-             pf03 = odmax1 i hw
-             pf02 : (w : Ordinal) → odef (* z) w → Omega-d w
-             pf02 w zw = odmax1 i hw _ (subst (λ k → odef (* k) z) (&iso) ox)  _ zw
-    odmax1 (Suc i) (he {_} {y} hw) = pf00 where
-        pf00 : odef ( Power (Power (Omega ho<))) y
-        pf00 = odmax1 i hw
+    odmax1 = ?
+--   odmax1 0 hφ z xz = ⊥-elim ( ¬x<0 (eq→  o∅==od∅  xz ))
+--   odmax1 (Suc i) (h0 {_} {y} hw) = pf01 where
+--       pf00 : odef ( Power (Power (Omega ho<))) y
+--       pf00 = odmax1 i hw
+--       pf01 : odef (Power (Power (Omega ho<))) (& (Union (< nat→ω i , nat→ω 0 > , * y)))
+--       pf01 z xz with eq→  *iso xz
+--       ... | record { owner = owner ; ao = case1 refl ; ox = ox } = pf02 where
+--            pf02 : (w : Ordinal) → odef (* z) w → Omega-d w
+--            pf02 w zw with eq→  *iso ox  
+--            ... | case2 refl with eq→ *iso zw
+--            ... | case1 refl = ω∋nat→ω {i}
+--            ... | case2 refl = ω∋nat→ω {0}
+--            pf02 w zw | case1 refl with eq→  *iso zw
+--            ... | case1 refl = ω∋nat→ω {i}
+--            ... | case2 refl = ω∋nat→ω {i} 
+--       ... | record { owner = owner ; ao = case2 refl ; ox = ox } = pf02 where
+--            pf03 : odef ( Power (Power (Omega ho<))) y
+--            pf03 = odmax1 i hw
+--            pf02 : (w : Ordinal) → odef (* z) w → Omega-d w
+--            pf02 w zw = odmax1 i hw _ (subst (λ k → odef (* k) z) (&iso) ox)  _ zw
+--   odmax1 (Suc i) (h1 {_} {y} hw) = pf01 where
+--       pf00 : odef ( Power (Power (Omega ho<))) y
+--       pf00 = odmax1 i hw
+--       pf01 : odef (Power (Power (Omega ho<))) (& (Union (< nat→ω i , nat→ω 1 > , * y)))
+--       pf01 z xz with eq→ *iso xz
+--       ... | record { owner = owner ; ao = case1 refl ; ox = ox } = pf02 where
+--            pf02 : (w : Ordinal) → odef (* z) w → Omega-d w
+--            pf02 w zw with eq→ *iso ox  
+--            ... | case2 refl with eq→ *iso zw
+--            ... | case1 refl = ω∋nat→ω {i}
+--            ... | case2 refl = ω∋nat→ω {1}
+--            pf02 w zw | case1 refl with eq→ *iso zw
+--            ... | case1 refl = ω∋nat→ω {i}
+--            ... | case2 refl = ω∋nat→ω {i}
+--       ... | record { owner = owner ; ao = case2 refl ; ox = ox } = pf02 where
+--            pf03 : odef ( Power (Power (Omega ho<))) y
+--            pf03 = odmax1 i hw
+--            pf02 : (w : Ordinal) → odef (* z) w → Omega-d w
+--            pf02 w zw = odmax1 i hw _ (subst (λ k → odef (* k) z) (&iso) ox)  _ zw
+--   odmax1 (Suc i) (he {_} {y} hw) = pf00 where
+--       pf00 : odef ( Power (Power (Omega ho<))) y
+--       pf00 = odmax1 i hw
 
 --
 -- Set of limited partial function of Omega
@@ -168,18 +169,19 @@ data Two : Set where
 Hω2→3 : (x :  HOD) → HODω2 ∋ x → List (Maybe Two) 
 Hω2→3 x = lemma where
    lemma : { y : Ordinal } →  Hω2r y → List (Maybe Two)
-   lemma record { count = 0 ; hω2 = hφ } = []
-   lemma record { count = (Suc i) ; hω2 = (h0 hω3) } = just i0 ∷ lemma record { count = i ; hω2 =  hω3 }
-   lemma record { count = (Suc i) ; hω2 = (h1 hω3) } = just i0 ∷ lemma record { count = i ; hω2 =  hω3 }
-   lemma record { count = (Suc i) ; hω2 = (he hω3) } = nothing ∷ lemma record { count = i ; hω2 =  hω3 }
+   lemma = ?
+--  lemma record { count = 0 ; hω2 = hφ } = []
+--  lemma record { count = (Suc i) ; hω2 = (h0 hω3) } = just i0 ∷ lemma record { count = i ; hω2 =  hω3 }
+--  lemma record { count = (Suc i) ; hω2 = (h1 hω3) } = just i0 ∷ lemma record { count = i ; hω2 =  hω3 }
+--  lemma record { count = (Suc i) ; hω2 = (he hω3) } = nothing ∷ lemma record { count = i ; hω2 =  hω3 }
 
 ω→2 : HOD
 ω→2 = Power (Omega ho<)
 
 ω2→f : (x : HOD) → ω→2 ∋ x → Nat → Two
 ω2→f x lt n with ∋-p x (nat→ω n)
-ω2→f x lt n | yes p = i1
-ω2→f x lt n | no ¬p = i0
+ω2→f x lt n | yes0 p = i1
+ω2→f x lt n | no0 ¬p = i0
 
 fω→2-sel : ( f : Nat → Two ) (x : HOD) → Set n
 fω→2-sel f x = (Omega ho< ∋ x) ∧ ( (lt : odef (Omega ho<) (&  x) ) → f (ω→nat x lt) ≡ i1 )
@@ -206,7 +208,8 @@ fω→2 f = Select (Omega ho<) (fω→2-sel f) (fω→2-wld f)
 
 ω→2f≡i1 : (X i : HOD) → (iω : (Omega ho<) ∋ i) → (lt : ω→2 ∋ X ) → ω2→f X lt (ω→nat i iω)  ≡ i1 → X ∋ i
 ω→2f≡i1 X i iω lt eq with ∋-p X (nat→ω (ω→nat i iω))
-ω→2f≡i1 X i iω lt eq | yes p = subst (λ k → odef X k) (==→o≡ (nat→ω-iso iω )) p
+ω→2f≡i1 X i iω lt eq | yes0 p = subst (λ k → odef X k) (==→o≡ (nat→ω-iso iω )) p
+ω→2f≡i1 X i iω lt eq | no0 n = ?
 
 ω2→f-iso : (X : HOD) → ( lt : ω→2 ∋ X ) → fω→2 ( ω2→f X lt )  =h= X
 eq→ (ω2→f-iso X lt) {x} ⟪ ωx , ⟪ ωx1 , iso ⟫ ⟫ = le00 where
@@ -217,8 +220,8 @@ eq← (ω2→f-iso X lt) {x} Xx = ⟪ subst (λ k → odef (Omega ho<) k) &iso l
     le02 = power→ (Omega ho<) _ lt (subst (λ k → odef X k) (sym &iso) Xx) 
     le01 : (wx : odef (Omega ho<) (& (* x))) → ω2→f X lt (ω→nat (* x) wx) ≡ i1
     le01 wx   with ∋-p  X (nat→ω (ω→nat _ wx) )
-    ... | yes p  = refl
-    ... | no ¬p  = ⊥-elim ( ¬p (subst (λ k → odef X k ) le03 Xx )) where
+    ... | yes0 p  = refl
+    ... | no0 ¬p  = ⊥-elim ( ¬p (subst (λ k → odef X k ) le03 Xx )) where
         le03 :  x ≡ & (nat→ω (ω→nato wx))
         le03 = trans (sym &iso) (sym (==→o≡ ( nat→ω-iso wx ) ))
 
@@ -230,10 +233,10 @@ fω→2-iso : (f : Nat → Two) → (x : Nat ) → ω2→f ( fω→2 f ) (ω2∋
 fω→2-iso f x = le01 x  where
     le01 : (x : Nat) → ω2→f (fω→2 f) (ω2∋f f) x ≡ f x
     le01 x with  ∋-p (fω→2 f) (nat→ω x) 
-    le01 x | yes p = subst (λ k → i1 ≡ f k ) (ω→nat-iso0 x (proj1 (proj2 p)) (==-trans *iso *iso)) (sym ((proj2 (proj2 p)) le02)) where
+    le01 x | yes0 p = subst (λ k → i1 ≡ f k ) (ω→nat-iso0 x (proj1 (proj2 p)) (==-trans *iso *iso)) (sym ((proj2 (proj2 p)) le02)) where
         le02 :  Omega-d (& (* (& (nat→ω x))))
         le02 = proj1 (proj2 p )
-    le01 x | no ¬p = sym ( ¬i1→i0 le04 ) where
+    le01 x | no0 ¬p = sym ( ¬i1→i0 le04 ) where
         le04 : ¬ f x ≡ i1
         le04 fx=1 = ¬p ⟪ ω∋nat→ω {x} , ⟪ subst (λ k → Omega-d k) (sym &iso) (ω∋nat→ω {x})  , le05 ⟫ ⟫ where
             le05 : (lt : Omega-d (& (* (& (nat→ω x))))) → f (ω→nato lt) ≡ i1

@@ -82,14 +82,18 @@ data Findp {n : Level} {Cod : Set n} : List (Maybe Cod) → (x : Nat) → Set (s
 open PFunc
 
 find : {n : Level} {Cod : Set n} → (f : List (Maybe Cod) ) → (x : Nat) → Findp f x → Cod
-find (just v ∷ _) 0 (v0 v) = v
-find (_ ∷ n) (Suc i) (vn p) = find n i p
+find = ?
+-- find [] _ _ = ?
+-- find _ zero _ = ?
+-- find (just v ∷ _) 0 (v0 v) = v
+-- find (_ ∷ n) (Suc i) (vn p) = find n i p
 
 findpeq : {n : Level} {Cod : Set n} → (f : List (Maybe Cod)) → {x : Nat} {p q : Findp f x } → find f x p ≡ find f x q
-findpeq n {0} {v0 _} {v0 _} = refl
-findpeq [] {Suc x} {()}
-findpeq (just x₁ ∷ n) {Suc x} {vn p} {vn q} = findpeq n {x} {p} {q}
-findpeq (nothing ∷ n) {Suc x} {vn p} {vn q} = findpeq n {x} {p} {q}
+findpeq = ?
+-- findpeq n {0} {v0 _} {v0 _} = refl
+-- findpeq [] {Suc x} {()}
+-- findpeq (just x₁ ∷ n) {Suc x} {vn p} {vn q} = findpeq n {x} {p} {q}
+-- findpeq (nothing ∷ n) {Suc x} {vn p} {vn q} = findpeq n {x} {p} {q}
 
 List→PFunc : {Cod : Set (suc n)} → List (Maybe Cod) → PFunc (Lift n Nat) Cod
 List→PFunc fp = record { dom = λ x → Lift zero (Findp fp (lower x))
@@ -221,16 +225,16 @@ _3↑_ : (Nat → Two) → Nat → List (Maybe Two)
 _3↑_ f i = 3↑22 f i 0 
 
 3↑< : {f : Nat → Two} → { x y : Nat } → x ≤ y → (_3↑_ f x)  3⊆ (_3↑_ f y)
-3↑< {f} {x} {y} x<y = lemma x y 0 x<y where
-     lemma : (x y i : Nat) → x ≤ y → (3↑22 f x i ) 3⊆ (3↑22 f y i )
-     lemma 0 y i z≤n with f i
-     lemma Zero Zero i z≤n | i0 = refl
-     lemma Zero (Suc y) i z≤n | i0 = 3⊆-[]  {3↑22 f (Suc y) i}
-     lemma Zero Zero i z≤n | i1 = refl
-     lemma Zero (Suc y) i z≤n | i1 = 3⊆-[]  {3↑22 f (Suc y) i}
-     lemma (Suc x) (Suc y) i (s≤s x<y) with f i  
-     lemma (Suc x) (Suc y) i (s≤s x<y) | i0 = lemma x y (Suc i) x<y 
-     lemma (Suc x) (Suc y) i (s≤s x<y) | i1 = lemma x y (Suc i) x<y 
+3↑< {f} {x} {y} x<y = ? -- lemma x y 0 x<y where
+--    lemma : (x y i : Nat) → x ≤ y → (3↑22 f x i ) 3⊆ (3↑22 f y i )
+--    lemma 0 y i lt  with f i
+--    lemma Zero Zero i lt1 | i0 = refl
+--    lemma Zero (Suc y) i lt1 | i0 = 3⊆-[]  {3↑22 f (Suc y) i}
+--    lemma Zero Zero i lt1 | i1 = refl
+--    lemma Zero (Suc y) i lt1 | i1 = 3⊆-[]  {3↑22 f (Suc y) i}
+--    lemma (Suc x) (Suc y) i lt with f i  
+--    lemma (Suc x) (Suc y) i lt | i0 = ? -- lemma x y (Suc i) x<y 
+--    lemma (Suc x) (Suc y) i lt | i1 = ? -- lemma x y (Suc i) x<y 
 
 Finite3b : (p : List (Maybe Two) ) → Bool 
 Finite3b [] = true

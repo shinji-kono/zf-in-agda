@@ -143,8 +143,8 @@ U-F=∅→F⊆U : {L F U : HOD} → U ⊆ L  →  ((x : Ordinal) →  ¬ ( odef 
 U-F=∅→F⊆U {L} {F} {U} U⊆L not = gt02  where
     gt02 : { x : Ordinal } → odef F x → odef U x
     gt02 {x} fx with ODC.∋-p U (* x)
-    ... | yes y = subst (λ k → odef U k ) &iso y
-    ... | no  n = ⊥-elim ( not x ⟪ fx , subst (λ k → ¬ odef U k ) &iso n ⟫ )
+    ... | yes0 y = subst (λ k → odef U k ) &iso y
+    ... | no0  n = ⊥-elim ( not x ⟪ fx , subst (λ k → ¬ odef U k ) &iso n ⟫ )
 
 filter-lemma2 :  {P L : HOD} → (LP : L ⊆ Power P)
        → ({p : HOD} → L ∋ p → L ∋ ( P ＼ p))
@@ -157,8 +157,8 @@ filter-lemma2 {P} {L} LP NEG F f∋P prime = record {
         p⊆L {p} lt = power→⊆ P p ( LP lt )
         p+1-p=1 : {p : HOD} → p ⊆ P  → P =h= (p ∪ (P ＼ p)) 
         eq→ (p+1-p=1 {p} p⊆P) {x} lt with ODC.decp (odef p x)
-        eq→ (p+1-p=1 {p} p⊆P) {x} lt | yes p∋x = case1 p∋x
-        eq→ (p+1-p=1 {p} p⊆P) {x} lt | no ¬p = case2 ⟪ lt , ¬p ⟫
+        eq→ (p+1-p=1 {p} p⊆P) {x} lt | yes0 p∋x = case1 p∋x
+        eq→ (p+1-p=1 {p} p⊆P) {x} lt | no0 ¬p = case2 ⟪ lt , ¬p ⟫
         eq← (p+1-p=1 {p} p⊆P) {x} ( case1 p∋x ) = subst (λ k → odef P k ) &iso (p⊆P ( subst (λ k → odef p k) (sym &iso) p∋x  )) 
         eq← (p+1-p=1 {p} p⊆P) {x} ( case2 ¬p  ) = proj1 ¬p
         lemma : (p : HOD) → p ⊆ P   →  filter F ∋ (p ∪ (P ＼ p))
@@ -203,8 +203,8 @@ max→ultra {L} {P} LP CAP F0 {y} mfy mx = record { proper = MaximumFilter.prope
     mf = MaximumFilter.mf mx
     ultra : {p : HOD} → L ∋ p → L ∋ (P ＼ p) → (filter mf ∋ p) ∨ (filter mf ∋ (P ＼ p))
     ultra {p} Lp Lnp with ODC.∋-p (filter mf) p 
-    ... | yes y = case1 y
-    ... | no np = case2 (eq→ F=mf F∋P-p ) where  
+    ... | yes0 y = case1 y
+    ... | no0 np = case2 (eq→ F=mf F∋P-p ) where  
          F : HOD  
          F = record { od = record { def = λ x →  odef L x ∧ Fp {L} {P} LP F0 mx (& p) x } 
             ; odmax = & L ; <odmax = λ lt → odef< (proj1 lt) } 
@@ -246,8 +246,8 @@ max→ultra {L} {P} LP CAP F0 {y} mfy mx = record { proper = MaximumFilter.prope
            ⊥-elim ( np (filter1 mf Lp (subst (λ k → odef (filter mf) k) (sym &iso) mfz) mu31) ) where
              mu31 : * z ⊆ p
              mu31 {x} zx with ODC.decp (odef p x)
-             ... | yes px = px
-             ... | no npx = ⊥-elim ( ¬x<0 ( eq→  *iso (z-p⊂x ⟪ zx , (λ px → npx ( eq→  *iso px) ) ⟫ ) ) )
+             ... | yes0 px = px
+             ... | no0 npx = ⊥-elim ( ¬x<0 ( eq→  *iso (z-p⊂x ⟪ zx , (λ px → npx ( eq→  *iso px) ) ⟫ ) ) )
          F0⊆F : filter F0 ⊆ F
          F0⊆F {x} fx = ⟪ f⊆L F0 fx , record { y = _ ; mfy = MaximumFilter.F⊆mf mx fx ; y-p⊂x = mu42 } ⟫ where
              mu42 : (* x ＼ * (& p)) ⊆ * x
