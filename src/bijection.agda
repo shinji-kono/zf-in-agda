@@ -970,7 +970,7 @@ LMℕ A Ln = Countable-Bernstein (List A) (List (Maybe A)) (List A ∧ List Bool
    ... | yes0 y = yes0 record { a = h ∷ Is.a y ; fa=c = cong₂ (λ j k → ⟪ h ∷ j , true ∷ k ⟫ ) (cong proj1 (Is.fa=c y)) (cong proj2 (Is.fa=c y))  }
    ... | no0 n = no0 lem00  where
         lem00 : ¬ Is (List A) (List A ∧ List Bool) (λ x → g (f x)) ⟪ h ∷ t , true ∷ bt ⟫
-        lem00 record { a = (x ∷ a) ; fa=c = eq } = ⊥-elim ( n record { a = a ; fa=c = ∧-injective lem01 lem02 } ) where
+        lem00 record { a = (x ∷ a) ; fa=c = eq } = ⊥-elim ( n record { a = a ; fa=c = ∧-unique lem01 lem02 } ) where
             lem01 : proj1 (g (f a)) ≡ t 
             lem01 = ∷-injectiveʳ ( cong proj1 eq )
             lem02 : proj2 (g (f a)) ≡ bt
@@ -1002,7 +1002,7 @@ LMℕ A Ln = Countable-Bernstein (List A) (List (Maybe A)) (List A ∧ List Bool
    ... | yes0 y = yes0 record { a = just h ∷ Is.a y ; fa=c = cong₂ (λ j k → ⟪ h ∷ j , true ∷ k ⟫ ) (cong proj1 (Is.fa=c y)) (cong proj2 (Is.fa=c y))   }
    ... | no0 n = no0 lem00 where
         lem00 : ¬ Is (List (Maybe A)) (List A ∧ List Bool) g ⟪ h ∷ t , true ∷ bt ⟫
-        lem00 record { a = (just x ∷ a) ; fa=c = eq } = n record { a = a ; fa=c = ∧-injective lem01 lem02 } where
+        lem00 record { a = (just x ∷ a) ; fa=c = eq } = n record { a = a ; fa=c = ∧-unique lem01 lem02 } where
             lem01 : proj1 (g a) ≡ t
             lem01 = ∷-injectiveʳ (cong proj1 eq)
             lem02 : proj2 (g a) ≡ bt

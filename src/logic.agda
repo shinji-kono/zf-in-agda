@@ -91,8 +91,8 @@ data Dec0 {n : Level} (A : Set n) : Set n where
   no0  : (A → ⊥) → Dec0 A
 
 open _∧_ 
-∧-injective : {n m : Level} {A : Set n} {B : Set m} → {a b : A ∧ B}  → proj1 a ≡ proj1 b → proj2 a ≡ proj2 b → a ≡ b
-∧-injective refl refl = refl
+∧-unique : {n m : Level} {A : Set n} {B : Set m} → {a b : A ∧ B}  → proj1 a ≡ proj1 b → proj2 a ≡ proj2 b → a ≡ b
+∧-unique refl refl = refl
 
 not-not-bool : { b : Bool } → not (not b) ≡ b
 not-not-bool {true} = refl
