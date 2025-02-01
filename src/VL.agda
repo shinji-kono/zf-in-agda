@@ -69,11 +69,14 @@ record VOrd (x : Ordinal) : Set n where
 V : OD
 V = record { def = λ x → VOrd x }
 
-record Vn : Set n where
-   field
-     x  : Ordinal
-     β  : Ordinal
-     ov : odef (TransFinite  V1 β) x 
+-- V is an Ordinal
+--  and ODAxiom can be constructed?
+
+-- record Vn : Set n where
+--    field
+--      x  : Ordinal
+--      β  : Ordinal
+--      ov : odef (TransFinite  V1 β) x 
 
 -- Vn∅ : Vn
 -- Vn∅ = record { x = o∅ ; β = o∅ ; ov = ? }

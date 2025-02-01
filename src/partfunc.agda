@@ -1,10 +1,9 @@
 {-# OPTIONS --cubical-compatible --safe #-}
-open import Level
 open import Ordinals
 open import logic
 open import Relation.Nullary
 
-open import Level
+open import Level hiding (zero ; suc)
 open import Ordinals
 import HODBase
 import OD
@@ -44,7 +43,7 @@ open import Data.Empty
 open import Relation.Binary
 open import Relation.Binary.Core
 open import  Relation.Binary.PropositionalEquality
-open import Data.Nat renaming ( zero to Zero ; suc to Suc ;  ℕ to Nat ; _⊔_ to _n⊔_ )
+open import Data.Nat -- renaming ( zero to zero ; suc to suc ;  ℕ to ℕ ; _⊔_ to _n⊔_ )
 
 open import Data.Empty 
 open import Data.Unit using ( ⊤ ; tt )
@@ -64,7 +63,7 @@ data Two : Set where
 -- Partial Function without ZF
 --
 
-record PFunc {n m l : Level } (Dom : Set n) (Cod : Set m) : Set (suc  (n ⊔ m ⊔ l)) where
+record PFunc {n m l : Level } (Dom : Set n) (Cod : Set m) : Set (Level.suc  (n Level.⊔ m Level.⊔ l)) where
    field
       dom : Dom → Set l
       pmap : (x : Dom ) → dom x → Cod
@@ -75,31 +74,41 @@ record PFunc {n m l : Level } (Dom : Set n) (Cod : Set m) : Set (suc  (n ⊔ m �
 -- PFunc (Lift n Nat) Cod is equivalent to List (Maybe Cod)
 --
 
-data Findp {n : Level} {Cod : Set n} : List (Maybe Cod) → (x : Nat) → Set (suc n) where
-   v0 : {f : List (Maybe Cod)} → ( v : Cod ) → Findp ( just v  ∷ f ) Zero
-   vn : {f : List (Maybe Cod)} {d : Maybe Cod} → {x : Nat} → Findp f x → Findp (d ∷ f) (Suc x) 
+data Findp {n : Level} {Cod : Set n} : List (Maybe Cod) → (x : ℕ) → Set (Level.suc n) where
+   v0 : {f : List (Maybe Cod)} → ( v : Cod ) → Findp ( just v  ∷ f ) zero
+   vn : {f : List (Maybe Cod)} {d : Maybe Cod} → {x : ℕ} → Findp f x → Findp (d ∷ f) (suc x) 
 
 open PFunc
 
-find : {n : Level} {Cod : Set n} → (f : List (Maybe Cod) ) → (x : Nat) → Findp f x → Cod
-find = ?
--- find [] _ _ = ?
--- find _ zero _ = ?
--- find (just v ∷ _) 0 (v0 v) = v
--- find (_ ∷ n) (Suc i) (vn p) = find n i p
+--   find : {n : Level} {Cod : Set n} → (f : List (Maybe Cod) ) → (x : ℕ) → Findp f x → Cod
+--   find {n} {Cod} [] x fp = ⊥-elim (fp0 _ fp refl ) where
+--      fp0 : (y : List (Maybe Cod)) → (fp : Findp y x) →  ¬ (y ≡ [] )
+--      fp0 .(just v ∷ _) (v0 v) ()
+--      fp0 .(_ ∷ _) (vn fp) ()
+--   find {n} {Cod} (just y  ∷ f) x fp = y
+--   find {n} {Cod} (nothing ∷ f) zero fp = ?
+--   find {n} {Cod} (nothing ∷ f) (suc x) fp = find f x ?
+--   --= find f x (fp0 _ refl fp) where
+--   --  fp0 : (f1 : List (Maybe Cod)) → f1 ≡ nothing ∷ f → Findp f1 x → Findp f x
+--   --  fp0 _ () (v0 fp1)
+--   --  fp0 (_ ∷ n) eq (vn fp2) = ? 
+--   -- find [] _ _ = ?
+--   -- find _ zero _ = ?
+--   -- find (just v ∷ _) 0 (v0 v) = v
+--   -- find (_ ∷ n) (suc i) (vn p) = find n i p
+--
+--   findpeq : {n : Level} {Cod : Set n} → (f : List (Maybe Cod)) → {x : ℕ} {p q : Findp f x } → find f x p ≡ find f x q
+--   findpeq = ?
+--   -- findpeq n {0} {v0 _} {v0 _} = refl
+--   -- findpeq [] {suc x} {()}
+--   -- findpeq (just x₁ ∷ n) {suc x} {vn p} {vn q} = findpeq n {x} {p} {q}
+--   -- findpeq (nothing ∷ n) {suc x} {vn p} {vn q} = findpeq n {x} {p} {q}
 
-findpeq : {n : Level} {Cod : Set n} → (f : List (Maybe Cod)) → {x : Nat} {p q : Findp f x } → find f x p ≡ find f x q
-findpeq = ?
--- findpeq n {0} {v0 _} {v0 _} = refl
--- findpeq [] {Suc x} {()}
--- findpeq (just x₁ ∷ n) {Suc x} {vn p} {vn q} = findpeq n {x} {p} {q}
--- findpeq (nothing ∷ n) {Suc x} {vn p} {vn q} = findpeq n {x} {p} {q}
-
-List→PFunc : {Cod : Set (suc n)} → List (Maybe Cod) → PFunc (Lift n Nat) Cod
-List→PFunc fp = record { dom = λ x → Lift zero (Findp fp (lower x))
-                       ; pmap = λ x y → find fp (lower x) (lower y)
-                       ; meq = λ {x} {p} {q} →  findpeq fp {lower x} {lower p} {lower q}
-                       }
+--   List→PFunc : {Cod : Set (Level.suc n)} → List (Maybe Cod) → PFunc (Lift n ℕ) Cod
+--   List→PFunc fp = record { dom = λ x → Lift Level.zero (Findp fp (lower x))
+--                          ; pmap = ? -- λ x y → find fp (lower x) (lower y)
+--                          ; meq = λ {x} {p} {q} →  ? -- findpeq fp {lower x} {lower p} {lower q}
+--                          }
 ----
 --
 -- to List (Maybe Two) is a Latice
@@ -217,24 +226,25 @@ f 3∩ [] = []
 3⊆∩f {nothing ∷ f} {nothing ∷ g} {just _ ∷ h} f<g f<h =  3⊆∩f {f} {g} {h} f<g f<h 
 3⊆∩f {nothing ∷ f} {nothing ∷ g} {nothing ∷ h} f<g f<h =  3⊆∩f {f} {g} {h} f<g f<h 
 
-3↑22 : (f : Nat → Two) (i j : Nat) → List (Maybe Two)
-3↑22 f Zero j = []
-3↑22 f (Suc i) j = just (f j) ∷ 3↑22 f i (Suc j)
+3↑22 : (f : ℕ → Two) (i j : ℕ) → List (Maybe Two)
+3↑22 f zero j = []
+3↑22 f (suc i) j = just (f j) ∷ 3↑22 f i (suc j)
 
-_3↑_ : (Nat → Two) → Nat → List (Maybe Two)
+_3↑_ : (ℕ → Two) → ℕ → List (Maybe Two)
 _3↑_ f i = 3↑22 f i 0 
 
-3↑< : {f : Nat → Two} → { x y : Nat } → x ≤ y → (_3↑_ f x)  3⊆ (_3↑_ f y)
-3↑< {f} {x} {y} x<y = ? -- lemma x y 0 x<y where
---    lemma : (x y i : Nat) → x ≤ y → (3↑22 f x i ) 3⊆ (3↑22 f y i )
+-- 3↑< : {f : ℕ → Two} → { x y : ℕ } → x ≤ y → (_3↑_ f x)  3⊆ (_3↑_ f y)
+-- 3↑< {f} {x} {y} x<y = lemma x y 0 x<y where
+--     lemma : (x y i : ℕ) → x ≤ y → (3↑22 f x i ) 3⊆ (3↑22 f y i )
+--     lemma = ?
 --    lemma 0 y i lt  with f i
---    lemma Zero Zero i lt1 | i0 = refl
---    lemma Zero (Suc y) i lt1 | i0 = 3⊆-[]  {3↑22 f (Suc y) i}
---    lemma Zero Zero i lt1 | i1 = refl
---    lemma Zero (Suc y) i lt1 | i1 = 3⊆-[]  {3↑22 f (Suc y) i}
---    lemma (Suc x) (Suc y) i lt with f i  
---    lemma (Suc x) (Suc y) i lt | i0 = ? -- lemma x y (Suc i) x<y 
---    lemma (Suc x) (Suc y) i lt | i1 = ? -- lemma x y (Suc i) x<y 
+--    lemma zero zero i lt1 | i0 = refl
+--    lemma zero (suc y) i lt1 | i0 = 3⊆-[]  {3↑22 f (suc y) i}
+--    lemma zero zero i lt1 | i1 = refl
+--    lemma zero (suc y) i lt1 | i1 = 3⊆-[]  {3↑22 f (suc y) i}
+--    lemma (suc x) (suc y) i lt with f i  
+--    lemma (suc x) (suc y) i lt | i0 = ? -- lemma x y (suc i) x<y 
+--    lemma (suc x) (suc y) i lt | i1 = ? -- lemma x y (suc i) x<y 
 
 Finite3b : (p : List (Maybe Two) ) → Bool 
 Finite3b [] = true
@@ -246,14 +256,14 @@ finite3cov [] = []
 finite3cov (just y ∷ x) = just y ∷ finite3cov x
 finite3cov (nothing ∷ x) = just i0 ∷ finite3cov x
 
-record F-Filter {n : Level} (L : Set n) (PL : (L → Set n) → Set n) ( _⊆_ : L  → L → Set n)  (_∩_ : L → L → L ) : Set (suc n) where
+record F-Filter {n : Level} (L : Set n) (PL : (L → Set n) → Set n) ( _⊆_ : L  → L → Set n)  (_∩_ : L → L → L ) : Set (Level.suc n) where
    field
        filter : L → Set n
        f⊆P :  PL filter 
        filter1 : { p q : L } → PL (λ x → q ⊆ x )  → filter p →  p ⊆ q  → filter q
        filter2 : { p q : L } → filter p →  filter q  → filter (p ∩ q)
 
-record F-Dense {n : Level} (L : Set n) (PL : (L → Set n) → Set n) ( _⊆_ : L  → L → Set n)  (_∩_ : L → L → L ) : Set (suc n) where
+record F-Dense {n : Level} (L : Set n) (PL : (L → Set n) → Set n) ( _⊆_ : L  → L → Set n)  (_∩_ : L → L → L ) : Set (Level.suc n) where
    field
        dense : L → Set n
        d⊆P :  PL dense 

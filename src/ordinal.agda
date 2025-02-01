@@ -94,7 +94,7 @@ osuc-≡< {a} {ordinal .(lv a) .(ord a)} (case2 ⟪ refl , lt ⟫) | tri≈ ¬a 
 ... | tri> ¬a ¬b c = ⊥-elim ( nat-≤> c lt )
 
 
--- we don't use this
+-- it is used in zorn
 OrdIrr :  {x y : Ordinal  } (lt lt1 : x o< y) → lt ≡ lt1
 OrdIrr {x} {y} (case1 x₁) (case1 x₂) = cong case1 (<-irrelevant _ _)
 OrdIrr {x} {y} (case1 x₁) (case2 x₂) = ⊥-elim ( nat-≡< (proj1 x₂) x₁  )
