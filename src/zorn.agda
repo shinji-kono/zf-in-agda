@@ -61,6 +61,24 @@ open Filter
 --     → ( ( B : HOD) → (B⊆A : B ⊆ A) → IsTotalOrderSet B → SUP A B   ) -- SUP condition
 --     → Maximal A
 --
+-- record IsSUP (A B : HOD) (x : Ordinal ) : Set n where
+--    field
+--       ax : odef A x
+--       x≤sup   : {y : Ordinal} → odef B y → (y ≡ x ) ∨ (y << x ) -- B is Total, use positive
+-- 
+-- record SUP ( A B : HOD )  : Set (Level.suc n) where
+--    field
+--      sup : HOD
+--       isSUP : IsSUP A B (& sup)
+--    ax = IsSUP.ax isSUP
+--    x≤sup = IsSUP.x≤sup isSUP
+
+-- record Maximal ( A : HOD )  : Set (Level.suc n) where
+--    field
+--       maximal : HOD
+--       as : A ∋ maximal
+--       ¬maximal<x : {x : HOD} → A ∋ x  → ¬ maximal < x       -- A is Partial, use negative
+
 
 
 --

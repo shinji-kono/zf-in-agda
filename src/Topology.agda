@@ -725,6 +725,28 @@ NeighborF {P} TP x = record { filter = NF ; f⊆L = NF⊆PP ; filter1 = f1 ; fil
              pq :  odef (* (Neighbor.u Np) ∩ * (Neighbor.u Nq)) x
              pq = eq→ *iso lt
 
+record FuncImage  {P Q : HOD} (func  : Func P Q) (x y : Ordinal) : Set n where
+    field
+       s : Ordinal
+       s∈P : odef P s
+       s∈x : odef (* x) s
+       in-cod : y ≡ Func.func func s∈P 
+
+record InverseImage  {P Q : HOD} (func  : Func P Q) (x y : Ordinal) : Set n where
+    field
+       y∈P : odef P y
+       is-inverse : odef (* x) (Func.func func y∈P)
+
+HODInverseImage : {P Q : HOD} (func  : Func P Q) (x : Ordinal) → HOD
+HODInverseImage {P} {Q} func x = record { od = record { def = λ y → InverseImage func x y } ; 
+  odmax = & P ; <odmax = λ lt → odef< (InverseImage.y∈P lt) } 
+
+record ContFunc {P Q : HOD} (TP : Topology P )(TQ : Topology Q) : Set n where
+    field
+       func : Func P Q
+       continuous : {x : Ordinal} → odef (OS TQ) x → odef (OS TP) (& (HODInverseImage func x))
+
+
 CAP : (P : HOD) {p q : HOD } → Power P ∋ p → Power P ∋ q → Power P ∋ (p ∩ q)
 CAP P {p} {q} Pp Pq x pqx with eq→ *iso pqx
 ... | ⟪ px , qx ⟫ = Pp _ (eq← *iso px )
@@ -733,5 +755,108 @@ NEG : (P : HOD) {p : HOD } → Power P ∋ p → Power P ∋ (P ＼ p )
 NEG P {p} Pp x vx with eq→ *iso vx
 ... | ⟪ Px , npx ⟫ = Px
 
+record SubElement {P : HOD} (TP : Topology P) (Q : HOD) (x : Ordinal)  : Set n where
+   field
+     R : Ordinal
+     OR : odef (OS TP) R
+     x=R : x ≡ & ( * R ∩ Q )
+
+record UnionSE {P} (TP : Topology P) (Q R : HOD) (x : Ordinal)  : Set n where
+   field
+     y  : Ordinal
+     R∋x  : odef R y
+     oq : SubElement TP Q y
+     x=oq : x ≡ SubElement.R oq
+
+sub-element : {P Q : HOD} → (TP : Topology P) 
+   → (p : HOD) → (x : Ordinal) → (op : SubElement TP Q (& p)) → odef p x →  odef (* (SubElement.R op)) x
+sub-element {P} {Q} TP  p x op px = proj1 (eq→ *iso (subst (λ k → odef (* k) x) (SubElement.x=R op) (eq← *iso px))) 
+
+sub-element-px : {P Q : HOD} → (TP : Topology P) 
+   → (p : HOD) → (x : Ordinal) → (op : SubElement TP Q (& p)) → odef (* (SubElement.R op)) x → odef Q x → odef p x 
+sub-element-px {P} {Q} TP  p x op opx qx = eq←  (ord→== (SubElement.x=R op)) ⟪ opx , qx ⟫
+
+==-lem00 : (P Q : HOD) → (P ∩ Q) =h= ((* (& P)) ∩ Q)
+==-lem00 P Q = record { eq→ = lem00 ; eq← = lem01 } where
+     lem00 : {x : Ordinal} →  odef (P ∩ Q) x → odef (* (& P) ∩ Q) x
+     lem00 {x} ⟪ px , qx ⟫  = ⟪ eq← *iso px , qx ⟫
+     lem01 : {x : Ordinal}  → odef (* (& P) ∩ Q) x →  odef (P ∩ Q) x
+     lem01 {x} ⟪ px , qx ⟫  = ⟪ eq→  *iso px , qx ⟫
+     -- we are in trouble if we use this directory in the follwing code
+
+-- Relative Topology
+--     unless Q ⊆ P, Topology Q will be empty
+--
+SubTopology : {Q P : HOD} → (TP : Topology P) → (Q⊆P : Q ⊆ P) → Topology Q
+SubTopology {Q} {P} TP Q⊆P = record {
+      OS = QOS
+    ; OS⊆PL = lem01 
+    ; o∩ = λ {p} {q} op oq → record {R = & ((* (SubElement.R op)) ∩ (* (SubElement.R oq)))  
+        ; OR =  o∩ TP (subst (λ k → odef (OS TP) k) (sym &iso) (SubElement.OR op))  (subst (λ k → odef (OS TP) k) (sym &iso) (SubElement.OR oq)) 
+        ; x=R = ==→o≡ (lem02 op oq ) }
+    ; o∪  = λ {p} p⊆OS → record {R = & (Union (poq {p} p⊆OS)) ; OR = o∪ TP (lem05 {p} p⊆OS) ; x=R = ==→o≡ (==-trans (lem06 {p} p⊆OS) (==-lem00 _ Q) ) }
+    ; OS∋od∅  = record { R = & od∅ ; OR = OS∋od∅ TP ; x=R = ==→o≡ record { eq→ = λ lt → ⊥-elim (¬x<0 lt) 
+         ; eq← = λ lt → ⊥-elim (¬x<0 (eq→ *iso (proj1 lt))) } }
+  } where
+     lem01 : { x : Ordinal } → SubElement TP Q x → (z : Ordinal) → odef (* x) z → odef Q z
+     lem01 {x} record { R = R ; OR = OR ; x=R = x=R } z xz = proj2 (eq→ *iso (subst (λ k → odef (* k) z) x=R xz)) 
+     QOS : HOD
+     QOS = record { od = record { def = λ x → SubElement TP Q x } ; odmax = osuc (& Q )
+         ; <odmax = λ {x} lt → subst (λ k → k o< _ ) &iso ( ⊆→o≤ (λ {x} lt2 → lem01 lt _ lt2 ) ) }
+     poq :  {p : HOD} → p ⊆ QOS → HOD 
+     poq {p} p⊆OQ = record { od = record { def = λ x → UnionSE TP Q p x } ; 
+         odmax = & (OS TP )  ; <odmax = λ {x} lt → odef< (subst ( λ k → odef (OS TP) k) (sym (UnionSE.x=oq lt)) (SubElement.OR (UnionSE.oq lt)))  }
+     lem02 :  {p q : HOD} → (op : SubElement TP Q (& p)) (oq : SubElement TP Q (& q)) →  (p ∩ q) =h= (* (& (* (SubElement.R op) ∩ * (SubElement.R oq))) ∩ Q)
+     lem02 {p} {q} op oq = record { eq→ = λ {x} lt → ⟪ eq← *iso ⟪ sub-element TP _ _ op (proj1 lt) , sub-element TP _ _ oq (proj2 lt) ⟫  , 
+          proj2 ( (eq→ *iso (subst (λ k → odef (* k) x) (SubElement.x=R op) (eq← *iso (proj1 lt) ))) ) ⟫ 
+       ; eq← = lem03 } where
+          lem03 : {x : Ordinal} → odef (* (& (* (SubElement.R op) ∩ * (SubElement.R oq))) ∩ Q) x → odef (p ∩ q) x
+          lem03 {x} ⟪ lt , qx ⟫ with eq→ *iso lt
+          ... | ⟪ pp , qq ⟫ = ⟪ sub-element-px TP _ _ op pp qx , sub-element-px TP _ _ oq qq qx ⟫ 
+     lem05 : {p : HOD} → (p⊆OS : p ⊆ QOS ) → poq {p} p⊆OS ⊆  OS TP
+     lem05 {p} p⊆OS {x} record { y = y ; R∋x = R∋x ; oq = oq ; x=oq = x=oq } = subst (λ k → odef (OS TP) k) (sym x=oq) ( SubElement.OR oq  )
+     lem06 : {p : HOD} → (p⊆OS : p ⊆ QOS ) → Union p =h= (Union (poq {p} p⊆OS) ∩ Q)
+     lem06 {p} p⊆OS = record { eq→ = lem07 ; eq← = lem11 } where
+        lem07 : {x : Ordinal} → odef (Union p) x → odef (Union (poq p⊆OS) ∩ Q) x
+        lem07 {x} record { owner = owner ; ao = ao ; ox = ox } = ⟪ 
+           record { owner = SubElement.R lem08  ; 
+              ao = record { y = owner ; R∋x = ao ; oq = lem08 ; x=oq = refl  }  ; ox = lem09 }  , lem10 ⟫ where
+                 lem08 : SubElement TP Q owner
+                 lem08 = p⊆OS ao
+                 lem09 : odef (* (SubElement.R lem08)) x
+                 lem09 = proj1 (eq→  *iso (subst (λ k → odef (* k) x) (SubElement.x=R lem08) ox ))
+                 lem10 : odef Q x
+                 lem10 = proj2 (eq→  *iso (subst (λ k → odef (* k) x) (SubElement.x=R lem08) ox ))
+        lem11 : {x : Ordinal}  → odef (Union (poq p⊆OS) ∩ Q) x → odef (Union p) x
+        lem11 {x} ⟪ record { owner = owner ; ao = record { y = y ; R∋x = R∋x ; oq = oq ; x=oq = x=oq } ; ox = ox } , qx ⟫ 
+            = record { owner = y ; ao = R∋x ; ox = lem12 } where
+              lem13 : & (* y) ≡ & ( * (SubElement.R oq) ∩ Q )
+              lem13 = trans &iso ( SubElement.x=R oq ) 
+              lem12 : odef (* y) x
+              lem12 = eq← (ord→== lem13  ) ⟪ subst (λ k → odef (* k) x) x=oq ox  , qx ⟫
+
+SubContFunc : {P Q R : HOD} (TP : Topology P ) (TQ : Topology Q)  → (f : ContFunc TP TQ ) → (R⊆P : R ⊆ P) → ContFunc (SubTopology {R} {P} TP R⊆P) TQ
+SubContFunc {P} {Q} {R} TP TQ f R⊆P = record {
+      func =  func-r
+    ; continuous = lem00
+    } where
+       func-r : Func R Q
+       func-r  =  record { func = λ lt → Func.func (ContFunc.func f) (R⊆P lt)  ; is-func = λ lt → Func.is-func (ContFunc.func f) (R⊆P lt) 
+             ; func-wld = λ {x} {y} ax ay x=y → Func.func-wld (ContFunc.func f) (R⊆P ax) (R⊆P ay) x=y }
+       lem00 : {x : Ordinal} → odef (OS TQ) x → odef (OS (SubTopology {R} {P} TP R⊆P)) (& (HODInverseImage func-r x))
+       lem00 {x} tx = record { R = & (HODInverseImage (ContFunc.func f) x) ; OR = ContFunc.continuous f tx ; x=R  = ==→o≡ lem02 } where
+           lem02 : HODInverseImage func-r x =h= (* (& (HODInverseImage (ContFunc.func f) x)) ∩ R)
+           lem02  = record { eq→ = λ {y} lt → 
+                    ⟪ eq← *iso record { y∈P = R⊆P (InverseImage.y∈P lt) ; is-inverse = InverseImage.is-inverse lt }  , InverseImage.y∈P lt  ⟫  
+              ; eq← = λ {y} lt → record { y∈P = proj2 lt  ; is-inverse = 
+                  subst (λ k → odef (* x) k) (Func.func-wld (ContFunc.func f) _ _ refl ) ( InverseImage.is-inverse (eq→ *iso (proj1 lt))) } 
+              }
 
 
+-- ProjTopology1 : {P Q : HOD} → Topology (ZFP P Q) → Topology P  
+-- ProjTopology1 = ?
+
+-- ProjTopology2 : {P Q : HOD} → Topology (ZFP P Q) → Topology Q 
+-- ProjTopology2 = ?
+
+-- end

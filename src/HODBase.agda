@@ -105,7 +105,7 @@ record ODAxiom : Set (suc n) where
    ; isEquivalence = record { refl = ==-refl ; sym = ==-sym ; trans = ==-trans } }
 
 -- use as open 
--- import Relation.Binary.EqReasoning as EqR
+-- import Relation.Binary.Reasoning.Setoid as EqR
 -- open EqR ==-Setoid
 
 

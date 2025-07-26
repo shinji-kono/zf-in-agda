@@ -71,6 +71,15 @@ power-∩ {A} {x} {y} ax ay = power← A (x ∩ y) p01  where
 odef-not : {S : HOD} {x : Ordinal } →  ¬ ( odef S x ) → odef S x → ⊥
 odef-not neg sx = ⊥-elim ( neg sx )
 
+-- HOD may defined by record { x=some-hod : & some-hod ≡ x }, some-hod ⊆ H we need to prove x o< osuc (& H)
+--
+record-hod : {h H : HOD} {x : Ordinal} → & h ≡ x → h ⊆ H  → x o< osuc (& H)
+record-hod {h} eq h⊆H = subst₂ (λ j k → j o< k ) eq refl ( ⊆→o≤ h⊆H )
+
+record-hod1 : {h H : HOD} {x : Ordinal} → & h ≡ x → odef H (& h)  → x o< (& H)
+record-hod1 {h} eq H∋h = subst₂ (λ j k → j o< k ) eq refl ( c<→o< H∋h )
+
+
 cseq :  HOD  →  HOD
 cseq x = record { od = record { def = λ y → odef x (osuc y) } ; odmax = osuc (odmax x) ; <odmax = lemma } where
     lemma : {y : Ordinal} → def (od x) (osuc y) → y o< osuc (odmax x)

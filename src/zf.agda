@@ -21,6 +21,11 @@ record ZFunc {n m : Level } (ZFSet : Set n) (_∋_ : ( A x : ZFSet  ) → Set m)
       cod∋ψ : (x : ZFSet) → cod ∋ ψ x
       ψ-cong : (x y : ZFSet) → x ≈ y → ψ x ≈ ψ y
 
+-- There is no cod∋φ in zf usually, since function φ is defined from a relation between
+-- a set and a set. But our functions are defined by themselves. We have a deordinals before the definition of the φ,
+-- so it may run through entire ordinals, then cod of φ becomes a class. To stop this, we
+-- need to have cod∋φ.
+
 record IsZF {n m : Level }
      (ZFSet : Set n)
      (_∋_ : ( A x : ZFSet  ) → Set m)

@@ -406,15 +406,103 @@ record Func (A B : HOD) : Set n where
         lemma2 : {x : HOD} (lt lt1 : A ∋ x) → < x , * (func lt) > =h= < x , * (func lt1) >
         lemma2 {x} lt1 lt2 = prod-cong-== ==-refl (o≡→== (func-wld lt1 lt2 refl ))
 
+FuncEQ : {A B : HOD} → (f g : Func A B) → ∀ (x : Ordinal) → ∀ (ax : odef A x) → Set n
+FuncEQ {A} {B} f g x ax = Func.func f ax ≡ Func.func g ax
+
+FE-refl : {A B : HOD} → (f : Func A B) → (x : Ordinal) → (ax : odef A x) → FuncEQ {A} {B} f f x ax
+FE-refl {A} {B} f x ax = refl
+
+FE-sym : {A B : HOD} → (f g : Func A B) → (x : Ordinal) → (ax : odef A x) → FuncEQ {A} {B} f g x ax → FuncEQ {A} {B} g f x ax
+FE-sym {A} {B} f g x ax eq = sym eq
+
+FE-trans : {A B : HOD} → (f g h : Func A B) → (x : Ordinal) → (ax : odef A x) → FuncEQ {A} {B} f g x ax → FuncEQ {A} {B} g h x ax → FuncEQ {A} {B} f h x ax
+FE-trans {A} {B} f g h x ax f=g g=h = trans f=g g=h
+
+F→FuncHOD : {A B : HOD} → Func A B →  HOD
+F→FuncHOD {A} {B} f = Replace' A ( λ x ax → < x , (* (Func.func f ax)) > ) (Func.fodmax f)
+
+FuncID : (a : HOD) → Func a a
+FuncID a = record { func = λ {x} _ → x  ; is-func = λ {x} ax → ax  ; func-wld = λ {x} {y} ax ay eq → eq  }
+
+F→FuncHOD-EQ : {A B : HOD} → (f g : Func A B ) → F→FuncHOD f =h= F→FuncHOD g → (x : Ordinal) → (ax : odef A x) → FuncEQ {A} {B} f g x ax
+F→FuncHOD-EQ {A} {B} f g eq x ax = lem00 where
+    ffx : odef (F→FuncHOD f) (& < * x , * (Func.func f ax) >)
+    ffx = record { z = x ; az = ax ; x=ψz = cong ( λ k →  & < * x , * k > ) (Func.func-wld f ax (subst (λ k → odef A k) (sym &iso) ax ) (sym &iso))   }
+    -- fgx : odef (F→FuncHOD g) (& < * x , * (Func.func g ax) >)
+    -- fgx = record { z = x ; az = ax ; x=ψz = cong ( λ k →  & < * x , * k > ) (Func.func-wld g ax (subst (λ k → odef A k) (sym &iso) ax ) (sym &iso))   }
+    lem00 : Func.func f ax ≡ Func.func g ax
+    lem00 with eq→ eq ffx
+    ... | record { z = z ; az = az ; x=ψz = x=ψz } = trans (*=h=*→≡ lem01) (Func.func-wld g 
+          (subst (λ k → odef A k) (sym &iso) az) ax (trans &iso (sym lem02)) ) where
+       lem01 : * (Func.func f ax) =h= * (Func.func g (subst (HODBase.OD.def (od A)) (sym &iso) az ))
+       lem01 =  proj2 (prod-eq (ord→==  x=ψz) )
+       lem02 : x ≡ z 
+       lem02 = *=h=*→≡ (proj1 (prod-eq (ord→==  x=ψz) ) )
 
 data FuncHOD (A B : HOD) : (x : Ordinal) →  Set n where
-     felm :  (F : Func A B) → FuncHOD A B (& ( Replace' A ( λ x ax → < x , (* (Func.func F {& x} ax )) > ) (Func.fodmax F) ))
+     felm :  (F : Func A B) → FuncHOD A B (& ( Replace' A ( λ y ay → < y , (* (Func.func F {& y} ay )) > ) (Func.fodmax F) ))
 
 FuncHOD→F : {A B : HOD} {x : Ordinal} → FuncHOD A B x → Func A B
 FuncHOD→F {A} {B} (felm F) = F
 
 FuncHOD=R : {A B : HOD} {x : Ordinal} → (fc : FuncHOD A B x) → (* x) =h=  Replace' A ( λ x ax → < x , (* (Func.func (FuncHOD→F fc) ax)) > ) (Func.fodmax (FuncHOD→F fc) )
 FuncHOD=R {A} {B}  (felm F) = *iso
+
+FuncHOD=fx : {A B : HOD} {x z : Ordinal} → (fc : FuncHOD A B x) → (az : odef A z) → odef (* x) (& ( < * z  , (* (Func.func (FuncHOD→F fc) az) ) > ))
+FuncHOD=fx {A} {B} {.(& (Replace' A (λ x ax → < x , * (Func.func F ax) >) (Func.fodmax F)))} {z} (felm F) az = 
+   eq← *iso  record { z = z ; az = az ; x=ψz = cong ( λ k →  & < * z , * k > ) (Func.func-wld F az (subst (λ k → odef A k) (sym &iso) az ) (sym &iso)) } 
+
+_↑_ : {A B : HOD} → (Func A B ) → (C : HOD) → Func (A ∩ C) B
+_↑_ {A} {B} f C = record { func = λ {x} acx → Func.func f ( proj1 acx )
+    ; is-func = λ {x} acx → Func.is-func f ( proj1 acx )
+    ; func-wld = λ {x} {y} ax ay x=y → Func.func-wld f (proj1 ax) (proj1 ay) x=y
+    }
+
+FuncHOD=eq : {A B : HOD} {x z s t : Ordinal} → (fc : FuncHOD A B x) → (az : odef A z) 
+    → odef (* x) (& ( < * z  , * s > )) → odef (* x) (& ( < * z  , * t > )) → s ≡  t
+FuncHOD=eq {A} {B} {x} {z} {s} {t} (felm f) az xs xt with eq→ *iso xs | eq→ *iso xt
+... | Xs | Xt = *=h=*→≡ lem03 where
+    asz : odef A (& (* (OD.Replaced1.z Xs))) 
+    asz = subst (λ k → odef A k ) (sym &iso) (Replaced1.az Xs) 
+    atz : odef A (& (* (OD.Replaced1.z Xt))) 
+    atz = subst (λ k → odef A k ) (sym &iso) (Replaced1.az Xt) 
+    lem01 :  < * z  , * s >  =h=   < * (Replaced1.z Xs) , * ( Func.func f asz) > 
+    lem01 = ord→== ( Replaced1.x=ψz Xs )
+    lem02 :  < * z  , * t >  =h=   < * (Replaced1.z Xt) , * ( Func.func f atz) > 
+    lem02 = ord→== ( Replaced1.x=ψz Xt )
+    lem04 : & (* (Replaced1.z Xs)) ≡ & (* (Replaced1.z Xt))
+    lem04 = ==→o≡ ( begin
+       * ( Replaced1.z Xs) ≈⟨ ==-sym (proj1 (prod-eq lem01)) ⟩ 
+       * z ≈⟨ (proj1 (prod-eq lem02)) ⟩ 
+       * ( Replaced1.z Xt) ∎ ) where open EqR ==-Setoid
+    lem03 : (* s) =h= (* t)
+    lem03 = begin
+       * s ≈⟨ proj2 ( prod-eq lem01 ) ⟩
+       * ( Func.func f (subst (λ k → odef A k ) (sym &iso) (Replaced1.az Xs) )) ≈⟨ o≡→== ( Func.func-wld f asz atz lem04 ) ⟩
+       * ( Func.func f (subst (λ k → odef A k ) (sym &iso) (Replaced1.az Xt) )) ≈⟨ ==-sym (proj2 ( prod-eq lem02 )) ⟩
+
+       * t ∎ where open EqR ==-Setoid
+
+FuncHOD-EQ : {A B : HOD} {x y z : Ordinal} → (fx : FuncHOD A B x) (fy : FuncHOD A B y) → x ≡ y → (az : odef A z) 
+    → FuncEQ {A} {B} (FuncHOD→F fx) (FuncHOD→F fy) z az 
+FuncHOD-EQ {A} {B} {x} {y} {z} fx fy eq az = FuncHOD=eq fx az (FuncHOD=fx fx az) (eq→ (o≡→== (sym eq)) (FuncHOD=fx fy az)) 
+
+FuncEQ→HODEQ : {A B : HOD}  → (fx fy : Func A B) → ((x : Ordinal) → (ax : odef A x) → FuncEQ fx fy x ax) → F→FuncHOD fx =h= F→FuncHOD fy
+FuncEQ→HODEQ {A} {B} fx fy eq = record {
+      eq→ = λ {z} az → record { z = Replaced1.z az ; az = Replaced1.az az ; x=ψz = trans (Replaced1.x=ψz az) 
+         ( cong (λ k → & < * (Replaced1.z az) ,  * k > ) (eq _ (subst (λ k → odef A k) (sym &iso) (Replaced1.az az)) )) }
+    ; eq← = λ {z} az → record { z = Replaced1.z az ; az = Replaced1.az az ; x=ψz = trans (Replaced1.x=ψz az) 
+         ( cong (λ k → & < * (Replaced1.z az) ,  * k > ) (sym (eq _ (subst (λ k → odef A k) (sym &iso) (Replaced1.az az)) ))) }
+    }
+
+
+FuncComp : {A B C : HOD} → Func B C → Func A B → Func A C
+FuncComp {A} {B} {C} g f = record {
+       func = λ {x} ax → Func.func g (Func.is-func f ax)
+     ; is-func = λ {x} ax → Func.is-func g (Func.is-func f ax)
+     ; func-wld = λ {x} {y} ax ay eq → lemma1 ax ay eq } where
+         lemma1 : {x y : Ordinal} → (ax : odef A x) → (ay : odef A y ) → x ≡ y → Func.func g (Func.is-func f ax) ≡ Func.func g (Func.is-func f ay)
+         lemma1 {x} {y} ax ay eq = Func.func-wld g (Func.is-func f ax) (Func.is-func f ay) (Func.func-wld f ax ay eq)
 
 --
 --  Set of All function from A to B
@@ -430,6 +518,9 @@ Funcs A B = record { od = record { def = λ x → FuncHOD A B x } ; odmax = osuc
     ... | record { z = z ; az = az ; x=ψz = x=ψz } = subst (λ k → ZFProduct A B k) (sym x=ψz) lemma4 where
         lemma4 : ZFProduct A B (& < * z , * (Func.func F (subst (λ k → odef A k) (sym &iso) az)) > )
         lemma4 = ab-pair az (Func.is-func F (subst (λ k → odef A k) (sym &iso) az))
+
+Funcs∋FuncHOD : {A B : HOD} → {f : Func A B} →  odef (Funcs A B) (& (F→FuncHOD f))
+Funcs∋FuncHOD {a} {b} {f} = felm f 
 
 TwoHOD : HOD
 TwoHOD = ( od∅ , ( od∅ ,  od∅ ))

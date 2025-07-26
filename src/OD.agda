@@ -133,6 +133,9 @@ o≡→==  {x} {.x} refl = ==-refl
 *≡*→≡ : { x y : Ordinal  } → * x ≡ * y →  x ≡ y
 *≡*→≡ eq = subst₂ (λ j k → j ≡ k ) &iso &iso ( cong (&) eq )
 
+*=h=*→≡ : { x y : Ordinal  } → od (* x) == od (* y) →  x ≡ y
+*=h=*→≡ eq = subst₂ (λ j k → j ≡ k ) &iso &iso (==→o≡ eq)
+
 &≡&*& : {x : HOD} → & x ≡ & (* (& x))
 &≡&*& = (==→o≡ (==-sym *iso) )
 
