@@ -225,6 +225,9 @@ zp-iso0 {A} {B} {a} {b} pab = ⟪ subst₂ (λ j k → j ≡ k ) &iso &iso (==�
                                 subst₂ (λ j k → j ≡ k ) &iso &iso (==→o≡ (proj2 (zp-iso1 pab) )) ⟫ 
 
 
+zp-iso3 :  { A B : HOD } → {x y : Ordinal } → (ax : odef (ZFP A B) x ) (ay : odef (ZFP A B) y ) → x ≡ y → (zπ1 ax ≡ zπ1 ay) ∧ (zπ2 ax ≡ zπ2 ay)
+zp-iso3 {A} {B} {.(& < * _ , * _ >)} {.(& < * _ , * _ >)} (ab-pair x x₁) (ab-pair x₂ x₃) x=y = prod-≡ x=y
+
 -- ZFP⊆⊗ :  {A B : HOD} {x : Ordinal} → odef (ZFP A B) x → odef (A ⊗ B) x
 -- ZFP⊆⊗ {A} {B} {px} ( ab-pair {a} {b} ax by ) = product→ (d→∋ A ax) (d→∋ B by)
 
@@ -457,6 +460,15 @@ _↑_ {A} {B} f C = record { func = λ {x} acx → Func.func f ( proj1 acx )
     ; is-func = λ {x} acx → Func.is-func f ( proj1 acx )
     ; func-wld = λ {x} {y} ax ay x=y → Func.func-wld f (proj1 ax) (proj1 ay) x=y
     }
+
+F∧ : {A B C D : HOD} → (f : Func A B) → (g : Func C D )  → Func (ZFP A C) (ZFP B D)
+F∧ {A} {B} {C} {D} f g = record {
+       func = λ {x} ax → & < * (Func.func f (zp1 ax)) , * (Func.func g (zp2 ax)) >
+     ; is-func = λ {x} ax → ab-pair (Func.is-func f (zp1 ax)) (Func.is-func g (zp2 ax))
+     ; func-wld = λ {x} {y} ax ay eq →  ==→o≡ ( prod-cong-== 
+         (o≡→== (Func.func-wld f (zp1 ax) (zp1 ay) (proj1 (zp-iso3 ax ay eq)))) 
+         (o≡→== (Func.func-wld g (zp2 ax) (zp2 ay) (proj2 (zp-iso3 ax ay eq)))) )
+   }
 
 FuncHOD=eq : {A B : HOD} {x z s t : Ordinal} → (fc : FuncHOD A B x) → (az : odef A z) 
     → odef (* x) (& ( < * z  , * s > )) → odef (* x) (& ( < * z  , * t > )) → s ≡  t
