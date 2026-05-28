@@ -1,5 +1,5 @@
 name: ZF
-depend: standard-library-2.3
+depend: standard-library-2.4
 include: src
 flags:
 

@@ -29,7 +29,7 @@ open Bool
 
 open  HODBase._==_
 
-open HODBase.ODAxiom HODAxiom  
+open HODBase.ODAxiom HODAxiom
 open OD O HODAxiom
 
 
@@ -114,7 +114,7 @@ pred-in A B = record { ψ-cong = wdf } where
    → ⟪ (λ p → ⟪ subst (λ k → odef A k) (==→o≡ x=y)       (proj1 p)
               , subst (λ k → odef B k) (==→o≡ x=y)       (proj2 p)  ⟫ )
      , (λ p → ⟪ subst (λ k → odef A k) (sym (==→o≡ x=y)) (proj1 p)
-              , subst (λ k → odef B k) (sym (==→o≡ x=y)) (proj2 p)  ⟫ ) ⟫  
+              , subst (λ k → odef B k) (sym (==→o≡ x=y)) (proj2 p)  ⟫ ) ⟫
 
 ∩-Select : { A B : HOD } →  Select A (  λ x → ( A ∋ x ) ∧ ( B ∋ x )) (pred-in A B)  =h= ( A ∩ B )
 ∩-Select {A} {B} =  record { eq→ =  lemma1 ; eq← = lemma2 }  where
@@ -143,52 +143,47 @@ dist-ord2 {p} {q} {r} = record { eq→ = lemma1 ; eq← = lemma2 }  where
     lemma2 {x} lt | case1 cp | _ = case1 cp
     lemma2 {x} lt | _ | case1 cp = case1 cp
     lemma2 {x} lt | case2 cq | case2 cr = case2 ⟪ cq , cr ⟫
+
 record PowerP (P : HOD) : Set (suc n) where
     constructor ⟦_,_⟧
     field
        hod : HOD
        x⊆P : hod ⊆ P
 
+record UP (P : HOD) (s : PowerP P → Set n) (x : Ordinal) : Set n where
+    field
+       p : Ordinal
+       x⊆P : (* p) ⊆ P
+       is-s : s record { hod = * p ; x⊆P = x⊆P }
+       p∋x : odef (* p) x
+    P∋x : odef P x
+    P∋x = x⊆P p∋x
+    pp : PowerP P
+    pp = record { hod = * p ; x⊆P = x⊆P }
 
-record IsBooleanAlgebra {n m : Level} ( L : Set n)
-       ( _≈_ : L → L → Set m )
-       ( b1 : L )
-       ( b0 : L )
-       ( -_ : L → L  )
-       ( _+_ : L → L → L )
-       ( _x_ : L → L → L ) : Set (n ⊔ m) where
-   field
-       +-assoc : {a b c : L } → (a + ( b + c )) ≈ ((a + b) + c)
-       x-assoc : {a b c : L } → (a x ( b x c )) ≈ ((a x b) x c)
-       +-sym : {a b : L } → (a + b) ≈ (b + a)
-       x-sym : {a b : L } → (a x b)  ≈ (b x a)
-       +-aab : {a b : L } → (a + ( a x b )) ≈ a
-       x-aab : {a b : L } → (a x ( a + b )) ≈ a
-       +-dist : {a b c : L } → (a + ( b x c )) ≈ (( a + b ) x ( a + c ))
-       x-dist : {a b c : L } → (a x ( b + c )) ≈ (( a x b ) + ( a x c ))
-       a+0 : {a : L } → (a + b0) ≈ a
-       ax1 : {a : L } → (a x b1) ≈ a
-       a+-a1 : {a : L } → (a + ( - a )) ≈ b1
-       ax-a0 : {a : L } → (a x ( - a )) ≈ b0
+UnionP : (P : HOD) → (s : PowerP P → Set n) → HOD
+UnionP  P s = record { od = record { def = λ x → UP P s x } ; odmax = & P ; <odmax = λ {x} up → odef< (UP.P∋x up) }
 
-record BooleanAlgebra {n m : Level} ( L : Set n) : Set (n ⊔ suc m) where
-   field
-       _≈_ : L → L → Set m
-       b1 : L
-       b0 : L
-       -_ : L → L
-       _+_ : L → L → L
-       _x_ : L → L → L
-       isBooleanAlgebra : IsBooleanAlgebra L _≈_ b1 b0 -_ _+_ _x_
+UnionPW : (P : HOD) → (s : PowerP P → Set n) → PowerP P
+UnionPW  P s = ⟦  UnionP P s , (λ lt → UP.P∋x lt) ⟧
+
+open import BoolAlgebra
 
 
-HODBA : (P : HODBase.HOD O)  (∋-p : (Q : HODBase.HOD O) → OD._⊆_ O HODAxiom  Q P → ( x : HODBase.HOD O ) → Dec0 ( OD._∈_ O HODAxiom x Q )) 
-     → BooleanAlgebra (PowerP P) 
+HODBA : (P : HODBase.HOD O)  (∋-p : (Q : HODBase.HOD O) → OD._⊆_ O HODAxiom  Q P → ( x : HODBase.HOD O ) → Dec0 ( OD._∈_ O HODAxiom x Q ))
+     → BooleanAlgebra (PowerP P)
 HODBA P ∋-p = record { _≈_ = λ x y → hod x =h= hod y ; b1 = ⟦ P , (λ x → x) ⟧   ; b0 = ⟦ od∅ , (λ x →  ⊥-elim (¬x<0 x)) ⟧
   ; -_ = λ x → ⟦  P ＼ hod x , proj1 ⟧
   ; _+_ = λ x y → ⟦ hod x ∪ hod y , ba00 x y ⟧ ; _x_ = λ x y → ⟦ hod x ∩ hod y , (λ lt → x⊆P x (proj1 lt))  ⟧
    ; isBooleanAlgebra = record {
-       +-assoc = λ {a} {b} {c} →  record { eq→ = ba01 a b c ; eq← = ba02 a b c  }
+     isEquivalence = record { refl = ==-refl ; sym = ==-sym ; trans = ==-trans }
+     ; +-resp = λ {f} {g} {h} {i} f=g h=i → record { eq→ = λ lt → ba10 {f} {g} {h} {i} f=g h=i lt
+         ; eq← = λ lt → ba10 {g} {f} {i} {h} (==-sym f=g) (==-sym h=i) lt }
+     ; x-resp =  λ {f} {g} {i} f=g h=i → record { eq→ = λ lt → ⟪ eq→ h=i ( proj1 lt) , eq→ f=g (proj2 lt) ⟫
+         ; eq← = λ lt → ⟪ eq← h=i ( proj1 lt) , eq← f=g (proj2 lt) ⟫  }
+     ; neg-resp = λ {f} {g}  f=g → record { eq→ = λ lt → ⟪ proj1 lt , ( λ gx → proj2 lt (eq← f=g gx) )  ⟫
+         ; eq← = λ lt → ⟪ proj1 lt , ( λ gx → proj2 lt (eq→  f=g gx) )  ⟫   }
+     ; +-assoc = λ {a} {b} {c} →  record { eq→ = ba01 a b c ; eq← = ba02 a b c  }
      ; x-assoc = λ {a} {b} {c} →
         record { eq→ = λ lt → ⟪ ⟪ proj1 lt  , proj1 (proj2 lt) ⟫ , proj2 (proj2 lt)  ⟫
                ; eq← = λ lt → ⟪ proj1 (proj1 lt) , ⟪ proj2 (proj1 lt)  , proj2 lt ⟫ ⟫ }
@@ -204,6 +199,10 @@ HODBA P ∋-p = record { _≈_ = λ x y → hod x =h= hod y ; b1 = ⟦ P , (λ x
      ; ax-a0 =  λ {a} →  record { eq→ = ba08 a ; eq← = λ lt → ⊥-elim (¬x<0 lt) }
        } } where
      open PowerP
+     ba10 :  {f g h i : PowerP P} → (f=g : hod f =h= hod g )
+         (h=i : hod h =h= hod i ) → {x : Ordinal} → odef (hod h ∪ hod f) x → odef (hod i ∪ hod g) x
+     ba10 {i} {f} {g} f=g h=i {x} (case1 lt) = case1 (eq→ h=i lt)
+     ba10 {i} {f} {g} f=g h=i {x} (case2 lt) = case2 (eq→ f=g lt)
      ba00 : (x y : PowerP P ) →  (hod x ∪ hod y) ⊆ P
      ba00 x y (case1 px) = x⊆P x px
      ba00 x y (case2 py) = x⊆P y py
@@ -236,4 +235,179 @@ HODBA P ∋-p = record { _≈_ = λ x y → hod x =h= hod y ; b1 = ⟦ P , (λ x
      ... | no0 n = case2 ⟪ px , subst (λ k → ¬ odef (hod a) k) &iso n ⟫
      ba08 : (a : PowerP P) → {x : Ordinal} → odef (hod a ∩ (P ＼ hod a)) x → odef od∅ x
      ba08 a {x} ⟪ ax , ⟪ px , nax ⟫ ⟫ = ⊥-elim ( nax ax )
+
+HODBA-comp : (P : HODBase.HOD O)  (∋-p : (Q : HODBase.HOD O) → Q ⊆ P → ( x : HODBase.HOD O ) → Dec0 ( OD._∈_ O HODAxiom x Q ))
+     → IsCompleteBooleanAlgebra (PowerP P) (HODBA P ∋-p)
+HODBA-comp P ∋-p = record { sup = λ s → UnionPW P (BPred.pred s)
+     ; is-sup =  λ s x sx →  record { eq→ = λ {z} lt → proj1 lt ; eq← = λ {z} lt → ⟪ lt  , record { p = & (PowerP.hod x)
+       ; x⊆P = λ {w} zw → PowerP.x⊆P x (eq→ *iso zw)
+       ; is-s = lem00 s x sx  ; p∋x = eq← *iso lt  } ⟫ }
+     ; is-minsup = lem04
+      } where
+         open BooleanAlgebra (HODBA P ∋-p) using (_≤_)
+         lem00 : ( s : BPred (PowerP P) (HODBA P ∋-p)) → (x : PowerP P) → BPred.pred s x
+             → BPred.pred s record { hod = * (& (PowerP.hod x)) ; x⊆P = λ {w} zw → PowerP.x⊆P x (eq→ *iso zw)  }
+         lem00 s  x sx = proj1 (BPred.pcong s x record { hod = * (& (PowerP.hod x)) ; x⊆P = λ {w} zw → PowerP.x⊆P x (eq→ *iso zw)  } (==-sym *iso) ) sx
+         lem02 : {x y : PowerP P} → x ≤ y → PowerP.hod x ⊆  PowerP.hod y
+         lem02 {x} {y} lt {z} xz = proj2 (eq← lt {z} xz )
+         lem04 :  (s : BPred (PowerP P) (HODBA P ∋-p)) {x : PowerP P} →
+            ((y : PowerP P) → BPred.pred s y → y ≤ x) → (UnionPW P (BPred.pred s)) ≤ x
+         lem04 s {x} fs = record { eq→ = λ {y} lt → proj1 lt ; eq← = λ {y} lt → ⟪ lt  , proj2 (eq←  (fs (UP.pp lt) ( UP.is-s lt)) ( UP.p∋x lt)) ⟫ }
+
+--
+-- clopen set assumption
+--
+record HBAR  ( L : HOD ) : Set (suc n) where
+   field
+       OS    : HOD
+       OS⊆PL :  OS ⊆ Power L
+       o∩ : { p q : HOD } → OS ∋ p →  OS ∋ q      → OS ∋ (p ∩ q)
+       o∪ : { P : HOD }  →  P ⊆ OS                → OS ∋ Union P
+       o- : { p : HOD }  →  OS ∋ p                → OS ∋ ( L ＼ p )
+   o∪2 : { p q : HOD } → OS ∋ p →  OS ∋ q      → OS ∋ (p ∪ q)
+   o∪2 {p} {q} op oq = subst (λ k → odef OS k) (==→o≡ ∪-Union) (o∪ lem00 ) where
+      lem00 : {x : Ordinal} → odef (p , q) x → odef OS x
+      lem00 {x} (case1 pp) = subst (λ k → odef OS k ) (sym pp) op
+      lem00 {x} (case2 qq) = subst (λ k → odef OS k ) (sym qq) oq
+
+
+open import ZEquiv  O HODAxiom ho<
+
+open HODElement 
+open HBAR 
+
+HBA : (L : HODBase.HOD O)  (∋-p : (Q : HODBase.HOD O) → OD._⊆_ O HODAxiom  Q L → ( x : HODBase.HOD O ) → Dec0 ( OD._∈_ O HODAxiom x Q ))
+     → (H : HBAR L)
+     → BooleanAlgebra {n} {n} (HODElement (HBAR.OS H))
+HBA L ∋-p H =  record { _≈_ = λ x y → (* (elt x)) =h= (* (elt y)) ; b1 = record { elt = & L ;  A∋elt =  ba02  } 
+      ; b0 = record { elt =  o∅  ;  A∋elt =  ba00 }
+  ; -_ = λ x → record { elt = & ( L ＼ (* (elt x))) ; A∋elt =  o- H (subst (λ k → odef (OS H) k ) (sym &iso) (A∋elt x) ) } 
+  ; _+_ = λ x y → record { elt = & ( ( * (elt x)) ∪ (* (elt y))) 
+       ; A∋elt = o∪2 H (subst (λ k → odef (OS H) k ) (sym &iso) (A∋elt x)) (subst (λ k → odef (OS H) k ) (sym &iso) (A∋elt y)) } 
+  ; _x_ = λ x y → record { elt = & ( ( * (elt x)) ∩ (* (elt y))) 
+       ; A∋elt =  o∩ H (subst (λ k → odef (OS H) k ) (sym &iso) (A∋elt x)) (subst (λ k → odef (OS H) k ) (sym &iso) (A∋elt y)) } 
+   ; isBooleanAlgebra = record {
+     isEquivalence = record { refl = ==-refl ; sym = ==-sym ; trans = ==-trans }
+     ; x-resp = λ {f} {g} {h} {i} f=g h=i → ==-trans *iso ( ==-trans (ba08 {* (elt f)} {* (elt g)} {* (elt h)} {* (elt i)} f=g h=i ) (==-sym *iso))
+     ; +-resp =  λ {f} {g} {h} {i} f=g h=i → ==-trans *iso (==-trans (ba09 {* (elt f)} {* (elt g)} {* (elt h)} {* (elt i)} f=g h=i) (==-sym *iso))
+     ; neg-resp = λ {f} {g}  f=g → record { eq→ = λ lt → eq← *iso ⟪ proj1 ( eq→ *iso lt ) , (λ lt1 → proj2 (eq→ *iso lt) (eq← f=g lt1) ) ⟫
+         ; eq← = λ lt → eq← *iso ⟪ proj1 ( eq→ *iso lt ) , (λ lt1 → proj2 (eq→ *iso lt) (eq→  f=g lt1) ) ⟫ }
+     ; +-assoc = λ {a} {b} {c} →  record { eq→ = λ lt → eq← *iso (ba05 (eq→ *iso lt ))  ; eq← = λ lt → eq← *iso (ba06 (eq→  *iso lt)) }
+     ; x-assoc = λ {a} {b} {c} →
+        record { eq→ = λ lt → eq← *iso ⟪ eq← *iso ⟪ proj1 (eq→ *iso lt) , proj1 (eq→ *iso (proj2 (eq→ *iso lt) )) ⟫ , proj2 (eq→ *iso (proj2 (eq→ *iso lt) )) ⟫
+               ; eq← = λ lt → eq←  *iso ⟪ proj1 ( eq→ *iso (proj1 (eq→ *iso lt) ))   , eq← *iso ⟪ proj2 (eq→ *iso (proj1 (eq→ *iso lt) ))  , proj2 (eq→ *iso lt)  ⟫  ⟫ }
+     ; +-sym = λ {a} {b} →  record { eq→ = λ {x} lt → eq← *iso (ba07 {* (elt a)} {* (elt b)} (eq→ *iso lt) ) ; eq← = λ  lt → eq← *iso (ba07 {* (elt b)} {* (elt a)} (eq→ *iso lt))  }
+     ; x-sym = λ {a} {b} →  record { eq→ = λ lt → eq← *iso ⟪ proj2 (eq→  *iso lt) , proj1 (eq→ *iso lt) ⟫  ; eq← = λ lt → eq← *iso ⟪ proj2 (eq→  *iso lt) ,  proj1 (eq→  *iso lt)  ⟫  }
+     ; +-aab = λ {a} {b} →  record { eq→ = λ lt → ba10 _ _ (eq→ *iso lt) ; eq← = λ lt → eq← *iso ( case1 lt ) }
+     ; x-aab = λ {a} {b} →  record { eq→ = λ lt → proj1 (eq→ *iso lt)  ; eq← = λ ax →  eq← *iso ⟪ ax , eq← *iso (case1 ax)  ⟫  }
+     ; +-dist = λ {p} {q} {r} → ba12 {* (elt p)} {* (elt q)} {* (elt r)}
+     ; x-dist = λ {p} {q} {r} → ba11 {* (elt p)} {* (elt q)} {* (elt r)}
+     ; a+0 = λ {a} →  record { eq→ = λ lt → ba13 {* (elt a)} (eq→ *iso lt) ; eq← = λ lt → eq← *iso (case1 lt)  }
+     ; ax1 = λ {a} →  record { eq→ = λ lt → proj1 ( eq→ *iso lt) ; eq← = λ ax → eq← *iso ⟪ ax , eq← *iso (OS⊆PL H (A∋elt a) _ ax)  ⟫  }
+     ; a+-a1 = λ {a} →  record { eq→ = λ lt → eq← *iso (ba16 (* (elt a)) (λ {x} → OS⊆PL H (A∋elt a) x) (eq→ *iso lt ) )  
+         ; eq← = λ lt → eq← *iso (ba17 (* (elt a)) (λ {x} → OS⊆PL H (A∋elt a) x) (eq→ *iso lt)  )   }
+     ; ax-a0 =  λ {a} →  record { eq→ = λ lt → ⊥-elim ( proj2 (eq→   *iso (proj2 ( eq→  *iso lt))) (proj1 ( eq→ *iso lt)) ) 
+           ; eq← = λ lt → ⊥-elim ( ¬x<0 ( eq→ o∅==od∅ lt )) }
+       } }  where
+     ba13 : {a : HOD} {x : Ordinal} → odef (a ∪ (* o∅)) x → odef a x
+     ba13 {a} {x} (case1 lt) = lt
+     ba13 {a} {x} (case2 lt) = ⊥-elim ( ¬x<0 ( eq→ o∅==od∅ lt ))
+     ba04 : {p q p1 q1 : HOD} { x : Ordinal} → odef p x ∨ odef q x → p =h= p1 → q =h= q1 → odef p1 x ∨ odef q1 x 
+     ba04 (case1 x) eq1 eq2 = case1 ( eq→  eq1 x )
+     ba04 (case2 x) eq1 eq2 = case2 ( eq→  eq2 x )
+     ba08 : {f g h i : HOD } → f =h= g → h =h= i →
+                     (h ∩ f) =h= (i ∩ g)
+     ba08 {f} {g} {h} {i} f=g h=i = record { eq→ = λ lt → ⟪ eq→  h=i (proj1 lt) ,  eq→  f=g (proj2 lt) ⟫
+         ; eq← = λ lt → ⟪ eq←  h=i (proj1 lt) ,  eq←  f=g (proj2 lt) ⟫ }
+     ba09 : {f g h i : HOD} → f =h= g → h =h= i →
+                     (h ∪ f) =h= (i ∪  g)
+     ba09 {f} {g} {h} {i} f=g h=i = record { eq→ = λ lt → ba04 {h} {f} {i} {g} lt  h=i f=g 
+         ; eq← = λ lt → ba04 {i} {g} {h} {f} lt  (==-sym h=i) (==-sym f=g)  }
+     ba07 : {a b : HOD} { x : Ordinal} → odef a x ∨ odef b x → odef b x  ∨ odef a x 
+     ba07 (case1 x) = case2 x
+     ba07 (case2 x) = case1 x
+     ba10 : (a b : HOD) → {x : Ordinal} →
+            odef a x ∨ odef (* (& (a ∩ b))) x → odef a x
+     ba10 a b (case1 ax) = ax
+     ba10 a b (case2 ab) = proj1 (eq→ *iso ab )
+     ba05 : {a b c : HOD} { x : Ordinal} → odef a x ∨ odef (* (& (b ∪ c))) x → odef (* (& (a ∪ b))) x  ∨ odef c x 
+     ba05 (case1 x) = case1 (eq← *iso (case1 x) )
+     ba05 (case2 x) with eq→ *iso x
+     ... | case1 x₁ = case1 (eq← *iso (case2 x₁) )
+     ... | case2 x₁ = case2 x₁ 
+     ba06 : {a b c : HOD} { x : Ordinal} → odef (* (& (a ∪ b))) x ∨ odef c x → odef a x ∨ odef (* (& (b ∪ c))) x 
+     ba06 (case1 x) with eq→ *iso x 
+     ... | case1 x₁ = case1 x₁
+     ... | case2 x₁ = case2 (eq← *iso (case1 x₁) ) 
+     ba06 (case2 x) = case2 (eq← *iso (case2 x) ) 
+     ba01 : & ( Union od∅ ) ≡ o∅ 
+     ba01 = =od∅→≡o∅ record { eq→ = λ {x} lt → ⊥-elim (¬x<0 (Own.ao lt) ) ; eq← = λ {x} lt → ⊥-elim (¬x<0 lt)   }
+     ba00 : odef (OS H)  o∅ 
+     ba00 = subst ( λ k → odef (OS H) k) ba01 (o∪ H ( λ x →  ⊥-elim (¬x<0 x) ))
+     ba03 :  (L ＼ * o∅) =h=  L
+     ba03 = record { eq→ = proj1 ; eq← =  λ lt →  ⟪ lt , (λ lt → ⊥-elim (¬x<0 (eq→ o∅==od∅ lt) ) ) ⟫ } 
+     ba02 : odef (OS H) (& L) 
+     ba02 = subst (λ k → odef (OS H) k ) (==→o≡ ba03) 
+         ( o- H (subst (  λ k → odef (OS H) k ) (sym &iso) ba00 ))
+     import Relation.Binary.Reasoning.Setoid as EqR
+     ba11 : {p q r : HOD} →  (* (& (p ∩ (* (& (q ∪ r)))))) =h= (* (& (* (& (p ∩ q)) ∪ * (& (p ∩ r)))))
+     ba11 {p} {q} {r} = begin
+        (* (& (p ∩ (* (& (q ∪ r))))))   ≈⟨ *iso ⟩
+        p ∩ (* (& (q ∪ r)))   ≈⟨ ba08 {(* (& (q ∪ r)))} {q ∪ r} {p} {p} *iso ==-refl  ⟩
+        p ∩ (q ∪ r)   ≈⟨ dist-ord {p} {q} {r} ⟩
+        (p ∩ q) ∪ (p ∩ r) ≈⟨ ba09 {(p ∩ r)} {* (& (p ∩ r))} {p ∩ q} {* (& (p ∩ q))} (==-sym *iso)  (==-sym *iso)  ⟩
+        * (& (p ∩ q)) ∪ * (& (p ∩ r)) ≈⟨ ==-sym *iso ⟩
+        (* (& (* (& (p ∩ q)) ∪ * (& (p ∩ r))))) ∎ where open EqR ==-Setoid
+     ba12 : {p q r : HOD} →  (* (& (p ∪ (* (& (q ∩ r)))))) =h= (* (& (* (& (p ∪ q)) ∩ * (& (p ∪ r)))))
+     ba12 {p} {q} {r} = begin
+        (* (& (p ∪ (* (& (q ∩ r))))))   ≈⟨ *iso ⟩
+        p ∪ (* (& (q ∩ r)))   ≈⟨ ba09 {(* (& (q ∩ r)))} {q ∩ r} {p} {p} *iso ==-refl  ⟩
+        p ∪ (q ∩ r)   ≈⟨ dist-ord2 {p} {q} {r} ⟩
+        (p ∪ q) ∩ (p ∪ r) ≈⟨ ba08 {(p ∪ r)} {* (& (p ∪ r))} {p ∪ q} {* (& (p ∪ q))} (==-sym *iso)  (==-sym *iso)  ⟩
+        * (& (p ∪ q)) ∩ * (& (p ∪ r)) ≈⟨ ==-sym *iso ⟩
+        (* (& (* (& (p ∪ q)) ∩ * (& (p ∪ r))))) ∎ where open EqR ==-Setoid
+     ba16 : (a : HOD ) → a ⊆ L → { x : Ordinal} → odef a x ∨ odef (* (& ((L ＼ a)))) x → odef L x
+     ba16 a a⊆L {x} (case1 ax) = a⊆L ax
+     ba16 a a⊆L {x} (case2 nax) = proj1 (eq→ *iso nax)
+     ba17 : (a : HOD ) → a ⊆ L → { x : Ordinal} → odef L x → odef a x ∨ odef (* ( & (L ＼ a))) x
+     ba17 a a⊆L {x} px with ∋-p a a⊆L (* x)
+     ... | yes0 y = case1 (subst (λ k → odef a k) &iso y)
+     ... | no0 n = case2 (eq← *iso ⟪ px , subst (λ k → ¬ odef a k) &iso n ⟫ )
+
+record HBAUP (L : HOD) (H : HBAR L) (s : HODElement (OS H) → Set n) (x : Ordinal) : Set n where
+    field
+       op : odef (OS H) x
+       is-s : s record { elt = x ; A∋elt = op }
+    P∋x : odef (Power L) x
+    P∋x = OS⊆PL H op 
+
+UnionHBA : (L : HOD) (H : HBAR L) (s : HODElement (OS H) → Set n) → HOD
+UnionHBA  L H s = record { od = record { def = λ x → HBAUP L H s x } ; odmax = & (Power L) ; <odmax = λ {x} up → odef< (HBAUP.P∋x up) }
+
+HBAC : (L : HOD)  (∋-p : (Q : HODBase.HOD O) → OD._⊆_ O HODAxiom  Q L → ( x : HODBase.HOD O ) → Dec0 ( OD._∈_ O HODAxiom x Q ))
+     → (H : HBAR L)
+     → IsCompleteBooleanAlgebra (HODElement (HBAR.OS H)) (HBA L ∋-p H)
+HBAC L ∋-p H = record { sup = λ s → record { elt = & ( Union ( UnionHBA L H (BPred.pred s))) ; A∋elt = o∪ H (lem03 s) } 
+     ; is-sup =  λ s x sx →  record { eq→ = λ lt → proj1 ( eq→ *iso lt) 
+        ; eq← = λ {z} lt → eq← *iso ⟪ lt , eq← *iso record { owner = _ ; ao = record { op = A∋elt x ; is-s = sx } ; ox = lt }  ⟫  }
+     ; is-minsup = lem04
+      } where
+         open BooleanAlgebra (HBA L ∋-p H) using (_≤_)
+         lem03 : (s :  BPred (HODElement (OS H)) (HBA L ∋-p H) ) → UnionHBA L H (BPred.pred s) ⊆ OS H
+         lem03 s {x} lt = HBAUP.op lt
+         lem02 : {x y : HODElement (HBAR.OS H) } → x ≤ y → * (elt x) ⊆  * (elt y )
+         lem02 {x} {y} lt {z} xz = proj2 (eq→ *iso lem09) where
+               lem09 :  odef (* (elt ((HBA L ∋-p H BooleanAlgebra.x x) y))) z
+               lem09 = eq← lt {z} xz 
+         lem04 : (s : BPred (HODElement (OS H)) (HBA L ∋-p H)) {x : HODElement (OS H)} 
+            → ((x₁ : HODElement (OS H)) → BPred.pred s x₁ → x₁ ≤ x) 
+                → record { elt = & (Union (UnionHBA L H (BPred.pred s))) ; A∋elt = o∪ H (lem03 s)  }  ≤ x
+         lem04 s {z} fs = record { eq→ = λ lt → proj1 (eq→ *iso lt) ; eq← = λ {w} lt → eq← *iso ⟪ eq← *iso (eq→ *iso lt) , 
+            lem02 {lem07 (eq→ *iso lt) } {z} (lem05 (eq→ *iso lt)) (lem08 (eq→ *iso lt))  ⟫  } where
+               lem07 : {w : Ordinal} → odef (Union (UnionHBA L H (BPred.pred s))) w → HODElement (OS H)
+               lem07 lt2 = record { elt = Own.owner lt2 ; A∋elt = HBAUP.op (Own.ao lt2) }
+               lem08 : {w : Ordinal} → (lt2 : odef (Union (UnionHBA L H (BPred.pred s))) w) → odef (* (elt (lem07 lt2))) w
+               lem08 lt2 = Own.ox lt2
+               lem05 : {w : Ordinal} → (lt2 : odef (Union (UnionHBA L H (BPred.pred s))) w ) → lem07 lt2 ≤ z
+               lem05 {w} lt2 = fs (lem07 lt2) (HBAUP.is-s (Own.ao lt2)) 
 

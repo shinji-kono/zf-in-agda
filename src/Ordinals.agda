@@ -50,4 +50,3 @@ module inOrdinal  {n : Level} (O : Ordinals {n} ) where
   TransFinite0 {ψ} ind x = lower (TransFinite {λ y → Lift (suc n) ( ψ y)} ind1 x) where
        ind1 : (z : Ordinal) → ((y : Ordinal) → y o< z → Lift (suc n) (ψ y)) → Lift (suc n) (ψ z)
        ind1 z prev = lift (ind z (λ y y<z → lower (prev y y<z ) )) 
-

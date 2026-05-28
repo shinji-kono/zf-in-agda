@@ -11,6 +11,12 @@ import OD
 module generic-filter {n : Level.Level } (O : Ordinals {n}) (HODAxiom : HODBase.ODAxiom O)  (ho< : OD.ODAxiom-ho< O HODAxiom )
        (AC : OD.AxiomOfChoice O HODAxiom ) where
 
+--
+-- It is better to define generic filter without our ZF Set Theory. 
+-- Countable Model of ZF is simply HODBase on countable Ordinals.
+-- 
+-- If we have a countable ordinal and it's ODAxiom, 
+-- set of ℕ → Bool i.e. real number is a subset of ℕ. We cannot see the subset from inside of the HOD.
 
 open import  Relation.Binary.PropositionalEquality hiding ( [_] )
 open import Data.Empty
@@ -80,7 +86,7 @@ record CountableModel : Set (Level.suc (Level.suc n)) where
        ctl-iso→ : { x : Ordinal } → (lt : odef (ctl-M) x )  → ctl→ (ctl← x lt ) ≡ x
        TC : {x y : Ordinal} → odef ctl-M x → odef (* x) y → odef ctl-M y
        is-model : (x : HOD) → & x o< & ctl-M → ctl-M ∋ (x ∩ ctl-M)
-       -- we have no0 otherway round
+       -- we have no otherway round
        -- ctl-iso← : { x : ℕ }  →  ctl← (ctl→ x ) (ctl<M x)  ≡ x
 --
 -- almmost universe

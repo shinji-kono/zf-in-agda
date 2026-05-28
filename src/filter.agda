@@ -70,6 +70,12 @@ record ultra-filter { L P : HOD } {LP : L ⊆ Power P} (F : Filter {L} {P} LP) :
        proper  : ¬ (filter F ∋ od∅)
        ultra   : {p : HOD } → L ∋ p → L ∋  ( P ＼ p) → ( filter F ∋ p ) ∨ (  filter F ∋ ( P ＼ p) )
 
+record dense-filter { L P : HOD } {LP : L ⊆ Power P} (F : Filter {L} {P} LP) : Set (suc (suc n)) where
+   field
+       dense   : {A : HOD } → A ⊆ filter F → L ∋  A → filter F ∋ Intersection A
+
+-- generic filter is ultra-filter and dense filter
+
 ∈-filter : {L P p : HOD} →  {LP : L ⊆ Power P}  → (F : Filter {L} {P} LP ) → filter F ∋ p → L ∋ p 
 ∈-filter {L} {p} {LP} F lt = ( f⊆L F) lt 
 
@@ -109,7 +115,7 @@ filter-lemma1 :  {P L : HOD} → (LP : L ⊆ Power P)
      → ({p : HOD} → L ∋ p → L ∋ (P ＼ p))
      → ({p q : HOD} → L ∋ p → L ∋ q → L ∋ (p ∩ q ))
      → (F : Filter {L} {P} LP) → ultra-filter F  → prime-filter F 
-filter-lemma1 {P} {L} LNEG NEG CAP F u = record {
+filter-lemma1 {P} {L} LP NEG CAP F u = record {
          proper = ultra-filter.proper u
        ; prime = lemma3
     } where
@@ -300,6 +306,16 @@ ultra→max {L} {P} LP NEG CAP U u  = record { mf = U ; F⊆mf = λ x → x ; pr
          ff0 : (p ∩ (P ＼ p)) =h= od∅
          ff0 = record { eq→ = λ {x} lt → ⊥-elim (proj2 (proj2 lt ) (proj1 lt)) 
                      ;  eq← = λ {x} lt → ⊥-elim ( ¬∅∋ (subst (λ k → odef od∅ k) (sym &iso) lt )) }
+
+--   record f-dense : {L P : HOD} (LP : L ⊆ Power P)  (NEG : {p : HOD} → L ∋ p → L ∋ ( P ＼ p)) 
+--           (CAP : {p q : HOD} → L ∋ p → L ∋ q → L ∋ (p ∩ q))
+--           (U : Filter {L} {P} LP) : Set (suc n) where
+--      field
+--          dense : HOD
+--          d⊆P :  dense ⊆ P
+--          dense-f : L → L 
+--          dense-d :  { p : L} → PL (λ x → p ⊆ x ) → dense ( dense-f p  )
+--          dense-p :  { p : L} → PL (λ x → p ⊆ x ) → p ⊆ (dense-f p) 
 
 --  if there is a filter , there is a ultra filter under the axiom of choise
 --        Zorn Lemma

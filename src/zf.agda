@@ -21,10 +21,14 @@ record ZFunc {n m : Level } (ZFSet : Set n) (_∋_ : ( A x : ZFSet  ) → Set m)
       cod∋ψ : (x : ZFSet) → cod ∋ ψ x
       ψ-cong : (x y : ZFSet) → x ≈ y → ψ x ≈ ψ y
 
--- There is no cod∋φ in zf usually, since function φ is defined from a relation between
--- a set and a set. But our functions are defined by themselves. We have a deordinals before the definition of the φ,
--- so it may run through entire ordinals, then cod of φ becomes a class. To stop this, we
--- need to have cod∋φ.
+-- In ZF, Replacement applies to formulas ψ(x,y) with x,y ranging over sets.
+-- For any set X, the image { y | ∃ x ∈ X ψ(x,y) } is a set.
+-- Hence the range is automatically a set, without an explicit codomain bound.
+--
+-- Here, however, ψ : ZFSet → ZFSet is a total map and could range over
+-- a proper class (e.g. all ordinals). Therefore we require an explicit
+-- bounding set `cod` containing all values of ψ.
+
 
 record IsZF {n m : Level }
      (ZFSet : Set n)
