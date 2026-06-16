@@ -1,5 +1,4 @@
 {-# OPTIONS --cubical-compatible --safe #-}
--- {-# OPTIONS --cubical-compatible --allow-unsolved-metas #-}
 
 module bijection where
 
@@ -10,7 +9,7 @@ open import Data.Maybe
 open import Data.List hiding ([_] ; sum )
 open import Data.List.Properties 
 open import Data.Nat.Properties
-open import Relation.Nullary hiding ( Dec ; yes ; no )
+open import Relation.Nullary 
 open import Data.Empty
 open import Data.Unit using ( tt ; ⊤ )
 open import  Relation.Binary.Core hiding (_⇔_)
@@ -21,7 +20,7 @@ open import logic
 open import nat
 
 
---  Dec0  -- we use our own simpler version for cubical compatibility
+--  Dec  -- we use our own simpler version for cubical compatibility
 
 -- record Bijection {n m : Level} (R : Set n) (S : Set m) : Set (n Level.⊔ m)  where
 --    field
@@ -507,8 +506,9 @@ LBℕ = record {
 --   but in case of ℕ, we can construct it directly.
 
 open import Data.List hiding ([_])
-open import Data.List.Relation.Unary.Any as UA
+open import Data.List.Relation.Unary.Any as UA hiding (toSum)
 open import Data.List.Relation.Unary.Any.Properties
+open import Data.Sum
 
 record InjectiveF (A B : Set) : Set where
    field
@@ -522,8 +522,8 @@ record Is (A C : Set) (f : A → C) (c : C) : Set where
 
 Countable-Bernstein : (A B C : Set) → Bijection A ℕ → Bijection C ℕ
      → (fi : InjectiveF A  B ) → (gi : InjectiveF  B C )
-     → (is-A : (c : C ) → Dec0 (Is A C (λ x → (InjectiveF.f gi (InjectiveF.f fi x))) c ))
-     → (is-B : (c : C ) → Dec0 (Is B C (InjectiveF.f gi) c)  )
+     → (is-A : (c : C ) → Dec (Is A C (λ x → (InjectiveF.f gi (InjectiveF.f fi x))) c ))
+     → (is-B : (c : C ) → Dec (Is B C (InjectiveF.f gi) c)  )
      → Bijection B ℕ
 Countable-Bernstein A B C an cn fi gi is-A is-B = record {
        fun→  = λ x → bton x
@@ -547,20 +547,20 @@ Countable-Bernstein A B C an cn fi gi is-A is-B = record {
     --
 
     count-B : ℕ → ℕ
-    count-B zero with is-B (fun← cn zero)
-    ... | yes0 isb = 1
-    ... | no0 nisb = 0
-    count-B (suc n) with is-B (fun← cn (suc n))
-    ... | yes0 isb = suc (count-B n)
-    ... | no0 nisb = count-B n
+    count-B zero with toSum (is-B (fun← cn zero))
+    ... | inj₁ x = 1
+    ... | inj₂ y = 0    
+    count-B (suc n) with toSum (is-B (fun← cn (suc n)))
+    ... | inj₁ x = suc (count-B n)
+    ... | inj₂ y =  count-B n    
 
     count-A : ℕ → ℕ
-    count-A zero with is-A (fun← cn zero)
-    ... | yes0 isb = 1
-    ... | no0 nisb = 0
-    count-A (suc n) with is-A (fun← cn (suc n))
-    ... | yes0 isb = suc (count-A n)
-    ... | no0 nisb = count-A n
+    count-A zero with toSum (is-A (fun← cn zero))
+    ... | inj₁  isb = 1
+    ... | inj₂  nisb = 0
+    count-A (suc n) with toSum (is-A (fun← cn (suc n)))
+    ... | inj₁  isb = suc (count-A n)
+    ... | inj₂  nisb = count-A n
 
     ¬isA∧isB : (y : C ) →  Is A C (λ x → g ( f x)) y → ¬ Is B C g y → ⊥
     ¬isA∧isB y isa nisb = ⊥-elim ( nisb record { a = f (Is.a isa) ; fa=c = lem } ) where
@@ -571,16 +571,16 @@ Countable-Bernstein A B C an cn fi gi is-A is-B = record {
              open ≡-Reasoning
 
     ca≤cb0 : (n : ℕ) → count-A n ≤ count-B n
-    ca≤cb0 zero with is-A (fun← cn zero) | is-B (fun← cn zero)
-    ... | yes0 isA | yes0 isB = ≤-refl
-    ... | yes0 isA | no0 nisB = ⊥-elim ( ¬isA∧isB _ isA nisB )
-    ... | no0 nisA | yes0 isB = px≤x
-    ... | no0 nisA | no0 nisB = ≤-refl
-    ca≤cb0 (suc n) with is-A (fun← cn (suc n)) | is-B (fun← cn (suc n))
-    ... | yes0 isA | yes0 isB = s≤s (ca≤cb0 n)
-    ... | yes0 isA | no0 nisB = ⊥-elim ( ¬isA∧isB _ isA nisB )
-    ... | no0 nisA | yes0 isB = ≤-trans (ca≤cb0 n) px≤x
-    ... | no0 nisA | no0 nisB = ca≤cb0 n
+    ca≤cb0 zero with toSum (is-A (fun← cn zero)) | toSum (is-B (fun← cn zero))
+    ... | inj₁ isA | inj₁ isB = ≤-refl
+    ... | inj₁ isA | inj₂ nisB = ⊥-elim ( ¬isA∧isB _ isA nisB )
+    ... | inj₂ nisA | inj₁ isB = px≤x
+    ... | inj₂ nisA | inj₂ nisB = ≤-refl
+    ca≤cb0 (suc n) with toSum (is-A (fun← cn (suc n))) | toSum (is-B (fun← cn (suc n)))
+    ... | inj₁ isA | inj₁ isB = s≤s (ca≤cb0 n)
+    ... | inj₁ isA | inj₂ nisB = ⊥-elim ( ¬isA∧isB _ isA nisB )
+    ... | inj₂ nisA | inj₁ isB = ≤-trans (ca≤cb0 n) px≤x
+    ... | inj₂ nisA | inj₂ nisB = ca≤cb0 n
 
     --  (c n)  is
     --     fun→ c, where c contains all "a" less than n
@@ -640,17 +640,17 @@ Countable-Bernstein A B C an cn fi gi is-A is-B = record {
 
     ca-list : List C → ℕ
     ca-list [] = 0
-    ca-list (h ∷ t) with is-A h
-    ... | yes0 _ = suc (ca-list t)
-    ... | no0 _ = ca-list t
+    ca-list (h ∷ t) with toSum (is-A h)
+    ... | inj₁ _ = suc (ca-list t)
+    ... | inj₂ _ = ca-list t
 
     ca-list=count-A : (n : ℕ) → ca-list (clist n) ≡ count-A n
-    ca-list=count-A zero with is-A (fun← cn 0)
-    ... | yes0 x = refl
-    ... | no0 x = refl
-    ca-list=count-A (suc n) with is-A (fun← cn (suc n))
-    ... | yes0 x = cong suc ( ca-list=count-A n )
-    ... | no0 x = ca-list=count-A n 
+    ca-list=count-A zero with toSum ( is-A (fun← cn 0))
+    ... | inj₁ x = refl
+    ... | inj₂ x = refl
+    ca-list=count-A (suc n) with toSum ( is-A (fun← cn (suc n)))
+    ... | inj₁ x = cong suc ( ca-list=count-A n )
+    ... | inj₂ x = ca-list=count-A n 
 
     --  remove (ani i) from clist (c n)
     --
@@ -662,12 +662,12 @@ Countable-Bernstein A B C an cn fi gi is-A is-B = record {
     --
     a-list-ca : (cl : List C) → {i : ℕ} → (a : Any (_≡_ (g (f (fun← an i)))) cl )
         → suc (ca-list (a-list cl a)) ≡ ca-list cl
-    a-list-ca _ {i} (here {x} {cs} px) with is-A x
-    ... | yes0 y = refl
-    ... | no0 not = ⊥-elim ( not record { a = _ ; fa=c = px  } )
-    a-list-ca _  {i} (there {x} {cs} a) with is-A x
-    ... | yes0 y = cong suc ( a-list-ca cs {i} a )
-    ... | no0 not = a-list-ca cs {i} a 
+    a-list-ca _ {i} (here {x} {cs} px) with toSum ( is-A x)
+    ... | inj₁ y = refl
+    ... | inj₂ not = ⊥-elim ( not record { a = _ ; fa=c = px  } )
+    a-list-ca _  {i} (there {x} {cs} a) with toSum ( is-A x)
+    ... | inj₁ y = cong suc ( a-list-ca cs {i} a )
+    ... | inj₂ not = a-list-ca cs {i} a 
 
 
     any-cl : (i : ℕ) → (cl : List C) → Set
@@ -677,7 +677,7 @@ Countable-Bernstein A B C an cn fi gi is-A is-B = record {
     n<ca-list n = lem30 n (clist (c n)) ≤-refl (λ j le  → clist-any n j le ) where
          --
          --  we have ANY i on i ≤ n, so we can remove n element from clist (c n)
-         --  induction on n is no good, because (ani (suc n)) may happen in clist (c n)
+         --  induction on n is  no good, because (ani (suc n)) may happen in clist (c n)
          --  so we cannot recurse on n<ca-list itself.
          --
 
@@ -753,12 +753,12 @@ Countable-Bernstein A B C an cn fi gi is-A is-B = record {
          lem00 i zero ()
          lem00 i (suc j) lt = ≤-trans (count-B-mono (x<sy→x≤y lt) ) (lem01 j) where
              lem01 : (j : ℕ) → count-B j ≤ count-B (suc j)
-             lem01 zero with is-B (fun← cn (suc zero))
-             ... | yes0 isb = refl-≤s
-             ... | no0 nisb = ≤-refl
-             lem01 (suc n) with is-B (fun← cn (suc (suc n)))
-             ... | yes0 isb = refl-≤s
-             ... | no0 nisb = ≤-refl
+             lem01 zero with toSum ( is-B (fun← cn (suc zero)))
+             ... | inj₁ isb = refl-≤s
+             ... | inj₂ nisb = ≤-refl
+             lem01 (suc n) with toSum ( is-B (fun← cn (suc (suc n))))
+             ... | inj₁ isb = refl-≤s
+             ... | inj₂ nisb = ≤-refl
 
     lem01 : (n i : ℕ) → suc n ≤ count-B i → CountB n
     lem01 n i le = lem09 i (count-B i) le refl where
@@ -768,14 +768,14 @@ Countable-Bernstein A B C an cn fi gi is-A is-B = record {
         lem06 i j bi bj eq = lem08  where
             lem20 : (i j : ℕ) → i < j →  Is B C g (fun← cn i) → Is B C g (fun← cn j) → count-B j ≡ count-B i → ⊥
             lem20 zero zero () bi bj le
-            lem20 zero (suc j) i<j bi bj le with  is-B (fun← cn 0) in eq1 | is-B (fun← cn (suc j)) in eq2
-            ... | no0 nisc  | _ = ⊥-elim (nisc bi)
-            ... |  yes0 _ | no0 nisc = ⊥-elim (nisc bj)
-            ... | yes0 _ | yes0 _ = ⊥-elim ( nat-≤> lem25 a<sa) where
+            lem20 zero (suc j) i<j bi bj le with  toSum ( is-B (fun← cn 0)) in eq1 | toSum ( is-B (fun← cn (suc j))) in eq2
+            ... |  inj₂ nisc  | _ = ⊥-elim (nisc bi)
+            ... |  inj₁ _ |  inj₂ nisc = ⊥-elim (nisc bj)
+            ... | inj₁ _ | inj₁ _ = ⊥-elim ( nat-≤> lem25 a<sa) where
                  lem22 : 1 ≡ count-B 0
-                 lem22 with is-B (fun← cn 0) in eq1
-                 ... | yes0 _ = refl
-                 ... | no0 nisa = ⊥-elim ( nisa bi )
+                 lem22 with toSum (is-B (fun← cn 0) ) in eq1
+                 ... | inj₁ _ = refl
+                 ... |  inj₂ nisa = ⊥-elim ( nisa bi )
                  lem24 : count-B j ≡ 0
                  lem24 = cong pred le
                  lem25 : 1 ≤ 0
@@ -791,18 +791,18 @@ Countable-Bernstein A B C an cn fi gi is-A is-B = record {
                  --    cb i <  suc (cb i) < cb (suc i) ≤ cb j
                  --    suc (cb i) ≡ suc (cb j) → cb i ≡ cb j
                  lem22 : suc (count-B i) ≡ count-B (suc i)
-                 lem22 with is-B (fun← cn (suc i)) in eq1
-                 ... | yes0 _ = refl
-                 ... | no0 nisa = ⊥-elim ( nisa bi )
+                 lem22 with toSum (is-B (fun← cn (suc i))) in eq1
+                 ... | inj₁ _ = refl
+                 ... |  inj₂ nisa = ⊥-elim ( nisa bi )
                  lem23 : suc (count-B j) ≡ count-B (suc j)
-                 lem23 with is-B (fun← cn (suc j)) in eq1
-                 ... | yes0 _ = refl
-                 ... | no0 nisa = ⊥-elim ( nisa bj )
+                 lem23 with toSum (is-B (fun← cn (suc j)) ) in eq1
+                 ... | inj₁ _ = refl
+                 ... |  inj₂ nisa = ⊥-elim ( nisa bj )
                  lem24 : count-B i ≡ count-B j
-                 lem24 with  is-B (fun← cn (suc i)) in eq1 | is-B (fun← cn (suc j)) in eq2
-                 ... | no0 nisc  | _ = ⊥-elim (nisc bi)
-                 ... | yes0 _ | no0 nisc = ⊥-elim (nisc bj)
-                 ... | yes0 _ |  yes0 _ = sym (cong pred le)
+                 lem24 with  toSum ( is-B (fun← cn (suc i))) in eq1 | toSum ( is-B (fun← cn (suc j))) in eq2
+                 ... |  inj₂ nisc  | _ = ⊥-elim (nisc bi)
+                 ... | inj₁ _ |  inj₂ nisc = ⊥-elim (nisc bj)
+                 ... | inj₁ _ |  inj₁ _ = sym (cong pred le)
                  lem21 : suc (count-B i) ≤ count-B j
                  lem21 = begin
                      suc (count-B i) ≡⟨ lem22 ⟩
@@ -816,44 +816,44 @@ Countable-Bernstein A B C an cn fi gi is-A is-B = record {
             ... | tri> ¬a ¬b c₁ = ⊥-elim ( lem20 j i c₁ bj bi eq )
 
         lem07 : (n i : ℕ) → count-B i ≡ suc n → CountB n
-        lem07 n 0 eq with is-B (fun← cn 0)
-        ... | yes0 isb = lem13 where
+        lem07 n 0 eq with toSum (is-B (fun← cn 0))
+        ... | inj₁ isb = lem13 where
             cb1 = count-B 0
             lem14 : count-B 0 ≡ 1
-            lem14 with  is-B (fun← cn 0)
-            ... | yes0 _ = refl
-            ... | no0 ne = ⊥-elim (ne isb)
+            lem14 with  toSum (is-B (fun← cn 0))
+            ... | inj₁ _ = refl
+            ... |  inj₂ ne = ⊥-elim (ne isb)
             lem12 : (cb1 : ℕ) →  Is B C g (fun← cn cb1)  → 1 ≡ count-B cb1 → 0 ≡ cb1
             lem12 cb1 iscb1 cbeq = lem06 0 cb1 isb iscb1 (trans lem14 cbeq)
             lem13 : CountB n
             lem13 = record { b = Is.a isb ; cb = 0 ; b=cn = sym (Is.fa=c isb) ; cb=n = trans lem14 eq
                 ; cb-inject = λ cb1 iscb1 cb1eq → lem12 cb1 iscb1 (subst (λ k → k ≡ count-B cb1) lem14 cb1eq)   }
-        ... | no0 nisb = ⊥-elim ( nat-≡< eq (s≤s z≤n ) )
-        lem07 n (suc i) eq with is-B (fun← cn (suc i))
-        ... | yes0 isb = record { b = Is.a isb ; cb = suc i ; b=cn = sym (Is.fa=c isb) ; cb=n = trans lem14 eq
+        ... |  inj₂ nisb = ⊥-elim ( nat-≡< eq (s≤s z≤n ) )
+        lem07 n (suc i) eq with toSum (is-B (fun← cn (suc i)))
+        ... | inj₁ isb = record { b = Is.a isb ; cb = suc i ; b=cn = sym (Is.fa=c isb) ; cb=n = trans lem14 eq
                  ; cb-inject = λ cb1 iscb1 cb1eq → lem12 cb1 iscb1 (subst (λ k → k ≡ count-B cb1) lem14 cb1eq)   } where
             cbs = count-B (suc i)
             lem14 : count-B (suc i) ≡ suc (count-B i)
-            lem14 with  is-B (fun← cn (suc i))
-            ... | yes0 _ = refl
-            ... | no0 ne = ⊥-elim (ne isb)
+            lem14 with  toSum (is-B (fun← cn (suc i)))
+            ... | inj₁ _ = refl
+            ... |  inj₂ ne = ⊥-elim (ne isb)
             lem12 : (cb1 : ℕ) → Is B C g (fun← cn cb1) → suc (count-B i)  ≡ count-B cb1 → suc i ≡ cb1
             lem12 cb1 iscb1 cbeq = lem06 (suc i) cb1 isb iscb1 (trans lem14 cbeq)
-        ... | no0 nisb = lem07 n i eq
+        ... |  inj₂ nisb = lem07 n i eq
 
         -- starting from 0, if count B i ≡ suc n, this is it
 
         lem09 : (i j : ℕ) → suc n ≤ j → j ≡ count-B i →  CountB n
         lem09 0 (suc j) le eq with ≤-∨ le
         ... | case1 eq1 = lem07 n 0 (sym (trans eq1 eq ))
-        ... | case2 lt with is-B (fun← cn 0) in eq1
-        ... | yes0 isb = ⊥-elim ( nat-≤> (≤-trans lt (refl-≤≡ eq ) ) (s≤s (s≤s z≤n)) )
-        ... | no0 nisb = ⊥-elim (nat-≡< (sym eq) (s≤s z≤n))
+        ... | case2 lt with toSum (is-B (fun← cn 0)) in eq1
+        ... | inj₁ isb = ⊥-elim ( nat-≤> (≤-trans lt (refl-≤≡ eq ) ) (s≤s (s≤s z≤n)) )
+        ... |  inj₂ nisb = ⊥-elim (nat-≡< (sym eq) (s≤s z≤n))
         lem09 (suc i) (suc j) le eq with ≤-∨ le
         ... | case1 eq1 = lem07 n (suc i) (sym (trans eq1 eq ))
-        ... | case2 lt with is-B (fun← cn (suc i)) in eq1
-        ... | yes0 isb = lem09 i j (px≤py lt) (cong pred eq)
-        ... | no0 nisb = lem09 i (suc j) (≤-trans (px≤py lt) a≤sa) eq
+        ... | case2 lt with toSum (is-B (fun← cn (suc i))) in eq1
+        ... | inj₁ isb = lem09 i j (px≤py lt) (cong pred eq)
+        ... |  inj₂ nisb = lem09 i (suc j) (≤-trans (px≤py lt) a≤sa) eq
  
     bton : B → ℕ
     bton b = pred (count-B (fun→ cn (g b)))
@@ -881,12 +881,12 @@ Countable-Bernstein A B C an cn fi gi is-A is-B = record {
         lem20 : count-B (fun→ cn (InjectiveF.f gi b)) ≡ zero
         lem20 = eq1
         lem21 : (i : ℕ) → i ≡ fun→ cn (InjectiveF.f gi b) → 0 < count-B  i
-        lem21 0 eq with is-B (fun← cn 0) in eq1
-        ... | yes0 isb = ≤-refl
-        ... | no0 nisb = ⊥-elim ( nisb record { a = b ; fa=c = trans (sym (fiso← cn _)) (cong (fun← cn) (sym eq)) } )
-        lem21 (suc i) eq with is-B (fun← cn (suc i)) in eq2
-        ... | yes0 isb = s≤s z≤n
-        ... | no0 nisb = ⊥-elim ( nisb record { a = b ; fa=c = trans (sym (fiso← cn _)) (cong (fun← cn) (sym eq)) } )
+        lem21 0 eq with toSum ( is-B (fun← cn 0)) in eq1
+        ... | inj₁ isb = ≤-refl
+        ... |  inj₂ nisb = ⊥-elim ( nisb record { a = b ; fa=c = trans (sym (fiso← cn _)) (cong (fun← cn) (sym eq)) } )
+        lem21 (suc i) eq with toSum (is-B (fun← cn (suc i))) in eq2
+        ... | inj₁ isb = s≤s z≤n
+        ... |  inj₂ nisb = ⊥-elim ( nisb record { a = b ; fa=c = trans (sym (fiso← cn _)) (cong (fun← cn) (sym eq)) } )
     ... | suc n = begin
            CountB.b CB  ≡⟨ InjectiveF.inject gi (bi-inject→ cn (begin
               fun→ cn (g (CountB.b CB)) ≡⟨ cong (fun→ cn) (sym (CountB.b=cn CB)) ⟩
@@ -954,62 +954,62 @@ LMℕ A Ln = Countable-Bernstein (List A) (List (Maybe A)) (List A ∧ List Bool
    fi = record { f = f ; inject = f-inject  }
    gi : InjectiveF (List (Maybe A)) (List A ∧ List Bool )
    gi = record { f = g ; inject = g-inject }
-   dec0 : (c : List A ∧ List Bool) → Dec0 (Is (List A) (List A ∧ List Bool) (λ x → g (f x)) c)
-   dec0 ⟪ [] , [] ⟫ = yes0 record { a = [] ; fa=c = refl }
-   dec0 ⟪ h ∷ t , [] ⟫ = no0 ( lem00 ) where
+   dec0 : (c : List A ∧ List Bool) → Dec (Is (List A) (List A ∧ List Bool) (λ x → g (f x)) c)
+   dec0 ⟪ [] , [] ⟫ = yes record { a = [] ; fa=c = refl }
+   dec0 ⟪ h ∷ t , [] ⟫ =  no ( lem00 ) where
         lem00 : Is (List A) (List A ∧ List Bool) (λ x → g (f x)) ⟪ h ∷ t , [] ⟫ → ⊥
         lem00 record { a = [] ; fa=c = () }
         lem00 record { a = (x ∷ a) ; fa=c = () }
-   dec0 ⟪ [] , true ∷ bt ⟫ = no0 lem00 where
+   dec0 ⟪ [] , true ∷ bt ⟫ =  no lem00 where
         lem00 : Is (List A) (List A ∧ List Bool) (λ x → g (f x)) ⟪ [] , true ∷ bt ⟫ → ⊥
         lem00 record { a = [] ; fa=c = () }
-   dec0 ⟪ [] , false ∷ bt ⟫ = no0 lem00 where
+   dec0 ⟪ [] , false ∷ bt ⟫ =  no lem00 where
         lem00 : Is (List A) (List A ∧ List Bool) (λ x → g (f x)) ⟪ [] , false ∷ bt ⟫ → ⊥
         lem00 record { a = [] ; fa=c = () }
-   dec0 ⟪ h ∷ t , (true ∷ bt) ⟫ with dec0 ⟪ t , bt ⟫
-   ... | yes0 y = yes0 record { a = h ∷ Is.a y ; fa=c = cong₂ (λ j k → ⟪ h ∷ j , true ∷ k ⟫ ) (cong proj1 (Is.fa=c y)) (cong proj2 (Is.fa=c y))  }
-   ... | no0 n = no0 lem00  where
+   dec0 ⟪ h ∷ t , (true ∷ bt) ⟫ with toSum (dec0 ⟪ t , bt ⟫)
+   ... | inj₁ y = yes record { a = h ∷ Is.a y ; fa=c = cong₂ (λ j k → ⟪ h ∷ j , true ∷ k ⟫ ) (cong proj1 (Is.fa=c y)) (cong proj2 (Is.fa=c y))  }
+   ... |  inj₂ n =  no lem00  where
         lem00 : ¬ Is (List A) (List A ∧ List Bool) (λ x → g (f x)) ⟪ h ∷ t , true ∷ bt ⟫
         lem00 record { a = (x ∷ a) ; fa=c = eq } = ⊥-elim ( n record { a = a ; fa=c = ∧-unique lem01 lem02 } ) where
             lem01 : proj1 (g (f a)) ≡ t 
             lem01 = ∷-injectiveʳ ( cong proj1 eq )
             lem02 : proj2 (g (f a)) ≡ bt
             lem02 = ∷-injectiveʳ ( cong proj2 eq )
-   dec0 ⟪ (h ∷ t) , (false ∷ bt) ⟫ = no0 lem00 where
+   dec0 ⟪ (h ∷ t) , (false ∷ bt) ⟫ =  no lem00 where
         lem00 :  ¬ Is (List A) (List A ∧ List Bool) (λ x → g (f x)) ⟪ h ∷ t , false ∷ bt ⟫
         lem00 record { a = [] ; fa=c = () }
         lem00 record { a = (x ∷ a) ; fa=c = () }
 
-   dec1 : (c : List A ∧ List Bool) → Dec0 (Is (List (Maybe A)) (List A ∧ List Bool) g c)
-   dec1 ⟪ [] , [] ⟫ = yes0 record { a = [] ; fa=c = refl }
-   dec1 ⟪ h ∷ t , [] ⟫ = no0 lem00 where
+   dec1 : (c : List A ∧ List Bool) → Dec (Is (List (Maybe A)) (List A ∧ List Bool) g c)
+   dec1 ⟪ [] , [] ⟫ = yes record { a = [] ; fa=c = refl }
+   dec1 ⟪ h ∷ t , [] ⟫ = no lem00 where
         lem00 :  ¬ Is (List (Maybe A)) (List A ∧ List Bool) g ⟪ h ∷ t , [] ⟫
         lem00 record { a = (just x ∷ a) ; fa=c = () }
         lem00 record { a = (nothing ∷ a) ; fa=c = () }
-   dec1 ⟪ [] , true ∷ bt ⟫ = no0 lem00 where
+   dec1 ⟪ [] , true ∷ bt ⟫ =  no lem00 where
         lem00 : ¬ Is (List (Maybe A)) (List A ∧ List Bool) g ⟪ [] , true ∷ bt ⟫
         lem00 record { a = (just x ∷ a) ; fa=c = () }
         lem00 record { a = (nothing ∷ a) ; fa=c = () }
-   dec1 ⟪ [] , false ∷ bt ⟫ with dec1 ⟪ [] , bt ⟫
-   ... | yes0 record { a = a ; fa=c = fa=c } = yes0 record { a = nothing ∷ a ; fa=c = cong₂ (λ j k → ⟪ j , false ∷ k ⟫) (cong proj1 fa=c) (cong proj2 fa=c) }
-   ... | no0 n = no0 lem00 where
+   dec1 ⟪ [] , false ∷ bt ⟫ with toSum (dec1 ⟪ [] , bt ⟫)
+   ... | inj₁ record { a = a ; fa=c = fa=c } = yes  record { a = nothing ∷ a ; fa=c = cong₂ (λ j k → ⟪ j , false ∷ k ⟫) (cong proj1 fa=c) (cong proj2 fa=c) }
+   ... |  inj₂ n =  no lem00 where
         lem00 : ¬ Is (List (Maybe A)) (List A ∧ List Bool) g ⟪ [] , false ∷ bt ⟫
         lem00 record { a = (nothing ∷ a) ; fa=c = eq } = n record { a = a ; fa=c = cong₂ (λ j k → ⟪ j , k ⟫) (cong proj1 eq) lem01 } where
             lem01 : proj2 (g a) ≡ bt
             lem01 with cong proj2 eq
             ... | eq = ∷-injectiveʳ eq
-   dec1 ⟪ h ∷ t , true ∷ bt ⟫ with dec1 ⟪ t , bt ⟫
-   ... | yes0 y = yes0 record { a = just h ∷ Is.a y ; fa=c = cong₂ (λ j k → ⟪ h ∷ j , true ∷ k ⟫ ) (cong proj1 (Is.fa=c y)) (cong proj2 (Is.fa=c y))   }
-   ... | no0 n = no0 lem00 where
+   dec1 ⟪ h ∷ t , true ∷ bt ⟫ with toSum (dec1 ⟪ t , bt ⟫)
+   ... | inj₁ y = yes record { a = just h ∷ Is.a y ; fa=c = cong₂ (λ j k → ⟪ h ∷ j , true ∷ k ⟫ ) (cong proj1 (Is.fa=c y)) (cong proj2 (Is.fa=c y))   }
+   ... |  inj₂ n =  no lem00 where
         lem00 : ¬ Is (List (Maybe A)) (List A ∧ List Bool) g ⟪ h ∷ t , true ∷ bt ⟫
         lem00 record { a = (just x ∷ a) ; fa=c = eq } = n record { a = a ; fa=c = ∧-unique lem01 lem02 } where
             lem01 : proj1 (g a) ≡ t
             lem01 = ∷-injectiveʳ (cong proj1 eq)
             lem02 : proj2 (g a) ≡ bt
             lem02 = ∷-injectiveʳ (cong proj2 eq)
-   dec1 ⟪ h ∷ t , false ∷ bt ⟫  with dec1 ⟪ h ∷ t , bt ⟫
-   ... | yes0 record { a = a ; fa=c = fa=c } = yes0 record { a = nothing ∷ a ; fa=c = cong₂ (λ j k → ⟪ j , false ∷ k ⟫) (cong proj1 fa=c) (cong proj2 fa=c) }
-   ... | no0 n = no0 lem00 where
+   dec1 ⟪ h ∷ t , false ∷ bt ⟫  with toSum (dec1 ⟪ h ∷ t , bt ⟫)
+   ... | inj₁ record { a = a ; fa=c = fa=c } = yes record { a = nothing ∷ a ; fa=c = cong₂ (λ j k → ⟪ j , false ∷ k ⟫) (cong proj1 fa=c) (cong proj2 fa=c) }
+   ... |  inj₂ n =  no lem00 where
         lem00 : ¬ Is (List (Maybe A)) (List A ∧ List Bool) g ⟪ h ∷ t , false ∷ bt ⟫
         lem00 record { a = (nothing ∷ a) ; fa=c = eq } = n record { a = a ; fa=c = cong₂ (λ j k → ⟪ j , k ⟫) (cong proj1 eq) lem01 } where
             lem01 : proj2 (g a) ≡ bt
