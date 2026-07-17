@@ -165,8 +165,8 @@ OD→ZFC   = record {
          minimal x ne = min (Min2 (* (a-choice (cx {x} ne) )) x ( oo∋ (is-in (cx ne))) )
          x∋minimal : (x : HOD  ) → ( ne : ¬ (x =h= od∅ ) ) → odef x ( & ( minimal x ne ) )
          x∋minimal x ne = x∋min (Min2 (* (a-choice (cx {x} ne) )) x ( oo∋ (is-in (cx ne))) )
-         minimal-1 : (x : HOD  ) → ( ne : ¬ (x =h= od∅ ) ) → (y : HOD ) → ¬ ( odef (minimal x ne) (& y)) ∧ (odef x (&  y) )
-         minimal-1 x ne y = min-empty (Min2 (* (a-choice (cx ne) )) x ( oo∋ (is-in (cx ne)))) y
+         is-minimal : (x : HOD  ) → ( ne : ¬ (x =h= od∅ ) ) → (y : HOD ) → ¬ ( odef (minimal x ne) (& y)) ∧ (odef x (&  y) )
+         is-minimal x ne y = min-empty (Min2 (* (a-choice (cx ne) )) x ( oo∋ (is-in (cx ne)))) y
 
 
 

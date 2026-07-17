@@ -24,8 +24,8 @@ open OrdUtil O
 
 -- Ordinal Definable Set
 
-open HODBase.HOD 
-open HODBase.OD 
+open HODBase.HOD
+open HODBase.OD
 
 open _∧_
 open _∨_
@@ -33,12 +33,12 @@ open Bool
 
 open  HODBase._==_
 
-open HODBase.ODAxiom HODAxiom  
+open HODBase.ODAxiom HODAxiom
 
-HOD =  HODBase.HOD O 
-OD  =  HODBase.OD O 
-Ords  =  HODBase.Ords O 
-_==_  =  HODBase._==_ O 
+HOD =  HODBase.HOD O
+OD  =  HODBase.OD O
+Ords  =  HODBase.Ords O
+_==_  =  HODBase._==_ O
 ==-refl = HODBase.==-refl  O
 ==-trans = HODBase.==-trans O
 ==-sym = HODBase.==-sym O
@@ -80,18 +80,6 @@ odef A x = def ( od A ) x
 _∋_ : ( a x : HOD  ) → Set n
 _∋_  a x  = odef a ( & x )
 
-                                                            
-record AxiomOfChoice : Set (suc n) where
- field                      
-  -- mimimul and x∋minimal is an Axiom of choice                
-  minimal : (x : HOD  ) → ¬ (od x == od od∅ )→ HOD                                
-  -- this should be ¬ (x =h= od∅ )→ ∃ ox → x ∋ Ord ox  ( minimum of x )
-  x∋minimal : (x : HOD  ) → ( ne : ¬ (od x == od od∅ ) ) → odef x ( & ( minimal x ne ) )
-  -- minimality (proved by ε-induction with LEM)
-  minimal-1 : (x : HOD  ) → ( ne : ¬ (od x == od od∅ ) ) → (y : HOD ) → ¬ ( odef (minimal x ne) (& y)) ∧ (odef x (&  y) )
-
--- _c<_ : ( x a : HOD  ) → Set n
--- x c< a = a ∋ x
 
 d→∋ : ( a : HOD  ) { x : Ordinal} → odef a x → a ∋ (* x)
 d→∋ a lt = subst (λ k → odef a k ) (sym &iso) lt
@@ -153,14 +141,14 @@ o∅==od∅  = lemma where
      lemma = record { eq→ = lemma0 ; eq← = lemma1 }
 
 ord-od∅ : & (od∅ ) ≡ o∅
-ord-od∅  = trans (==→o≡ (==-sym o∅==od∅)) &iso  
+ord-od∅  = trans (==→o≡ (==-sym o∅==od∅)) &iso
 
 ≡o∅→=od∅  : {x : HOD} → & x ≡ o∅ → od x == od od∅
 ≡o∅→=od∅ {x} eq = record { eq→ = λ {y} lt → ⊥-elim ( ¬x<0 {y} (subst₂ (λ j k → j o< k ) &iso eq ( c<→o< {* y} {x} (d→∋ x lt))))
     ; eq← = λ {y} lt → ⊥-elim ( ¬x<0 lt )}
 
 =od∅→≡o∅  : {x : HOD} → od x == od od∅ → & x ≡ o∅
-=od∅→≡o∅ {x} eq = trans (==→o≡ {x} {od∅} eq)  ord-od∅ 
+=od∅→≡o∅ {x} eq = trans (==→o≡ {x} {od∅} eq)  ord-od∅
 
 ≡od∅→=od∅  : {x : HOD} → x ≡ od∅ → od x == od od∅
 ≡od∅→=od∅ {x} eq = ≡o∅→=od∅ (subst (λ k → & x  ≡ k ) ord-od∅ ( cong & eq ) )
@@ -173,11 +161,17 @@ eq← ∅0 {w} lt = lift (¬x<0 lt)
 ∅<  {x} {y} d eq with eq→ (==-trans eq (==-sym ∅0) ) d
 ∅<  {x} {y} d eq | lift ()
 
-¬x∋y→x≡od∅  : { x : HOD  } → ({y : Ordinal } → ¬ odef x y ) → (& x) ≡ & od∅ 
+¬x∋y→x≡od∅  : { x : HOD  } → ({y : Ordinal } → ¬ odef x y ) → (& x) ≡ & od∅
 ¬x∋y→x≡od∅ {x} nxy = ==→o≡ record { eq→ = λ {y} lt → ⊥-elim (nxy lt) ; eq← = λ {y} lt → ⊥-elim (¬x<0 lt)  }
 
 0<P→ne  : { x : HOD  } → o∅ o< & x → ¬ (  od x  == od od∅  )
 0<P→ne {x} 0<x eq = ⊥-elim ( o<¬≡ (sym (=od∅→≡o∅ eq)) 0<x )
+
+ne→o<  : { x : HOD  } → ¬ (  od x  == od od∅  ) → o∅ o< & x 
+ne→o< {x} ne with trio< o∅ (& x)
+... | tri< a ¬b ¬c = a
+... | tri≈ ¬a b ¬c = ⊥-elim ( ne (≡o∅→=od∅ (sym b) ))
+... | tri> ¬a ¬b c = ⊥-elim (  ¬x<0 c  )
 
 ∈∅< : { x : HOD  } {y : Ordinal } → odef x y → o∅  o< (& x)
 ∈∅<  {x} {y} d with trio< o∅ (& x)
@@ -196,6 +190,30 @@ is-o∅ x with trio< x o∅
 is-o∅ x | tri< a ¬b ¬c = no0 ¬b
 is-o∅ x | tri≈ ¬a b ¬c = yes0 b
 is-o∅ x | tri> ¬a ¬b c = no0 ¬b
+
+record AxiomOfChoice : Set (suc n) where
+ field
+  minimal-o< : (x : HOD  ) → o∅ o< & x  → Ordinal
+  x∋minimal-o< : (x : HOD  ) → ( ne :  o∅ o< & x ) → odef x ( minimal-o< x ne ) 
+  is-minimal-o< : (x : HOD  ) → ( ne :  o∅ o< & x ) → (y : HOD ) → ¬ ( odef (* (minimal-o< x ne)) (& y)) ∧ (odef x (&  y) )
+  -- mimimul and x∋minimal is an Axiom of choice
+ minimal : (x : HOD  ) → ¬ (od x == od od∅ ) → HOD
+ minimal x ne = * ( minimal-o< x (ne→o< ne) )
+ minimal-o<-cong : (x : HOD  ) → (ne ne1 :  o∅ o< & x ) →  minimal-o< x ne ≡ minimal-o< x ne1
+ minimal-o<-cong x ne ne1 = cong (λ k → minimal-o< x k ) (o<-irr {o∅} {& x} {ne} {ne1} )
+ minimal-cong : (x : HOD  ) → (ne ne1 : ¬ (od x == od od∅ ) ) →  od (minimal x ne) == od (minimal x ne1)
+ minimal-cong x ne ne1 = o≡→==  (minimal-o<-cong x (ne→o< ne) (ne→o< ne1) ) 
+ x∋minimal : (x : HOD  ) → ( ne : ¬ (od x == od od∅ ) ) → odef x ( & ( minimal x ne ) )
+ x∋minimal x ne = subst ( λ k → odef x k) (sym &iso) ( x∋minimal-o< x (ne→o< ne)  )
+ is-minimal : (x : HOD  ) → ( ne : ¬ (od x == od od∅ ) ) → (y : HOD ) → ¬ ( odef (minimal x ne) (& y)) ∧ (odef x (&  y) )
+ is-minimal x ne = is-minimal-o< x (ne→o< ne)
+
+-- we cannot say
+-- min-cong : (x y : HOD ) → ( nex : ¬ (od x == od od∅ ) ) → ( ney : ¬ (od y == od od∅ ) ) → od x == od y → od (minimal x nex) == od (minimal y ney )
+-- min-cong x y nex ney x=y = ?
+
+-- _c<_ : ( x a : HOD  ) → Set n
+-- x c< a = a ∋ x
 
 odef< : {b : Ordinal } { A : HOD } → odef A b → b o< & A
 odef< {b} {A} ab = subst (λ k → k o< & A) &iso ( c<→o< (subst (λ k → odef A k ) (sym &iso ) ab))
@@ -238,7 +256,7 @@ infixr  220 _⊆_
    →   {x y : HOD  }   → def (od y) ( & x ) → & x o< & y
 ⊆→o≤→c<→o< peq ⊆→o≤ {x} {y} y∋x with trio< (& x) (& y)
 ⊆→o≤→c<→o< peq ⊆→o≤ {x} {y} y∋x | tri< a ¬b ¬c = a
-⊆→o≤→c<→o< peq ⊆→o≤ {x} {y} y∋x | tri≈ ¬a b ¬c = ⊥-elim ( o<¬≡ (peq {x}) (pair<y (eq← (ord→== b) y∋x ) ) ) 
+⊆→o≤→c<→o< peq ⊆→o≤ {x} {y} y∋x | tri≈ ¬a b ¬c = ⊥-elim ( o<¬≡ (peq {x}) (pair<y (eq← (ord→== b) y∋x ) ) )
 ⊆→o≤→c<→o< peq ⊆→o≤ {x} {y} y∋x | tri> ¬a ¬b c =
   ⊥-elim ( o<> (⊆→o≤ {x , x} {y} y⊆x,x ) lemma1 ) where
     lemma : {z : Ordinal} → (z ≡ & x) ∨ (z ≡ & x) → & x ≡ z
@@ -263,9 +281,9 @@ infixr  220 _⊆_
          ... | tri> ¬a ¬b c = ⊥-elim (o≤> (ordtrans (c<→o< lt)  y≤x)  c )
          ... | tri≈ ¬a b ¬c with osuc-≡< y≤x
          ... | case1 y=x = subst (λ k → & y₁ o< k ) y=x (c<→o< lt)
-         ... | case2 y<x = ⊥-elim ( o<¬≡ b ( (ordtrans (c<→o< lt) y<x)  )) 
+         ... | case2 y<x = ⊥-elim ( o<¬≡ b ( (ordtrans (c<→o< lt) y<x)  ))
      ε-induction-hod : (ox : Ordinal) { oy : Ordinal } → oy o< ox → (y : HOD) → & y o< osuc oy  → ψ y
-     ε-induction-hod ox {oy} lt = TransFinite {λ oy → (y : HOD) → & y o< osuc oy →  ψ y} induction2 oy 
+     ε-induction-hod ox {oy} lt = TransFinite {λ oy → (y : HOD) → & y o< osuc oy →  ψ y} induction2 oy
 
 -- we cannot prove this...
 -- ε-induction0 : { ψ : HOD  → Set n}
@@ -293,9 +311,9 @@ Union U = record { od = record { def = λ x → Own U x } ; odmax = osuc (& U) ;
         umax {y} uy = o<→≤ ( ordtrans (odef< (Own.ox uy)) (subst (λ k → k o< & U) (sym &iso) umax1) ) where
             umax1 : Own.owner uy o< & U
             umax1 = odef< (Own.ao uy)
-         
+
 union→ :  (X z u : HOD) → (X ∋ u) ∧ (u ∋ z) → Union X ∋ z
-union→ X z u xx =  record { owner = & u ; ao = proj1 xx ; ox = eq← *iso (proj2 xx) } 
+union→ X z u xx =  record { owner = & u ; ao = proj1 xx ; ox = eq← *iso (proj2 xx) }
 union← :  (X z : HOD) (X∋z : Union X ∋ z) →  ¬  ( (u : HOD ) → ¬ ((X ∋  u) ∧ (u ∋ z )))
 union← X z UX∋z not = ⊥-elim ( not (* (Own.owner UX∋z)) ⟪ subst (λ k → odef X k) (sym &iso) ( Own.ao UX∋z) , Own.ox UX∋z ⟫  )
 
@@ -308,28 +326,28 @@ union← X z UX∋z not = ⊥-elim ( not (* (Own.owner UX∋z)) ⟪ subst (λ k 
 
 record RCod (COD : HOD) (ψ : HOD → HOD)  : Set (suc n) where
  field
-     ≤COD : ∀ {x : HOD } → ψ x ⊆ COD 
-     ψ-eq : ∀ {x y : HOD } → od x == od y  → ψ x =h= ψ y 
+     ≤COD : ∀ {x : HOD } → ψ x ⊆ COD
+     ψ-eq : ∀ {x y : HOD } → od x == od y  → ψ x =h= ψ y
 
 record Replaced (A : HOD) (ψ : Ordinal → Ordinal ) (x : Ordinal ) : Set n where
    field
       z : Ordinal
       az : odef A z
-      x=ψz  : x ≡ ψ z 
+      x=ψz  : x ≡ ψ z
 
 Replace : (D : HOD) → (ψ : HOD  → HOD) → {C : HOD} → RCod C ψ  → HOD
 Replace X ψ {C} rc = record { od = record { def = λ x → Replaced X (λ z → & (ψ (* z))) x  } ; odmax = osuc (& C)
    ; <odmax = rmax< } where
         rmax< :  {y : Ordinal} → Replaced X (λ z → & (ψ (* z))) y  → y o< osuc (& C)
-        rmax< {y} lt = subst (λ k → k o< osuc (& C)) r01 ( ⊆→o≤ (RCod.≤COD rc) ) where 
+        rmax< {y} lt = subst (λ k → k o< osuc (& C)) r01 ( ⊆→o≤ (RCod.≤COD rc) ) where
             r01 : & (ψ ( * (Replaced.z lt ) )) ≡ y
             r01 = sym (Replaced.x=ψz lt )
 
 replacement← : {ψ : HOD → HOD} (X x : HOD) →  X ∋ x → {C : HOD} → (rc : RCod C ψ) → Replace X ψ rc ∋ ψ x
 replacement← {ψ} X x lt {C} rc = record { z = & x ; az = lt  ; x=ψz = ==→o≡ (RCod.ψ-eq rc (==-sym *iso) ) }
-replacement→ : {ψ : HOD → HOD} (X x : HOD) → {C : HOD} → (rc : RCod C ψ ) → (lt : Replace X ψ rc ∋ x) 
+replacement→ : {ψ : HOD → HOD} (X x : HOD) → {C : HOD} → (rc : RCod C ψ ) → (lt : Replace X ψ rc ∋ x)
    →  ¬ ( (y : HOD) → ¬ (x =h= ψ y))
-replacement→ {ψ} X x {C} rc lt eq = eq (* (Replaced.z lt)) (ord→== (Replaced.x=ψz lt)) 
+replacement→ {ψ} X x {C} rc lt eq = eq (* (Replaced.z lt)) (ord→== (Replaced.x=ψz lt))
 
 --
 -- If we have LEM, Replace' is equivalent to Replace
@@ -339,7 +357,7 @@ replacement→ {ψ} X x {C} rc lt eq = eq (* (Replaced.z lt)) (ord→== (Replace
 
 record RXCod (X COD : HOD) (ψ : (x : HOD) → X ∋ x → HOD)  : Set (suc n) where
  field
-     ≤COD : ∀ {x : HOD } → (lt : X ∋ x) → ψ x lt ⊆ COD 
+     ≤COD : ∀ {x : HOD } → (lt : X ∋ x) → ψ x lt ⊆ COD
      ψ-eq : ∀ {x : HOD } → (lt lt1 : X ∋ x) → ψ x lt =h= ψ x lt1
 
 record Replaced1 (A : HOD) (ψ : (x : Ordinal ) → odef A x → Ordinal ) (x : Ordinal ) : Set n where
@@ -351,26 +369,26 @@ record Replaced1 (A : HOD) (ψ : (x : Ordinal ) → odef A x → Ordinal ) (x : 
 Replace' : (X : HOD) → (ψ : (x : HOD) → X ∋ x → HOD) → {C : HOD} → RXCod X C ψ  → HOD
 Replace' X ψ {C} rc = record { od = record { def = λ x → Replaced1 X (λ z xz → & (ψ (* z) (subst (λ k → odef X k) (sym &iso) xz) )) x  } ; odmax = osuc (& C) ; <odmax = rmax< } where
         rmax< :  {y : Ordinal} → Replaced1 X (λ z xz → & (ψ (* z) (subst (λ k → odef X k) (sym &iso) xz) )) y  → y o< osuc (& C)
-        rmax< {y} lt = subst (λ k → k o< osuc (& C)) r01 ( ⊆→o≤ (RXCod.≤COD rc (subst (λ k → odef X k) (sym &iso) (Replaced1.az lt) )))  where 
+        rmax< {y} lt = subst (λ k → k o< osuc (& C)) r01 ( ⊆→o≤ (RXCod.≤COD rc (subst (λ k → odef X k) (sym &iso) (Replaced1.az lt) )))  where
             r01 : & (ψ ( * (Replaced1.z lt ) ) (subst (λ k → odef X k) (sym &iso) (Replaced1.az lt) )) ≡ y
             r01 = sym (Replaced1.x=ψz lt )
 
 cod-conv : (X : HOD) → (ψ : (x : HOD) → X ∋ x → HOD) → {C : HOD} → (rc : RXCod X C ψ   )
-      → RXCod (* (& X)) C (λ y xy → ψ y (eq→ *iso xy)) 
-cod-conv X ψ {C} rc = record { ≤COD = λ {x} lt → RXCod.≤COD rc (eq→ *iso lt ) 
-        ; ψ-eq = λ {x} lt lt1 → RXCod.ψ-eq rc (eq→ *iso lt) (eq→ *iso lt1) } 
+      → RXCod (* (& X)) C (λ y xy → ψ y (eq→ *iso xy))
+cod-conv X ψ {C} rc = record { ≤COD = λ {x} lt → RXCod.≤COD rc (eq→ *iso lt )
+        ; ψ-eq = λ {x} lt lt1 → RXCod.ψ-eq rc (eq→ *iso lt) (eq→ *iso lt1) }
 
 Replace'-iso : {X Y : HOD} → {fx : (x : HOD) → X ∋ x → HOD} {fy : (x : HOD) → Y ∋ x → HOD}
     → {CX : HOD} → (rcx : RXCod X CX fx  ) → {CY : HOD} → (rcy : RXCod Y CY fy   )
       → X ≡ Y →  ( (x :  HOD) → (xx : X ∋ x ) → (yy : Y ∋ x ) → fx _ xx ≡ fy _ yy )
       → od (Replace' X fx rcx ) == od (Replace' Y fy rcy)
 Replace'-iso {X} {X} {fx} {fy} _ _ refl eq  = record { eq→ = ri0 ; eq← = ri1 } where
-     ri0 : {x : Ordinal} → Replaced1 X (λ z xz → & (fx (* z) (subst (odef X) (sym &iso) xz))) x 
+     ri0 : {x : Ordinal} → Replaced1 X (λ z xz → & (fx (* z) (subst (odef X) (sym &iso) xz))) x
                          → Replaced1 X (λ z xz → & (fy (* z) (subst (odef X) (sym &iso) xz))) x
      ri0 {x} record { z = z ; az = az ; x=ψz = x=ψz } = record { z = z ; az = az ; x=ψz = trans x=ψz (cong (&) ( eq _ xz xz ))  } where
          xz : X ∋ * z
          xz = subst (λ k → odef X k ) (sym &iso) az
-     ri1 : {x : Ordinal} → Replaced1 X (λ z xz → & (fy (* z) (subst (odef X) (sym &iso) xz))) x 
+     ri1 : {x : Ordinal} → Replaced1 X (λ z xz → & (fy (* z) (subst (odef X) (sym &iso) xz))) x
                          → Replaced1 X (λ z xz → & (fx (* z) (subst (odef X) (sym &iso) xz))) x
      ri1 {x} record { z = z ; az = az ; x=ψz = x=ψz } = record { z = z ; az = az ; x=ψz = trans x=ψz (cong (&) (sym ( eq _ xz xz )))  } where
          xz : X ∋ * z
@@ -383,19 +401,19 @@ Replace'-iso1 X ψ rc = record { eq→ = ri0 ; eq← = ri1 } where
       ri0 : {x : Ordinal} → Replaced1 (* (& X))
             (λ z xz → & (ψ (* z) (eq→ *iso (subst (odef (* (& X))) (sym &iso) xz)))) x →
             Replaced1 X (λ z xz → & (ψ (* z) (subst (odef X) (sym &iso) xz))) x
-      ri0 {x} record { z = z ; az = az ; x=ψz = x=ψz } = record { z = z ; az = eq→  *iso az 
-          ; x=ψz = trans x=ψz (==→o≡ (RXCod.ψ-eq rc _ _ )) } 
-      ri1 : {x : Ordinal} → 
+      ri0 {x} record { z = z ; az = az ; x=ψz = x=ψz } = record { z = z ; az = eq→  *iso az
+          ; x=ψz = trans x=ψz (==→o≡ (RXCod.ψ-eq rc _ _ )) }
+      ri1 : {x : Ordinal} →
             Replaced1 X (λ z xz → & (ψ (* z) (subst (odef X) (sym &iso) xz))) x →
-              Replaced1 (* (& X)) (λ z xz → & (ψ (* z) (eq→ *iso (subst (odef (* (& X))) (sym &iso) xz)))) x 
-      ri1 {x} record { z = z ; az = az ; x=ψz = x=ψz } = record { z = z ; az = eq←  *iso az 
-          ; x=ψz = trans x=ψz (==→o≡  (RXCod.ψ-eq rc _ _ ))  } 
+              Replaced1 (* (& X)) (λ z xz → & (ψ (* z) (eq→ *iso (subst (odef (* (& X))) (sym &iso) xz)))) x
+      ri1 {x} record { z = z ; az = az ; x=ψz = x=ψz } = record { z = z ; az = eq←  *iso az
+          ; x=ψz = trans x=ψz (==→o≡  (RXCod.ψ-eq rc _ _ ))  }
 
 _∈_ : ( A B : HOD  ) → Set n
 A ∈ B = B ∋ A
 
 Power : HOD  → HOD
-Power A =  record { od = record { def = λ x → ( z : Ordinal) → odef (* x) z → odef A z  } ; odmax = osuc (& A) 
+Power A =  record { od = record { def = λ x → ( z : Ordinal) → odef (* x) z → odef A z  } ; odmax = osuc (& A)
        ; <odmax = p00  } where
    p00 :  {y : Ordinal} → ((z : Ordinal) → odef (* y) z → odef A z) → y o< osuc (& A)
    p00 {y} y⊆A = p01 where
@@ -412,7 +430,7 @@ Power∋∅ : {S : HOD} → odef (Power S) o∅
 Power∋∅ z xz = ⊥-elim (¬x<0 ( eq→ o∅==od∅ xz)  )
 
 Intersection : (X : HOD ) → HOD   -- ∩ X
-Intersection X = record { od = record { def = λ x → (x o≤ & X ) ∧ ( {y : Ordinal} → odef X y → odef (* y) x )} ; odmax = osuc (& X) ; <odmax = λ lt → proj1 lt } 
+Intersection X = record { od = record { def = λ x → (x o≤ & X ) ∧ ( {y : Ordinal} → odef X y → odef (* y) x )} ; odmax = osuc (& X) ; <odmax = λ lt → proj1 lt }
 
 empty : (x : HOD  ) → ¬  (od∅ ∋ x)
 empty x = ¬x<0
@@ -434,7 +452,7 @@ data Omega-d  : ( x : Ordinal  ) → Set n where
 --
 
 Omega-od : OD
-Omega-od = record { def = λ x → Omega-d x } 
+Omega-od = record { def = λ x → Omega-d x }
 
 o∅<x : {x : Ordinal} → o∅ o≤ x
 o∅<x {x} with trio< o∅ x
@@ -448,13 +466,13 @@ o∅<x {x} with trio< o∅ x
     lemma = record { owner = _ ; ao = case2 refl ; ox = eq← *iso (subst (λ k → odef (x , x)  k) (sym &iso) (case1 refl)) }
 
 ux-2cases : {x y : HOD } → Union ( x , ( x ,  x)) ∋ y → ( & x ≡ & y ) ∨ ( x ∋ y )
-ux-2cases {x} {y} record { owner = owner ; ao = (case1 eq) ; ox = ox } 
+ux-2cases {x} {y} record { owner = owner ; ao = (case1 eq) ; ox = ox }
     = case2 (eq→ *iso (subst (λ k → odef k (& y)) (cong (*) eq)  ox ))
 ux-2cases {x} {y} record { owner = owner ; ao = (case2 eq) ; ox = ox } with eq→ *iso (subst (λ k → odef k (& y))  (cong (*) eq) ox)
 ... | case1 y=x = case1 (sym y=x)
 ... | case2 y=x = case1 (sym y=x)
 
-ux-transitve  : {x y : HOD} → x ∋ y →  Union ( x , ( x ,  x)) ∋ y 
+ux-transitve  : {x y : HOD} → x ∋ y →  Union ( x , ( x ,  x)) ∋ y
 ux-transitve {x} {y} ox  = record { owner = _ ; ao = case1 refl ; ox = eq← *iso ox }
 
 --
@@ -465,21 +483,21 @@ ux-transitve {x} {y} ox  = record { owner = _ ; ao = case1 refl ; ox = eq← *is
 --
 record ODAxiom-ho< : Set (suc n) where
  field
-    omega : Ordinal  
+    omega : Ordinal
     ho< : {x : Ordinal } → Omega-d x →  x o< omega
 
 -- postulate
---    odaxion-ho< : ODAxiom-ho< 
+--    odaxion-ho< : ODAxiom-ho<
 
 -- open ODAxiom-ho< odaxion-ho<
 
 Omega : ODAxiom-ho< → HOD
-Omega ho< = record { od = record { def = λ x → Omega-d x } ; odmax = ODAxiom-ho<.omega ho< ; <odmax = λ lt → ODAxiom-ho<.ho< ho< lt }  
+Omega ho< = record { od = record { def = λ x → Omega-d x } ; odmax = ODAxiom-ho<.omega ho< ; <odmax = λ lt → ODAxiom-ho<.ho< ho< lt }
 
 infinity∅ : (ho< : ODAxiom-ho<) →  Omega ho<  ∋ od∅
 infinity∅ ho< = subst (λ k → odef (Omega ho<) k ) lemma iφ where
     lemma : o∅ ≡ & od∅
-    lemma =  sym ord-od∅ 
+    lemma =  sym ord-od∅
 
 Omega-iso : {x : HOD } →  od (Union (* (& x) , (* (& x) , * (& x)))) == od (Union (x , (x , x)))
 Omega-iso {x} = record { eq→ = lemma2 ; eq← = lemma3 } where
@@ -488,18 +506,18 @@ Omega-iso {x} = record { eq→ = lemma2 ; eq← = lemma3 } where
       lemma4 : owner ≡ & x
       lemma4 = trans ao ( ==→o≡ *iso )
   lemma2 {y} record { owner = owner ; ao = case2 ao ; ox = ox } = record { owner = owner ; ao = case2 lemma4 ; ox = ox }  where
-      lemma4 : owner ≡ & (x , x) 
+      lemma4 : owner ≡ & (x , x)
       lemma4 = trans ao ( ==→o≡ record { eq→ = lemma5 _ ; eq← = lemma6 _ } ) where
           lemma5 : (x₁ : Ordinal) → (x₁ ≡ & (* (& x))) ∨ (x₁ ≡ & (* (& x))) → (x₁ ≡ & x) ∨ (x₁ ≡ & x)
           lemma5 y (case1 eq) = case1 (trans eq (sym (==→o≡ (==-sym *iso) ) ))
           lemma5 y (case2 eq) = case1 (trans eq (sym (==→o≡ (==-sym *iso) ) ))
-          lemma6 : (x₁ : Ordinal) → (x₁ ≡ & x) ∨ (x₁ ≡ & x) → (x₁ ≡ & (* (& x))) ∨ (x₁ ≡ & (* (& x))) 
+          lemma6 : (x₁ : Ordinal) → (x₁ ≡ & x) ∨ (x₁ ≡ & x) → (x₁ ≡ & (* (& x))) ∨ (x₁ ≡ & (* (& x)))
           lemma6 y (case1 eq) = case1 (trans eq ((==→o≡ (==-sym *iso) ) ))
           lemma6 y (case2 eq) = case1 (trans eq ((==→o≡ (==-sym *iso) ) ))
   lemma3 :  {y : Ordinal}  → Own (x , (x , x)) y → Own (* (& x) , (* (& x) , * (& x))) y
-  lemma3 {y} record { owner = owner ; ao = (case1 ao) ; ox = ox } = record { owner = owner 
+  lemma3 {y} record { owner = owner ; ao = (case1 ao) ; ox = ox } = record { owner = owner
         ; ao = case1 (trans ao (==→o≡ (==-sym *iso) )) ; ox = ox }
-  lemma3 {y} record { owner = owner ; ao = (case2 ao) ; ox = ox } = record { owner = owner 
+  lemma3 {y} record { owner = owner ; ao = (case2 ao) ; ox = ox } = record { owner = owner
         ; ao = case2 (trans ao (==→o≡ record { eq→ = lemma5 _ ; eq← = lemma4 _  }))  ; ox = ox } where
        lemma4 : (x₁ : Ordinal) → (x₁ ≡ & (* (& x))) ∨ (x₁ ≡ & (* (& x))) → (x₁ ≡ & x) ∨ (x₁ ≡ & x)
        lemma4 y (case1 eq) = case1 ( trans eq (sym (==→o≡ (==-sym *iso) ) ))
@@ -509,14 +527,14 @@ Omega-iso {x} = record { eq→ = lemma2 ; eq← = lemma3 } where
        lemma5 y (case2 eq) = case1 ( trans eq ((==→o≡ (==-sym *iso) ) ))
 
 infinity : (ho< : ODAxiom-ho<) → (x : HOD) → Omega ho< ∋ x → Omega ho< ∋ Union (x , (x , x ))
-infinity ho< x lt = subst (λ k → odef (Omega ho<) k ) (==→o≡ Omega-iso) (isuc {& x} lt) 
+infinity ho< x lt = subst (λ k → odef (Omega ho<) k ) (==→o≡ Omega-iso) (isuc {& x} lt)
 
 pair→ : ( x y t : HOD  ) →  (x , y)  ∋ t  → ( t =h= x ) ∨ ( t =h= y )
-pair→ x y t (case1 t≡x ) = case1 ( ord→== t≡x ) 
+pair→ x y t (case1 t≡x ) = case1 ( ord→== t≡x )
 pair→ x y t (case2 t≡y ) = case2 ( ord→== t≡y )
 
 pair← : ( x y t : HOD  ) → ( t =h= x ) ∨ ( t =h= y ) →  (x , y)  ∋ t
-pair← x y t (case1 t=h=x) = case1 (==→o≡ t=h=x)  
+pair← x y t (case1 t=h=x) = case1 (==→o≡ t=h=x)
 pair← x y t (case2 t=h=y) = case2 (==→o≡ t=h=y)
 
 pair-iso : {x y : HOD } →  (* (& x) , * (& y)) =h= (x , y)
@@ -584,9 +602,9 @@ ZFReplace X ψ zfψ = record { od = record { def = λ x → Replaced X (λ z →
 
 zf-replacement← :  {ψ : HOD → HOD} → {zfψ :  ZFunc HOD _∋_ _=h=_ ψ } → (X x : HOD) →  X ∋ x → ZFReplace X ψ zfψ ∋ ψ x
 zf-replacement← {ψ} {zfψ} X x lt = record { z = & x ; az = lt  ; x=ψz = ==→o≡  (ZFunc.ψ-cong zfψ _ _ (==-sym *iso)  ) }
-zf-replacement→ : {ψ : HOD → HOD} → {zfψ : ZFunc HOD _∋_ _=h=_ ψ } → (X x : HOD) 
+zf-replacement→ : {ψ : HOD → HOD} → {zfψ : ZFunc HOD _∋_ _=h=_ ψ } → (X x : HOD)
      → (lt : ZFReplace X ψ zfψ ∋ x) → ¬ ( (y : HOD) → ¬ (x =h= ψ y))
-zf-replacement→ {ψ} {zfψ} X x lt eq = eq (* (Replaced.z lt)) (ord→== (Replaced.x=ψz lt)) 
+zf-replacement→ {ψ} {zfψ} X x lt eq = eq (* (Replaced.z lt)) (ord→== (Replaced.x=ψz lt))
 
 isZF :  (ho< : ODAxiom-ho< ) → IsZF HOD _∋_  _=h=_ od∅ _,_ Union Power Select ZFReplace (Omega ho<)
 isZF ho< = record {
@@ -602,9 +620,9 @@ isZF ho< = record {
     ;   ε-induction = ε-induction
     ;   infinity∅ = infinity∅ ho<
     ;   infinity = infinity ho<
-    ;   selection = λ {X} {ψ} {zψ} {y} → selection {X} {ψ} {zψ} {y} 
-    ;   replacement← = λ {ψ} {zfψ} → zf-replacement← {ψ} {zfψ} 
-    ;   replacement→ = λ {ψ} {zfψ} → zf-replacement→ {ψ} {zfψ} 
+    ;   selection = λ {X} {ψ} {zψ} {y} → selection {X} {ψ} {zψ} {y}
+    ;   replacement← = λ {ψ} {zfψ} → zf-replacement← {ψ} {zfψ}
+    ;   replacement→ = λ {ψ} {zfψ} → zf-replacement→ {ψ} {zfψ}
     }
 
 HOD→ZF : ODAxiom-ho< → ZF
@@ -617,7 +635,7 @@ HOD→ZF ho< = record {
     ; Union = Union
     ; Power = Power
     ; Select = Select
-    ; Replace = ZFReplace 
+    ; Replace = ZFReplace
     ; infinite = Omega ho<
     ; isZF = isZF ho<
  }

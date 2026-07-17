@@ -1254,9 +1254,8 @@ Zorn-lemma {A}  0<A supP = zorn00 where
                fc12 = ftrans<-≤ lt (subst (λ k → k ≤ a) (sym (zeq _ _ (o<→≤ <-osuc) o≤-refl )) (s≤fc _ f mf fca ) )
            pcmp (ic-isup i i<x s<i fca) (ic-isup j j<x s<j fcb) eq  = fcn-cmp _ f mf fca (subst (λ k → FClosure A f k b) (pc03 j<x i<x eq) fcb ) where
                pc03 : (j<x : j o< x ) → (i<x : i o< x ) → i ≡ j → supfz j<x ≡ supfz i<x
-               pc03 j<x i<x refl  = cong supfz o<-irr
+               pc03 j<x i<x refl  = cong supfz o<-irr   -- we need irrevance of o<
       ... | tri> ¬a ¬b ib<ia = ZChain.f-total (pzc (pic<x (proj2 ia))) (pchainU⊆chain ia) (IC⊆ (proj2 ib) (proj2 ia) ib<ia)
-
 
       usup : MinSUP A pchainU
       usup = minsupP pchainU (λ ic → proj1 ic ) ptotalU

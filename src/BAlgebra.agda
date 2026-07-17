@@ -374,6 +374,17 @@ HBA L ∋-p H =  record { _≈_ = λ x y → (* (elt x)) =h= (* (elt y)) ; b1 = 
      ... | yes0 y = case1 (subst (λ k → odef a k) &iso y)
      ... | no0 n = case2 (eq← *iso ⟪ px , subst (λ k → ¬ odef a k) &iso n ⟫ )
 
+HBA-⊆ : (L : HOD)  (∋-p : (Q : HODBase.HOD O) → OD._⊆_ O HODAxiom  Q L → ( x : HODBase.HOD O ) → Dec0 ( OD._∈_ O HODAxiom x Q ))
+     → (H : HBAR L) → (x y : HODElement (OS H))
+     → ( (* (elt x)) ⊆ (* (elt y) )) ⇔ ( BooleanAlgebra._≤_ (HBA L ∋-p H) x  y ) 
+HBA-⊆ L ∋-p H x y = record { proj1 = lem00 ; proj2 = lem01 } where
+   open BooleanAlgebra (HBA L ∋-p H) 
+   open IsBooleanAlgebra (BooleanAlgebra.isBooleanAlgebra (HBA L ∋-p H))
+   lem00 : * (HODElement.elt x) ⊆ * (HODElement.elt y) → x ≤ y
+   lem00 le = record { eq→ = λ {a} xya → proj1 (eq→ *iso xya) ; eq← = λ {a} ax → eq← *iso ⟪ ax , le ax ⟫ }
+   lem01 : x ≤ y → * (HODElement.elt x) ⊆ * (HODElement.elt y)
+   lem01 le {a} ax = proj2 (eq→ *iso (eq← le {a} ax))
+
 record HBAUP (L : HOD) (H : HBAR L) (s : HODElement (OS H) → Set n) (x : Ordinal) : Set n where
     field
        op : odef (OS H) x

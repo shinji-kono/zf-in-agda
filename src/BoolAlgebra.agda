@@ -204,6 +204,11 @@ record BooleanAlgebra {n m : Level} ( L : Set n) : Set (n ⊔ suc m) where
        - b ∎
    ≤0→≈  : {a : L } → a ≤ b0 → a ≈ b0
    ≤0→≈ {a} eq  = btrans (bsym eq) (btrans x-sym (0≤a _))
+   ≈→≤ : {a b : L } → a ≈ b →  a ≤ b 
+   ≈→≤ {a} {b} a=b = begin
+         a x b ≈⟨ x-resp (bsym a=b) brefl ⟩
+         a x a ≈⟨ x-idem ⟩
+         a ∎
    ≤-trans : {i j k : L} → i ≤ j → j ≤ k → i ≤ k
    ≤-trans {i} {j} {k} i≤j j≤k = begin
        i x k ≈⟨ x-resp brefl (bsym i≤j) ⟩
@@ -213,7 +218,12 @@ record BooleanAlgebra {n m : Level} ( L : Set n) : Set (n ⊔ suc m) where
        i ∎
    resp-≤ : {i j k l : L} → i ≈ k → j ≈ l → i ≤ j → k ≤ l
    resp-≤ {i} {j} {k} {l} i=k j=l i≤j =  btrans (btrans (x-resp (bsym j=l ) (bsym i=k) ) i≤j   ) i=k 
-
+   ≤≥→≈ : {i j : L} → i ≤ j → j ≤ i → i ≈ j
+   ≤≥→≈ {i} {j} i≤j j≤i = begin
+         i ≈⟨ bsym i≤j ⟩
+         i x j ≈⟨ x-sym ⟩
+         j x i ≈⟨ j≤i  ⟩
+         j ∎
 
 record BPred {n m : Level} ( L : Set n) (BA : BooleanAlgebra {n} {m} L) : Set (n ⊔ suc m) where
    open BooleanAlgebra BA using (_≈_)
