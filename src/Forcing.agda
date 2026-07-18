@@ -466,15 +466,14 @@ bni2unique L PB an bn0 i (suc j) k i≤j bi bj k≤i = lem00 k k≤i where
 record BnR (L : HOD) (PB : HODBooleanAlgebra L ) (an : AN L PB ) (bni : Bni L PB an) (x : Ordinal) : Set n where
     field
        i : ℕ 
-       x=bi : x ≡ elt (Bni.b (get-b L PB an bni i (Bn1 L PB an i bni ) ))
-    pbb : odef (OS PB) x
-    pbb = subst (λ k → odef (OS PB) k) (sym x=bi) ( A∋elt (Bni.b (get-b  L PB an bni i (Bn1 L PB an i bni ) )) )
+       bx :  odef (OS PB) x
+       bn≤x :  (*  (elt (Bni.b (get-b L PB an bni i (Bn1 L PB an i bni ) )) ))  ⊆  (* x)
 
 BnHOD : (L : HOD) → (PB : HODBooleanAlgebra L ) → (an : AN L PB ) (bni : Bni L PB an) → HOD
-BnHOD L PB an bni = record { od = record { def = λ x → BnR L PB an bni x } ; odmax = & (OS PB) ; <odmax =  λ lt → odef< (BnR.pbb lt) } 
+BnHOD L PB an bni = record { od = record { def = λ x → BnR L PB an bni x } ; odmax = & (OS PB) ; <odmax =  λ lt → odef< (BnR.bx lt)  } 
 
 BnHOD⊆L : (L : HOD) → (PB : HODBooleanAlgebra L ) → (an : AN L PB ) (bni : Bni L PB an)  → BnHOD L PB an bni ⊆ Power L
-BnHOD⊆L L PB an bni {x} lt z xz = OS⊆PL PB (BnR.pbb lt) _ xz 
+BnHOD⊆L L PB an bni {x} lt z xz = OS⊆PL PB (BnR.bx lt)  _ xz 
 
 bni-mono : (L : HOD) → (PB : HODBooleanAlgebra L ) → (an : AN L PB ) (bni : Bni L PB an) → (i j : ℕ) → i Data.Nat.≤ j
          → (* (elt (Bni2.b (Bn1 L PB an j  bni) j ))) ⊆  (* (elt (Bni2.b (Bn1 L PB an i bni) i  )))
@@ -487,14 +486,25 @@ bni-mono L PB an bni i j i≤j {x} ej = eq← lem01 ( lem00 ej ) where
     lem00 = ≤→⊆ PB {(Bni2.b (Bn1 L PB an j  bni) j )} {Bni2.b (Bn1 L PB an j bni) i} ( Bni2.bmono (Bn1 L PB an j bni) _ i≤j  )
 
 BnFilter : (L : HOD) → (PB : HODBooleanAlgebra L ) → (an : AN L PB ) (bni : Bni L PB an) → Filter  {OS PB} {L} (OS⊆PL PB) 
-BnFilter L PB an bni = record { filter = BnHOD L PB an bni ; f⊆L =  BnR.pbb  ; filter1 = f1 ; filter2 = f2 } where
+BnFilter L PB an bni = record { filter = BnHOD L PB an bni ; f⊆L =  BnR.bx  ; filter1 = f1 ; filter2 = f2 } where
    f1 :  {p q : HOD} → OS PB ∋ q → BnHOD L PB an bni ∋ p → p ⊆ q → BnHOD L PB an bni ∋ q 
-   f1 {p} {q} oq bp p⊆q = record { i = ? ; x=bi = ? } where
-      lem00 : ?
-      lem00 = ?
+   f1 {p} {q} oq bp p⊆q = record { i = BnR.i bp ; bx = oq ; bn≤x = lem00 } where
+      lem01 : { x : Ordinal} → odef ( * ( elt (Bni.b (get-b L PB an bni (BnR.i bp) (Bn1 L PB an (BnR.i bp) bni ) ) ) ) ) x →  odef p x
+      lem01 lt = eq→  *iso (BnR.bn≤x bp lt)
+      lem00 : { x : Ordinal} → odef ( * ( elt (Bni.b (get-b L PB an bni (BnR.i bp) (Bn1 L PB an (BnR.i bp) bni ) ) ) ) ) x →  odef (* (& q)) x
+      lem00 lt = eq← *iso ( p⊆q (lem01 lt ))
    f2 :  {p q : HOD} → BnHOD L PB an bni ∋ p → BnHOD L PB an bni ∋ q → OS PB ∋ (p ∩ q) → BnHOD L PB an bni ∋ (p ∩ q)
-   f2 {p} {q} bp bq p∩q = record { i = ? ; x=bi = ? } where
-      lem00 : ?
-      lem00 = ?
-
+   f2 {p} {q} bp bq p∩q with Data.Nat.<-cmp (BnR.i bp) (BnR.i bq)
+   ... | tri< a ¬b ¬c = record { i = BnR.i bq ; bx = p∩q ; bn≤x = lem01 } where
+      lem01 : { x : Ordinal} → odef ( * ( elt (Bni.b (get-b L PB an bni (BnR.i bq) (Bn1 L PB an (BnR.i bq) bni ) ) ) ) ) x →  odef (* ( & (p ∩ q))) x
+      lem01 {x} lt = eq← *iso ⟪ eq→  *iso (BnR.bn≤x bp lem02 ) , eq→  *iso (BnR.bn≤x bq lt )  ⟫  where
+          lem02 : odef ( * ( elt (Bni.b (get-b L PB an bni (BnR.i bp) (Bn1 L PB an (BnR.i bp) bni ) ) ) ) ) x 
+          lem02 = bni-mono L PB an bni (BnR.i bp) (BnR.i bq) (Data.Nat.Properties.≤-trans a≤sa a )  lt 
+   ... | tri≈ ¬a b ¬c = record { i = BnR.i bp ; bx = p∩q ; bn≤x = λ lt → eq← *iso ⟪ eq→  *iso (BnR.bn≤x bp lt  ) 
+           , eq→  *iso (BnR.bn≤x bq ( bni-mono L PB an bni (BnR.i bq) (BnR.i bp)  (refl-≤≡  (sym b))  lt  ))  ⟫ } 
+   ... | tri> ¬a ¬b c = record { i = BnR.i bp ; bx = p∩q ; bn≤x = lem01 } where
+      lem01 : { x : Ordinal} → odef ( * ( elt (Bni.b (get-b L PB an bni (BnR.i bp) (Bn1 L PB an (BnR.i bp) bni ) ) ) ) ) x →  odef (* ( & (p ∩ q))) x
+      lem01 {x} lt = eq← *iso ⟪ eq→  *iso (BnR.bn≤x bp lt) , eq→  *iso (BnR.bn≤x bq lem02 )  ⟫  where
+          lem02 : odef ( * ( elt (Bni.b (get-b L PB an bni (BnR.i bq) (Bn1 L PB an (BnR.i bq) bni ) ) ) ) ) x 
+          lem02 = bni-mono L PB an bni (BnR.i bq) (BnR.i bp) (Data.Nat.Properties.≤-trans a≤sa c )  lt 
 

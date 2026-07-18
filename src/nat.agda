@@ -106,6 +106,41 @@ y≤x→max=x (suc x) (suc y) lt with <-cmp y x
 ... | tri≈ ¬a refl ¬c = cong suc (y≤x→max=x x y ≤-refl )
 ... | tri> ¬a ¬b c = ⊥-elim ( nat-≤> c lt )
 
+min : (x y : ℕ) → ℕ
+min zero zero = zero
+min zero (suc x) = zero
+min (suc x) zero = zero
+min (suc x) (suc y) = suc (min x y )
+
+min≤x : (x y : ℕ) → min x y ≤ x
+min≤x zero zero = ≤-refl
+min≤x zero (suc x) = z≤n
+min≤x (suc x) zero = z≤n
+min≤x (suc x) (suc y) = s≤s ( min≤x x y ) 
+
+min≤y : (x y : ℕ) → min x y ≤ y
+min≤y zero zero = ≤-refl
+min≤y zero (suc x) = z≤n
+min≤y (suc x) zero = z≤n
+min≤y (suc x) (suc y) = s≤s ( min≤y x y ) 
+
+x≤y→min=x : (x y : ℕ) → x ≤ y → min x y ≡ x
+x≤y→min=x zero zero x≤y = refl
+x≤y→min=x zero (suc y) x≤y = refl
+x≤y→min=x (suc x) (suc y) lt with <-cmp x y
+... | tri< a ¬b ¬c = cong suc  (x≤y→min=x x y (≤-trans a≤sa a) )
+... | tri≈ ¬a refl ¬c = cong suc (x≤y→min=x x y ≤-refl )
+... | tri> ¬a ¬b c = ⊥-elim ( nat-≤> c lt )
+
+y≤x→min=y : (x y : ℕ) → y ≤ x → min x y ≡ y
+y≤x→min=y zero zero y≤x = refl
+y≤x→min=y zero (suc y) ()
+y≤x→min=y (suc x) zero lt = refl
+y≤x→min=y (suc x) (suc y) lt with <-cmp y x
+... | tri< a ¬b ¬c = cong suc (y≤x→min=y x y (≤-trans a≤sa a))
+... | tri≈ ¬a refl ¬c = cong suc (y≤x→min=y x y ≤-refl )
+... | tri> ¬a ¬b c = ⊥-elim ( nat-≤> c lt )
+
 
 -- _*_ : ℕ → ℕ → ℕ
 -- _*_ zero _ = zero
