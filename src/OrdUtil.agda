@@ -86,6 +86,12 @@ osucprev {ox} {oy} oy<ox | tri< a ¬b ¬c = a
 osucprev {ox} {oy} oy<ox | tri≈ ¬a b ¬c = ⊥-elim (o<¬≡ (cong (λ k → osuc k) b) oy<ox )
 osucprev {ox} {oy} oy<ox | tri> ¬a ¬b c = ⊥-elim (o<> (osucc c) oy<ox )
 
+osuc-inject :  {ox oy : Ordinal } → osuc oy ≡  osuc ox  → oy ≡  ox
+osuc-inject {ox} {oy} eq with trio< oy ox
+... | tri< a ¬b ¬c = ⊥-elim (o<¬≡ eq ( osucc a ) )
+... | tri≈ ¬a b ¬c = b 
+... | tri> ¬a ¬b c = ⊥-elim (o<¬≡ (sym eq) ( osucc c ) )
+
 ordtrans≤-< :  {ox oy oz : Ordinal } → ox o< osuc oy  → oy o< oz  → ox o< oz
 ordtrans≤-< {ox} {oy} {oz} x≤y y<z with  osuc-≡< x≤y
 ... | case1 x=y = subst ( λ k → k o< oz ) (sym x=y) y<z

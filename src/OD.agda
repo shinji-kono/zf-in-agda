@@ -318,6 +318,20 @@ union← :  (X z : HOD) (X∋z : Union X ∋ z) →  ¬  ( (u : HOD ) → ¬ ((X
 union← X z UX∋z not = ⊥-elim ( not (* (Own.owner UX∋z)) ⟪ subst (λ k → odef X k) (sym &iso) ( Own.ao UX∋z) , Own.ox UX∋z ⟫  )
 
 --
+--  M x = Uinion { M β | β o< x }
+--
+record MOrd (M : Ordinal → Ordinal ) (max : Ordinal) (has-max : (x : Ordinal) → M x o< max )  (y x : Ordinal) : Set n where
+    field
+       value : Ordinal
+       value<y : value o< y
+       Mv=x : M value ≡ x
+
+OrdUnion : (M : Ordinal → Ordinal ) (max : Ordinal) (has-max : (x : Ordinal) → M x o< max )  (x : Ordinal)  → HOD
+OrdUnion M max has-max x = record { od = record { def = λ y → MOrd M max has-max x y } ; odmax = max ; <odmax = lem00 }  where
+    lem00 : {y : Ordinal} → MOrd M max has-max x y → y o< max
+    lem00 {y} mo = subst (λ k → k o< max ) (MOrd.Mv=x mo) (has-max (MOrd.value mo))
+
+--
 --
 --
 

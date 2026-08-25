@@ -74,6 +74,9 @@ record BooleanAlgebra {n m : Level} ( L : Set n) : Set (n ⊔ suc m) where
    a ≤ b = (a x b) ≈ a
    _<_ : L → L → Set m
    a < b = (¬ ( a ≈ b )) ∧ ((a x b) ≈ a)
+   --
+   -- we don't have (a < b) ∨ (b ≤ a)
+   --
    open EqR (IsBooleanAlgebra.bSetoid isBooleanAlgebra )
    open IsBooleanAlgebra isBooleanAlgebra
    open import Tactic.MonoidSolver using (solve; solve-macro)
@@ -224,6 +227,19 @@ record BooleanAlgebra {n m : Level} ( L : Set n) : Set (n ⊔ suc m) where
          i x j ≈⟨ x-sym ⟩
          j x i ≈⟨ j≤i  ⟩
          j ∎
+   open _∧_
+   bool-≤≥→≈  : {a b : L } → a ≤  b →  b ≤ a  → a ≈ b
+   bool-≤≥→≈ {a} {b} a≤b b≤a  = begin
+       a ≈⟨ bsym a≤b ⟩
+       a x b ≈⟨ x-sym ⟩
+       b x a ≈⟨ b≤a  ⟩
+       b ∎  
+   bool-<> : {a b : L } → a < b → ¬ ( b < a  )
+   bool-<> {a} {b} a<b b<a = proj1 a<b ( begin
+       a ≈⟨ bsym (proj2 a<b) ⟩
+       a x b ≈⟨ x-sym ⟩
+       b x a ≈⟨ proj2 b<a  ⟩
+       b ∎ ) 
 
 record BPred {n m : Level} ( L : Set n) (BA : BooleanAlgebra {n} {m} L) : Set (n ⊔ suc m) where
    open BooleanAlgebra BA using (_≈_)

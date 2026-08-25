@@ -4,6 +4,12 @@ open import Ordinals
 open import logic
 open import Relation.Nullary
 
+--
+-- 選択公理と数学　田中尚夫 190 page
+-- 
+--
+--
+
 import HODBase
 import OD
 open import Relation.Nullary
@@ -62,10 +68,13 @@ import BAlgebra
 
 open Bijection
 
+-- 補題 23.1 Bの任意の要素 b ≠ 0 に対して、bを含む M-生成超フィルターが存在する
+
 --
 -- Original Paper uses Boolean Algebra on a HOD Set
 -- but we only have a definition of a filter on HOD Set
 -- so we use Boolean Algebra on a subset of L
+
 record HODBooleanAlgebra  (L : HOD) : Set (n Level.⊔ Level.suc n)  where
    field
      LDec : (Q : HOD) → Q ⊆ L → ( x : HOD ) → Dec0 ( x ∈ Q ) 
@@ -94,6 +103,8 @@ record HODBooleanAlgebra  (L : HOD) : Set (n Level.⊔ Level.suc n)  where
    ⊆→≤ {p} {q}  = proj1 ( HBA-⊆ L LDec H p q )
    ≤→⊆  :　{ p q : HODElement (HBAR.OS H) }  → p ≤ q → * (elt p) ⊆ * (elt q)
    ≤→⊆  {p} {q}  = proj2 ( HBA-⊆ L LDec H p q )
+   0<b→¬b≈od∅ : {a : HODElement (HBAR.OS H)} → b0 < a → ¬ ( (* (elt a))  =h= od∅ )
+   0<b→¬b≈od∅ {a} 0<a eq = ⊥-elim (proj1 0<a (==-sym (==-trans eq (==-sym o∅==od∅ ) ) ) )
 
 
 record CM : Set (Suc (Suc n)) where
@@ -137,6 +148,8 @@ record OAn (L : HOD) (PB : HODBooleanAlgebra L ) (an : AN L PB) (oa : Ordinal) :
    a : {x : Ordinal} → odef (* oa) x → HODBooleanAlgebra.B PB
    a {x} lt = record { elt = x ; A∋elt = poa lt }
 
+-- M は可算なので整列可能
+--  
 -- { A ∈  M : ∅ ≠ A ⊆ B } = { A0 , A1, A2, ... An }
 -- 
 An : (L : HOD) → (PB : HODBooleanAlgebra L ) → AN L PB → HOD
@@ -147,6 +160,8 @@ PAn L PB an i = record { pred = λ p → odef (* (elt (AN.imap an i))) (elt p)
    ; pcong = λ x y eq → ⟪ ( λ lt → subst (λ k → odef (* (elt (AN.imap an i))) k ) (*=h=*→≡ eq) lt ) 
       , ( λ lt → subst (λ k → odef (* (elt (AN.imap an i))) k ) (sym (*=h=*→≡ eq))  lt )  ⟫ }
 
+-- BはM完備なので最小上界が存在する
+--
 -- ∧ an
 ∧An : (L : HOD) → (PB : HODBooleanAlgebra L ) → AN L PB → ℕ → B PB
 ∧An L PB an i = IsCompleteBooleanAlgebra.sup ( bc PB ) (PAn L PB an i)
@@ -172,6 +187,13 @@ record AAn (L : HOD) (PB : HODBooleanAlgebra L )  (bi : HODBooleanAlgebra.B PB) 
 
 import Relation.Binary.Reasoning.Setoid as EqR
 
+--
+--   b_0 = b
+--
+--   b_n+1 if ( bn ∙ an ≠ 0 ) then
+--     b_n+1 = bn ∙ an
+--   else
+--     bn - a ( An ∋ a such that a = bn- a > 0 )
 
 record Bni (L : HOD)  (PB : HODBooleanAlgebra L ) (an : AN L PB )  : Set n where
    open BooleanAlgebra (ba PB)
@@ -180,6 +202,8 @@ record Bni (L : HOD)  (PB : HODBooleanAlgebra L ) (an : AN L PB )  : Set n where
       b : HODBooleanAlgebra.B PB
       bnz : b0 < b
 
+--  if ( bn ∙ an = 0 ) then we have   An ∋ a such that a = bn- a > 0 
+--
 b-ai→a1 :  (L : HOD)  (PB : HODBooleanAlgebra L ) (an : AN L PB )  
     (i : ℕ) (b : HODBooleanAlgebra.B PB) (bnz : BooleanAlgebra._<_ (ba PB) (BooleanAlgebra.b0 (ba PB)) b) (yy :  BooleanAlgebra._≈_ (ba PB) (( BooleanAlgebra._x_ (ba PB) b ( ∧An L PB an i ))) (BooleanAlgebra.b0 (ba PB))) 
       → AAn L PB b an 
@@ -242,6 +266,12 @@ ai→a1-cong L PB an i i bi bn bnzi bnzj yyi yyj refl = brefl {(AAn.a (b-ai→a1
    open BooleanAlgebra (ba PB)
    open IsBooleanAlgebra (BooleanAlgebra.isBooleanAlgebra (ba PB))
 
+--
+-- induction of b is not simple, we construct a record which represents the induction of b
+--   function Bni2.b is unique on the induciton Bn1 which is a property of Bni2
+-- 
+-- we can prove monotonity of b in Bni2
+
 record Bni2 (L : HOD)  (PB : HODBooleanAlgebra L ) (an : AN L PB ) (bn0 : Bni L PB an) (i : ℕ)  : Set n where
    open BooleanAlgebra (ba PB)
    open IsBooleanAlgebra (BooleanAlgebra.isBooleanAlgebra (ba PB))
@@ -254,7 +284,7 @@ record Bni2 (L : HOD)  (PB : HODBooleanAlgebra L ) (an : AN L PB ) (bn0 : Bni L 
           → (b (suc j)) ≈ ( (b j) x ( - (AAn.a (b-ai→a1 L PB an j (b j) (bnz j ) eq ) )))
       eq2 : (j : ℕ) → j Data.Nat.< i → (neq : ¬ (((b j) x (∧An L PB an j)) ≈ b0 ))
           → (b (suc j)) ≈  ( (b j) x (∧An L PB an j)  )
-   bcong : (i j : ℕ) → i ≡ j →  b i ≈ b j
+   bcong : (i j : ℕ) → i ≡ j →  b i ≈ b j   -- uniqueness of b on the induction Bn1
    bcong i j eq = subst ( λ k → b i ≈ b k ) eq ( brefl {b i} )
    bin2-lem00 : (a b : HODBooleanAlgebra.B PB) → (a x b) ≤ a
    bin2-lem00 a b = begin
@@ -264,6 +294,10 @@ record Bni2 (L : HOD)  (PB : HODBooleanAlgebra L ) (an : AN L PB ) (bn0 : Bni L 
       a x b ∎ where open EqR bSetoid 
    bzero≈  : ( j : ℕ) → j ≡ zero → b j ≈ Bni.b bn0
    bzero≈ j eq = o≡→== (cong elt (bzero j eq))
+
+--
+-- induction of b, such as Bni2
+--
 
 Bn1 : (L : HOD) → (PB : HODBooleanAlgebra L ) → (an : AN L PB ) → (i : ℕ) → (bn0 : Bni L PB an) → Bni2 L PB an bn0 i
 Bn1 L PB an zero bni = record { b = λ j → Bni.b bni ; bzero = λ _ eq → refl ; bnz = λ j → Bni.bnz bni ; bmono = λ j j≤0 →  x-idem {Bni.b bni}  ; eq1 = λ _ () ; eq2 = λ _ () } where
@@ -410,6 +444,10 @@ get-b L PB an bn0 i bni = record { b = Bni2.b bni i ; bnz = Bni2.bnz bni i } whe
    open BooleanAlgebra (ba PB)
    open IsBooleanAlgebra (BooleanAlgebra.isBooleanAlgebra (ba PB))
 
+--
+-- uniqueness of b is proved without Bn1, it comes from Bni2
+--
+
 bni2unique : (L : HOD) → (PB : HODBooleanAlgebra L ) → (an : AN L PB ) → (bn0 : Bni L PB an) 
   → (i j k : ℕ) → i Data.Nat.≤  j → (bi :  Bni2 L PB an bn0 i)→ (bj :  Bni2 L PB an bn0 j)
   → k Data.Nat.≤ i → BooleanAlgebra._≈_ (ba PB) (Bni2.b bi k) (Bni2.b bj k )
@@ -463,6 +501,10 @@ bni2unique L PB an bn0 i (suc j) k i≤j bi bj k≤i = lem00 k k≤i where
                Bni2.b bj (suc m)  ∎ where
                   open EqR bSetoid
 
+--
+-- 生成フィルターを集合として作る
+--
+
 record BnR (L : HOD) (PB : HODBooleanAlgebra L ) (an : AN L PB ) (bni : Bni L PB an) (x : Ordinal) : Set n where
     field
        i : ℕ 
@@ -507,4 +549,531 @@ BnFilter L PB an bni = record { filter = BnHOD L PB an bni ; f⊆L =  BnR.bx  ;
       lem01 {x} lt = eq← *iso ⟪ eq→  *iso (BnR.bn≤x bp lt) , eq→  *iso (BnR.bn≤x bq lem02 )  ⟫  where
           lem02 : odef ( * ( elt (Bni.b (get-b L PB an bni (BnR.i bq) (Bn1 L PB an (BnR.i bq) bni ) ) ) ) ) x 
           lem02 = bni-mono L PB an bni (BnR.i bq) (BnR.i bp) (Data.Nat.Properties.≤-trans a≤sa c )  lt 
+
+BnFProper : (L : HOD) → (PB : HODBooleanAlgebra L ) → (an : AN L PB ) (bni : Bni L PB an) → ¬ (odef ( Filter.filter (BnFilter L PB an bni)) (& od∅ ))
+BnFProper L PB an bni record { i = i ; bx = bx ; bn≤x = bn≤x } = ⊥-elim (¬x<0 (eq→ *iso (bn≤x lem04 ))) where
+  lem05 : HOD
+  lem05 = * (elt (Bni.b (get-b L PB an bni i (Bn1 L PB an i bni ) ) ) )
+  lem06 : ¬ (od lem05 == od od∅)
+  lem06 = 0<b→¬b≈od∅ PB {(Bni.b (get-b L PB an bni i (Bn1 L PB an i bni ) ) )} (Bni2.bnz (Bn1 L PB an i bni ) i )
+  lem04 : odef lem05 (& ( minimal lem05 lem06 ))
+  lem04 = x∋minimal lem05 lem06 
+
+--
+-- BnFilter を超フィルターに Zorn の補題で拡張する
+--
+
+open import maximum-filter O HODAxiom ho< AC
+
+maxf   : (L : HOD) → (PB : HODBooleanAlgebra L ) → (an : AN L PB ) (bni : Bni L PB an) 
+   → MaximumFilter (OS⊆PL PB) (BnFilter L PB an bni)
+maxf  L PB an bni  = F→Maximum {OS PB} {L} (OS⊆PL PB) (o∩ PB) (BnFilter L PB an bni ) lem00 lem01 (BnFProper L PB an bni) where
+   lem03 : od∅ ⊆ OS PB
+   lem03 lt = ⊥-elim (¬x<0 lt)
+   lem00 : o∅ o< & (OS PB)   -- yes we have OS PB ∋ od∅  
+   lem00 = ∈∅< (o∪ PB {od∅} lem03 ) 
+   lem01 : odef (Filter.filter (BnFilter L PB an bni)) (elt (Bni.b bni))
+   lem01 = record { i = zero ; bx = A∋elt (Bni.b bni) ; bn≤x = λ lt → lt  }
+
+mf     : (L : HOD) → (PB : HODBooleanAlgebra L ) → (an : AN L PB ) (bni : Bni L PB an) → Filter  {OS PB} {L} (OS⊆PL PB) 
+mf L PB an bni  =  MaximumFilter.mf (maxf L PB an bni)
+
+ultraf : (L : HOD) → (PB : HODBooleanAlgebra L ) → (an : AN L PB ) (bni : Bni L PB an) → ultra-filter ( mf L PB  an bni )
+ultraf L PB an bni  = F→ultra {OS PB} {L} (OS⊆PL PB) (o∩ PB) (BnFilter L PB an bni)  lem00 lem01 (BnFProper L PB an bni)  where
+   lem03 : od∅ ⊆ OS PB
+   lem03 lt = ⊥-elim (¬x<0 lt)
+   lem00 : o∅ o< & (OS PB)   -- yes we have OS PB ∋ od∅  
+   lem00 = ∈∅< (o∪ PB {od∅} lem03 ) 
+   lem01 : odef (Filter.filter (BnFilter L PB an bni)) (elt (Bni.b bni))
+   lem01 = record { i = zero ; bx = A∋elt (Bni.b bni) ; bn≤x = λ lt → lt  }
+
+--
+-- M_0^(B) = 0
+-- M_(α+1)^(B) = { x : Func x ∧ dom(x) ⊆ M_α^(B) ∧ ran(x) ⊆ B }
+-- M_(α)^(B) =  ∪ { M_β^(B) : β < α }  (α ∈  limit)
+--
+-- M^(B) =  ∪ { M_α^(B) : α ∈ (Ordinal ∩ M) }
+--
+-- v 0 = 0
+-- v x = { <  v y , 1 > : y ∈ x }   ¬ ( x =  0) }
+--
+-- i_G  : ? → ?
+-- i_G 0 = 0
+-- i_G x = { i_G y : y( x) ∈ G }  
+--
+--
+
+--
+-- ブール値モデルの宇宙
+--
+--
+--   Somehthing lik (Ordinal → Bool Algebra ) * → Bool Algebra
+--
+
+record FuncsS  (A B : HOD) (x : Ordinal) : Set n where
+   field 
+     dom cod : Ordinal
+     dom⊆A : (* dom) ⊆ A  
+     cod⊆B : (* cod) ⊆ B  
+     is-func : odef (Funcs (* dom) (* cod)) x 
+
+FuncsSHOD : (A B : HOD) → HOD
+FuncsSHOD A B = record { od = record { def = λ x → FuncsS A B x } ; odmax = osuc (& (ZFP A B)) ; <odmax 
+        = λ {y} px → lem02 px } where
+   lem00 : (x y : Ordinal) → (lt : FuncsS A B x) → odef (* x) y → odef (ZFP (* (FuncsS.dom lt)) (* (FuncsS.cod lt) )) y
+   lem00 x y lt xy = Func<ZFP (* (FuncsS.dom lt)) (* (FuncsS.cod lt) ) (FuncsS.is-func lt)  xy
+   lem01 : (x : Ordinal) → (lt : FuncsS A B x) → ZFP(* (FuncsS.dom lt)) (* (FuncsS.cod lt) ) ⊆ ZFP A B
+   lem01 x lt lt2 = proj1 (ZFP⊆  (FuncsS.dom⊆A lt) ) (proj2 (ZFP⊆  (FuncsS.cod⊆B lt) )  lt2 )
+   lem02 : {y : Ordinal} → FuncsS A B y → y o< osuc (& (ZFP A B))
+   lem02 {y} lt = begin
+        y   ≤⟨ subst ( λ k → k o≤ (& (ZFP _ _)) ) &iso (⊆→o≤ (lem00 _ _ lt) )  ⟩ 
+        & (ZFP (* (FuncsS.dom lt)) (* (FuncsS.cod lt)))  ≤⟨ ⊆→o≤ ( lem01 _ lt) ⟩ 
+        & (ZFP A B)  ∎ 
+          where open  o≤-Reasoning
+
+record BMOrd  (y : Ordinal) (M : (x : Ordinal) → x o< y → Ordinal ) (z : Ordinal)   : Set n where
+    field
+       value : Ordinal
+       value<y : value o< y
+       Mv=x : M value value<y ≡ z
+
+BUnion : (y : Ordinal) (M : (x : Ordinal ) → x o< y → Ordinal ) (max : Ordinal)
+    (is-max : (x : Ordinal) → (x<y : x o< y ) → M x x<y o< max ) → HOD
+BUnion y M max is-max = record { od = record { def = λ z → BMOrd y M z } ; odmax = max ; <odmax = lem00 }  where
+    lem00 : {z : Ordinal} → BMOrd y M z → z o< max
+    lem00 {z} mo = subst (λ k → k o< _ ) (BMOrd.Mv=x mo) ( is-max _ (BMOrd.value<y mo))
+
+record BAU (L : HOD)  (PB : HODBooleanAlgebra L ) (x : Ordinal) : Set n where
+  field 
+     f : (y : Ordinal) → y o≤ x →  Ordinal
+     fcong : (a b : Ordinal) → (a≤x : a o≤ x) (b≤x : b o≤ x) → a ≡ b → f a a≤x ≡ f b b≤x
+     fmax : Ordinal
+     has-fmax : (y : Ordinal) → (y≤x : y o≤ x ) → f y y≤x o< fmax 
+     fp0 : (y : Ordinal) → y ≡ o∅  → (y≤x : y o≤ x) → f y y≤x ≡ o∅
+     fp-prev : (y z : Ordinal) → (y=oz : y ≡ osuc z ) → (z≤x : z o≤ x)  → (y≤x : y o≤ x )
+        → f y y≤x  ≡  & ( FuncsSHOD (* (f z z≤x )) (OS PB) )
+     fp-lim : (y : Ordinal) → ((z : Ordinal) → ¬ ( y ≡ osuc z)) → o∅ o< y → (y≤x : y o≤ x) 
+        → f y y≤x ≡  & ( BUnion y (λ z z<y → f z (ordtrans z<y y≤x )) fmax (λ z z<y → has-fmax z (ordtrans z<y y≤x ) ) )
+     -- we should have monotonicity
+     -- fmono : (a b : Ordinal) → (a<x : a o< x) (b<x : b o< x) → a o< b → f a a<x o< f b b<x
+
+--
+-- Assumption : we have enough ordinal to have function hierarchy
+--
+record BFlim (L : HOD)  (PB : HODBooleanAlgebra L ) (y : Ordinal) : Set n where 
+  field 
+     bfmax : (bau : (x : Ordinal) → x o< y → BAU L PB x) → Ordinal
+     is-bfmax : (x : Ordinal) → (x<y : x o< y )
+        → (bau : (x : Ordinal) → x o< y → BAU L PB x)
+        → (z : Ordinal) → (z≤x : z o≤ x) → BAU.f (bau x x<y ) z z≤x  o< bfmax bau
+
+BAU-unique : (L : HOD)  (PB : HODBooleanAlgebra L ) → {x y z : Ordinal} → (x<y : x o< y) → (bx : BAU L PB x) → (by : BAU L PB y )
+   → (z≤x : z o≤ x) → BAU.f bx z z≤x ≡ BAU.f by z (ordtrans z≤x (osucc x<y))
+BAU-unique L PB {x} {y} {z} x<y bx by z≤x = Ordinals.inOrdinal.TransFinite0 O 
+         {λ z → (z≤x : z o≤ x) → BAU.f bx z z≤x ≡ BAU.f by z (ordtrans z≤x (osucc x<y)) } ind  z z≤x where
+    ind : (z : Ordinal) → ((y₁ : Ordinal) → y₁ o< z → (z≤x₁ : y₁ o≤ x) → BAU.f bx y₁ z≤x₁ ≡ BAU.f by y₁ (ordtrans z≤x₁ (osucc x<y))) →
+            (z≤x : z o≤ x) → BAU.f bx z z≤x ≡ BAU.f by z (ordtrans z≤x (osucc x<y))
+    ind z prev z≤x with trio< z o∅
+    ... | tri< a ¬b ¬c = ⊥-elim ( ¬x<0 a)
+    ... | tri≈ ¬a b ¬c = trans ( BAU.fp0 bx _ b z≤x ) (sym ( BAU.fp0 by _ b (ordtrans z≤x (osucc x<y) ) ) ) 
+    ... | tri> ¬a ¬b c with Oprev-p  z
+    ... | yes0 p =  trans ( BAU.fp-prev bx z _ (sym ( Oprev.oprev=x p )) (ordtrans lem08 <-osuc)  z≤x )
+            (trans (cong (&) lem01 )  (sym ( BAU.fp-prev by z _  (sym ( Oprev.oprev=x p )) lem09  (ordtrans z≤x (osucc x<y) )  ))) where
+        lem08 : Oprev.oprev p o< x
+        lem08 = osucprev ( begin
+            osuc (Oprev.oprev p)  ≡⟨ Oprev.oprev=x p ⟩ 
+            z ≤⟨ z≤x ⟩ 
+            x ∎  )
+            where open o≤-Reasoning
+        lem07 : Oprev.oprev p o< z
+        lem07 = osucprev ( begin
+          osuc  (Oprev.oprev p)  ≡⟨ Oprev.oprev=x p ⟩ 
+          z ∎  )
+            where open o≤-Reasoning
+        lem09 :  Oprev.oprev p o< osuc y
+        lem09  = ordtrans (ordtrans lem08 <-osuc) (osucc x<y)
+        lem00 : BAU.f bx (Oprev.oprev p) (ordtrans lem08 <-osuc) ≡ BAU.f by (Oprev.oprev p) (ordtrans (ordtrans lem08 <-osuc) (osucc x<y))
+        lem00 = prev _ lem07 (ordtrans lem08 <-osuc)
+        lem01 : FuncsSHOD (* (BAU.f bx (Oprev.oprev p) (ordtrans lem08 <-osuc) )) (OS PB) ≡ FuncsSHOD (* (BAU.f by (Oprev.oprev p) lem09 )) (OS PB)
+        lem01 = cong ( λ k → FuncsSHOD (* k) (OS PB) ) lem00
+    ... | no0 ¬p =  trans lem00 (trans lem03 (sym lem01)) where
+        nbx : HOD
+        nbx = BUnion z (λ x x<z → BAU.f bx x (ordtrans x<z z≤x)) (BAU.fmax bx) (λ x x<z → BAU.has-fmax bx x (ordtrans x<z z≤x) )
+        nby : HOD
+        nby = BUnion z (λ x x<z → BAU.f by x (ordtrans x<z (ordtrans z≤x (osucc x<y)) )) (BAU.fmax by) (λ x x<z → BAU.has-fmax by x (ordtrans x<z (ordtrans z≤x (osucc x<y)) ) )
+        lem00 : BAU.f bx z z≤x ≡ & nbx
+        lem00 = BAU.fp-lim  bx _  (λ w eq → ¬p (record { oprev = w ; oprev=x = sym eq } )) c z≤x 
+        lem01 : BAU.f by z (ordtrans z≤x (osucc x<y) ) ≡ & nby
+        lem01 = BAU.fp-lim  by _  (λ w eq → ¬p (record { oprev = w ; oprev=x = sym eq } )) c (ordtrans z≤x (osucc x<y) )
+        lem04 : (w  : Ordinal) → (w≤z : w o< z) → (w≤x : w o≤ x) → BAU.f bx w w≤x ≡ BAU.f by w (ordtrans w≤x (osucc x<y) )
+        lem04 w lt le = prev _ lt le
+        lem05 :  {w : Ordinal} → odef nbx w → odef nby w
+        lem05 {w} bxw = record { value = BMOrd.value bxw ; value<y = lem07  ; Mv=x  
+            = trans (sym (trans (lem04 _ lem07 (ordtrans lem07 z≤x )) (BAU.fcong by _ _ _ _ refl ) ))  (BMOrd.Mv=x bxw)   } where
+              lem07 : BMOrd.value bxw  o< z
+              lem07 = BMOrd.value<y bxw   
+        lem06 :  {w : Ordinal} → odef nby w → odef nbx w
+        lem06 {w} byw = record { value = BMOrd.value byw ; value<y = lem07 ; Mv=x 
+            = trans (trans (lem04 _ lem07 (ordtrans (BMOrd.value<y byw) z≤x )) (BAU.fcong by _ _ _ _ refl ) )  (BMOrd.Mv=x byw)   }  where
+              lem07 : BMOrd.value byw  o< z
+              lem07 = BMOrd.value<y byw   
+        lem03 : & nbx ≡ & nby
+        lem03 = ==→o≡ record { eq→  = lem05 ; eq←  = lem06 }
+
+BAU-unique0 : (L : HOD)  (PB : HODBooleanAlgebra L ) → {x z : Ordinal} → (bx by : BAU L PB x) 
+   → (z≤x : z o≤ x) → BAU.f bx z z≤x ≡ BAU.f by z z≤x
+BAU-unique0 L PB {x} {z} bx by z≤x = Ordinals.inOrdinal.TransFinite0 O 
+         {λ z → (z≤x : z o≤ x) → BAU.f bx z z≤x ≡ BAU.f by z z≤x  } ind  z z≤x where
+    ind : (z : Ordinal) → ((y₁ : Ordinal) → y₁ o< z → (z≤x₁ : y₁ o≤ x) → BAU.f bx y₁ z≤x₁ ≡ BAU.f by y₁ z≤x₁) →
+            (z≤x : z o≤ x) → BAU.f bx z z≤x ≡ BAU.f by z z≤x 
+    ind z prev z≤x with trio< z o∅
+    ... | tri< a ¬b ¬c = ⊥-elim ( ¬x<0 a)
+    ... | tri≈ ¬a b ¬c = trans ( BAU.fp0 bx _ b z≤x ) (sym ( BAU.fp0 by _ b z≤x  ) ) 
+    ... | tri> ¬a ¬b c with Oprev-p  z
+    ... | yes0 p =  trans ( BAU.fp-prev bx z _ (sym ( Oprev.oprev=x p )) lem08  z≤x )
+            (trans (cong (&) (cong ( λ k → FuncsSHOD (* k) (OS PB) ) lem00) )  (sym ( BAU.fp-prev by z _  (sym ( Oprev.oprev=x p )) lem08  z≤x  )))  where
+        lem08 : Oprev.oprev p o< osuc x
+        lem08 = begin
+            Oprev.oprev p  <⟨ <-osuc ⟩ 
+            osuc (Oprev.oprev p)  ≡⟨ Oprev.oprev=x p ⟩ 
+            z ≤⟨ z≤x ⟩ 
+            x ∎  
+            where open o≤-Reasoning
+        lem07 : Oprev.oprev p o< z
+        lem07 = osucprev ( (subst (λ k → k o< osuc z) (sym (Oprev.oprev=x p)) <-osuc  ) )
+        lem00 : BAU.f bx (Oprev.oprev p) lem08  ≡ BAU.f by (Oprev.oprev p) lem08 
+        lem00 = prev _  lem07 lem08
+    ... | no0 ¬p =  trans lem00 (trans lem03 (sym lem01)) where
+        nbx : HOD
+        nbx = BUnion z (λ x x<z → BAU.f bx x (ordtrans x<z z≤x)) (BAU.fmax bx) (λ x x<z → BAU.has-fmax bx x (ordtrans x<z z≤x) )
+        nby : HOD
+        nby = BUnion z (λ x x<z → BAU.f by x (ordtrans x<z z≤x)) (BAU.fmax by) (λ x x<z → BAU.has-fmax by x (ordtrans x<z z≤x ) )
+        lem00 : BAU.f bx z z≤x ≡ & nbx
+        lem00 = BAU.fp-lim  bx _  (λ w eq → ¬p (record { oprev = w ; oprev=x = sym eq } )) c z≤x 
+        lem01 : BAU.f by z z≤x  ≡ & nby
+        lem01 = BAU.fp-lim  by _  (λ w eq → ¬p (record { oprev = w ; oprev=x = sym eq } )) c z≤x 
+        lem04 : (w  : Ordinal) → (w≤z : w o< z) → (w≤x : w o≤ x) → BAU.f bx w w≤x ≡ BAU.f by w w≤x 
+        lem04 w lt le = prev _ lt le
+        lem05 :  {w : Ordinal} → odef nbx w → odef nby w
+        lem05 {w} bxw = record { value = BMOrd.value bxw ; value<y = lem07  ; Mv=x  
+            = trans (sym (trans (lem04 _ lem07 (ordtrans lem07 z≤x )) (BAU.fcong by _ _ _ _ refl ) ))  (BMOrd.Mv=x bxw)   } where
+              lem07 : BMOrd.value bxw  o< z
+              lem07 = BMOrd.value<y bxw   
+        lem06 :  {w : Ordinal} → odef nby w → odef nbx w
+        lem06 {w} byw = record { value = BMOrd.value byw ; value<y = lem07 ; Mv=x 
+            = trans (trans (lem04 _ lem07 (ordtrans (BMOrd.value<y byw) z≤x )) (BAU.fcong by _ _ _ _ refl ) )  (BMOrd.Mv=x byw)   }  where
+              lem07 : BMOrd.value byw  o< z
+              lem07 = BMOrd.value<y byw   
+        lem03 : & nbx ≡ & nby
+        lem03 = ==→o≡ record { eq→  = lem05 ; eq←  = lem06 }
+
+BAU-unique1 : (L : HOD)  (PB : HODBooleanAlgebra L ) → {x y z : Ordinal} → (bx : BAU L PB x) (by : BAU L PB y) 
+   → x ≡ y → (z≤x : z o≤ x) (z≤y : z o≤ y) → BAU.f bx z z≤x ≡ BAU.f by z z≤y
+BAU-unique1 L PB {x} {_} {z} bx by refl z≤x z≤y with o<-irr {z} {osuc x} {z≤x} {z≤y}
+... | refl = BAU-unique0 L PB bx by z≤x 
+
+BAU-unique2 : (L : HOD)  (PB : HODBooleanAlgebra L ) → {x z1 z2 : Ordinal} → (bx by : BAU L PB x) 
+   → z1 ≡ z2 → (z1≤x : z1 o≤ x) (z2≤x : z2 o≤ x) → BAU.f bx z1 z1≤x ≡ BAU.f by z2 z2≤x
+BAU-unique2 L PB {x} {_} {z} bx by refl z1≤x z2≤x with o<-irr {z} {osuc x} {z1≤x} {z2≤x}
+... | refl = BAU-unique0 L PB bx by z1≤x 
+
+BAU-unique3 : (L : HOD)  (PB : HODBooleanAlgebra L ) → {x y z1 z2 : Ordinal} → (bx : BAU L PB x) (by : BAU L PB y) 
+   → x ≡ y → z1 ≡ z2 → (z1≤x : z1 o≤ x) (z2≤y : z2 o≤ y) → BAU.f bx z1 z1≤x ≡ BAU.f by z2 z2≤y
+BAU-unique3 L PB {x} {_} {z} bx by refl refl z1≤x z2≤y with o<-irr {z} {osuc x} {z1≤x} {z2≤y}
+... | refl = BAU-unique0 L PB bx by z1≤x 
+
+BUnion-unique : (L : HOD)  (PB : HODBooleanAlgebra L ) → {y max1 max2 b1 : Ordinal} 
+   → (bau1 : BAU L PB b1) → (bau2 : BAU L PB b1) → (y≤b1 : y o≤ b1) 
+   → (is-max1 : (x : Ordinal) → (x<y : x o< y) → BAU.f bau1 x (ordtrans x<y y≤b1 ) o< max1 ) 
+   → (is-max2 : (x : Ordinal) → (x<y : x o< y) → BAU.f bau2 x (ordtrans x<y y≤b1 ) o< max2 )
+   → BUnion y (λ z z<y →  BAU.f bau1 z (ordtrans z<y y≤b1 ) ) max1 is-max1 =h= BUnion y (λ z z<y →  BAU.f bau2 z (ordtrans z<y y≤b1 ) ) max2 is-max2
+BUnion-unique L PB {y} {_} bau1 bau2 y≤b1 is-max1 is-max2 = record {
+     eq→ = λ {z} lt → record { value = BMOrd.value lt ; value<y = BMOrd.value<y lt 
+       ; Mv=x = trans (trans (BAU-unique0 L PB bau2 bau1 (ordtrans (BMOrd.value<y lt) y≤b1 ) ) (BAU.fcong bau1 _ _ _ _ refl ) ) ( BMOrd.Mv=x lt )  }
+   ; eq← = λ {z} lt → record { value = BMOrd.value lt ; value<y = BMOrd.value<y lt 
+       ; Mv=x = trans (trans (BAU-unique0 L PB bau1 bau2 (ordtrans (BMOrd.value<y lt) y≤b1 ) ) (BAU.fcong bau2 _ _ _ _ refl ) ) ( BMOrd.Mv=x lt )  }
+  } 
+
+BUnion-unique1 : {y max1 max2 : Ordinal} 
+   → (M1 M2 : (x : Ordinal ) → x o< y → Ordinal ) 
+   → (is-max1 : (x : Ordinal) → (x<y : x o< y) → M1 _ x<y o< max1 ) 
+   → (is-max2 : (x : Ordinal) → (x<y : x o< y) → M2 _ x<y o< max2 )
+   → ( (x : Ordinal ) → (x<y : x o< y) → M1 _ x<y ≡ M2 _ x<y ) 
+   → BUnion y M1 max1 is-max1 =h= BUnion y M2 max2 is-max2
+BUnion-unique1 {y} {m1} {m2} M1 M2 im1 im2 eq = record {
+          eq→ = λ {z} lt → record { value = BMOrd.value lt ; value<y = BMOrd.value<y lt ; Mv=x = lem00 z lt  }
+        ; eq← = λ {z} lt → record { value = BMOrd.value lt ; value<y = BMOrd.value<y lt ; Mv=x = lem01 z lt  }
+    } where
+        lem00 : (z : Ordinal) → ( lt : BMOrd y M1 z ) → M2 (BMOrd.value lt) (BMOrd.value<y lt) ≡ z
+        lem00 z lt = trans (sym (eq (BMOrd.value lt) (BMOrd.value<y lt) )) (BMOrd.Mv=x lt)  
+        lem01 : (z : Ordinal) → ( lt : BMOrd y M2 z ) → M1 (BMOrd.value lt) (BMOrd.value<y lt) ≡ z
+        lem01 z lt = trans (eq (BMOrd.value lt) (BMOrd.value<y lt) ) (BMOrd.Mv=x lt)  
+--
+-- Constructing the Boolean Algebra Universe
+--
+
+MBc : (L : HOD)  (PB : HODBooleanAlgebra L ) → (bflim : (y : Ordinal) →  BFlim L PB y) → (x : Ordinal) → BAU L PB x
+MBc L PB bflim x = Ordinals.inOrdinal.TransFinite0 O {λ x → BAU L PB x} lem01 x where
+    lem01 : (x : Ordinal) → ((y : Ordinal) → y o< x → BAU L PB y) → BAU L PB x
+    lem01 x prev = record { f = lem02  
+         ; fcong = lem04 ;  fmax = fmax ;  has-fmax = has-fmax ;  fp0 = lem50 ;  fp-prev = lem05 ;  fp-lim = lem60 
+      } where
+        lem09 : (y : Ordinal) →  y ≡ x → ( z : Ordinal) → z o< y → BAU L PB z
+        lem09 y b z z<y = prev z (subst (λ k → z o< k) b z<y )
+        lem10 : (y : Ordinal)  → (b : y ≡ x) → (w : Ordinal) (w<y : w o< y) → BAU.f (lem09 y b w w<y) w <-osuc o< BFlim.bfmax (bflim y) (lem09 y b)
+        lem10 y b w w<y =  BFlim.is-bfmax (bflim y) _ w<y (lem09 y b) _ <-osuc
+
+        lem02 : (y : Ordinal) → y o≤ x →  Ordinal
+        lem02 y y≤x with trio< y o∅
+        ... | tri< a ¬b ¬c = ⊥-elim ( ¬x<0 a)
+        ... | tri≈ ¬a b ¬c = o∅ 
+        ... | tri> ¬a ¬b 0<y with trio< y x
+        ... | tri< a ¬b ¬c = BAU.f (prev y a) y <-osuc
+        ... | tri> ¬a ¬b c = ⊥-elim ( o≤> y≤x  c )
+        ... | tri≈ ¬a b ¬c with Oprev-p  y
+        ... | yes0 p = & ( FuncsSHOD (* (BAU.f (prev _ (ordtrans<-≤ lem03 y≤x ) ) (Oprev.oprev p) <-osuc )) (OS PB) ) where
+            lem03 : Oprev.oprev p o< y
+            lem03 = subst (λ k → Oprev.oprev p o< k) (Oprev.oprev=x p) <-osuc
+        ... | no0 ¬p = & ( BUnion y (λ z z<y → BAU.f (lem09 y b z z<y) z <-osuc ) (BFlim.bfmax (bflim y) (lem09 y b)) (lem10 y b)  ) 
+
+        lem50 :  (y : Ordinal) → y ≡ o∅ → (y≤x : y o≤ x) → lem02 y y≤x ≡ o∅
+        lem50 y y=0 y≤x with trio< y o∅
+        ... | tri< a ¬b ¬c = ⊥-elim ( ¬x<0 a)
+        ... | tri≈ ¬a b ¬c = refl
+        ... | tri> ¬a ¬b c = ⊥-elim ( ¬b y=0)
+
+        fmax0 : HOD
+        fmax0 = BUnion x (λ z z<y → BAU.f (lem09 x refl z z<y) z <-osuc ) (BFlim.bfmax (bflim x) (lem09 x refl )) (lem10 x refl )    
+
+        fmax : Ordinal
+        fmax with Oprev-p  x
+        ... | yes0 p = omax (osuc (& ( FuncsSHOD (* (BAU.f (prev _ lem03 ) (Oprev.oprev p) <-osuc )) (OS PB) ))) (osuc (& fmax0))  where
+            lem03 : Oprev.oprev p o< x
+            lem03 = subst (λ k → Oprev.oprev p o< k) (Oprev.oprev=x p) <-osuc
+        ... | no0 ¬p =  osuc (& fmax0)
+
+        lem04 :  (a b : Ordinal) (a≤x : a o≤ x) (b≤x : b o≤ x) → a ≡ b → lem02 a a≤x ≡ lem02 b b≤x
+        lem04 a a a≤x b≤x refl = cong (λ k → lem02 a k) o<-irr  --  we cannot use cong₂ ( λ j k → lem02 j k )  a=b o<-irr
+
+        lem05 : (y z : Ordinal) → y ≡ osuc z → (z≤x : z o≤ x) (y≤x : y o≤ x) → lem02 y y≤x ≡ & (FuncsSHOD (* (lem02 z z≤x)) (OS PB))
+        lem05 y z eq z≤x y≤x with trio< y o∅
+        ... | tri< a ¬b ¬c = ⊥-elim ( ¬x<0 a)
+        ... | tri≈ ¬a b ¬c =  ⊥-elim ( o<¬≡ (sym b) (subst (λ k → o∅ o< k ) (sym eq) (b<x→0<x <-osuc ) ))
+        ... | tri> ¬a ¬b c with trio< y x
+        ... | tri< a ¬b₁ ¬c = trans ( BAU.fp-prev (prev y a) y z eq  (subst (λ k → z o< osuc k ) (sym eq) (ordtrans <-osuc <-osuc ))  <-osuc ) 
+              (cong (&) (cong ( λ k → FuncsSHOD (* k) (OS PB) ) lem06  ) ) where
+           lem06 : BAU.f (prev y a ) z (subst (λ k → z o< osuc k) (sym eq) (ordtrans <-osuc <-osuc)) ≡ lem02 z z≤x 
+           lem06 with trio< z o∅ 
+           ... | tri< a ¬b ¬c = ⊥-elim ( ¬x<0 a)
+           ... | tri≈ ¬a b ¬c = BAU.fp0 (prev y a) _ b (subst (λ k → z o< osuc k) (sym eq) (ordtrans <-osuc <-osuc)) -- lem02 o∅ ≡ o∅ 
+           ... | tri> ¬a ¬b c with trio< z x
+           ... | tri< a₁ ¬b₁ ¬c = trans (BAU.fcong (prev y a) _ _ _ _ refl ) 
+                (sym (BAU-unique L PB (subst (λ k → z o< k) (sym eq) <-osuc ) (prev z a₁ ) (prev y a ) <-osuc )) 
+           ... | tri≈ ¬a₁ b ¬c = ⊥-elim ( o<> a (subst (λ k → x o< k) (trans (cong osuc (sym b)) (sym eq)) <-osuc  ))
+           ... | tri> ¬a₁ ¬b₁ c₁ = ⊥-elim ( o≤> z≤x c₁ )
+        ... | tri> ¬a₁ ¬b₁ c₁ = ⊥-elim ( o≤> y≤x  c₁ )
+        ... | tri≈ ¬a₁ b ¬c with Oprev-p  y
+        ... | yes0 p =  lem06 where
+            lem03 : Oprev.oprev p o< y
+            lem03 = subst (λ k → Oprev.oprev p o< k) (Oprev.oprev=x p) <-osuc
+            lem08 : Oprev.oprev p ≡ z 
+            lem08 = osuc-inject (trans ( Oprev.oprev=x p ) eq )
+            lem20 : Oprev.oprev p o< x 
+            lem20 = subst₂ ( λ j k → j o< k  ) (sym lem08) (trans (sym eq) b) <-osuc
+            lem21 : BAU.f (prev (Oprev.oprev p) (ordtrans<-≤ lem03 y≤x)) (Oprev.oprev p) <-osuc ≡ lem02 z z≤x
+            lem21 with trio< z o∅
+            ... | tri< a ¬b ¬c = ⊥-elim ( ¬x<0 a)
+            ... | tri≈ ¬a b ¬c = BAU.fp0 (prev _ (ordtrans<-≤ lem03 y≤x ) ) _ (trans lem08 b) <-osuc 
+            ... | tri> ¬a ¬b c with trio< z x
+            ... | tri< a ¬b₁ ¬c = lem22  where
+                lem22 : BAU.f (prev (Oprev.oprev p) (ordtrans<-≤ lem03 y≤x)) (Oprev.oprev p) <-osuc ≡ BAU.f (prev _ a) z <-osuc
+                lem22 = begin
+                    BAU.f (prev (Oprev.oprev p) (ordtrans<-≤ lem03 y≤x)) (Oprev.oprev p) <-osuc 
+                        ≡⟨ BAU.fcong (prev (Oprev.oprev p) (ordtrans<-≤ lem03 y≤x)) _ _ <-osuc _  lem08 ⟩
+                    BAU.f (prev (Oprev.oprev p) (ordtrans<-≤ lem03 y≤x)) z (subst (λ k → z o< osuc k) (sym lem08) <-osuc ) 
+                       ≡⟨ BAU-unique1 L PB (prev (Oprev.oprev p) (ordtrans<-≤ lem03 y≤x)) (prev _ a) lem08 _ _  ⟩
+                    BAU.f (prev _ a) z <-osuc 
+                    ∎ where open ≡-Reasoning
+            ... | tri≈ ¬a₁ b₁ ¬c = ⊥-elim ( o<¬≡  b₁ (subst (λ k → z o< k) (trans (sym eq) b ) <-osuc )) 
+            ... | tri> ¬a₁ ¬b₁ c₁ = ⊥-elim ( o<>  c₁ (subst (λ k → z o< k) (trans (sym eq) b ) <-osuc )) 
+            lem06 :  & ( FuncsSHOD (* (BAU.f (prev _ (ordtrans<-≤ lem03 y≤x ) ) (Oprev.oprev p) <-osuc )) (OS PB) ) ≡ & (FuncsSHOD (* (lem02 z z≤x)) (OS PB))
+            lem06 = cong (λ k → & (FuncsSHOD (* k) (OS PB) ) ) lem21 
+        ... | no0 ¬p =  ⊥-elim ( ¬p record { oprev = z ; oprev=x = sym eq } ) 
+
+        has-fmax : (y : Ordinal) (y≤x : y o≤ x) → lem02 y y≤x o< fmax
+        has-fmax y y≤x with trio< y o∅
+        ... | tri< a ¬b ¬c = ⊥-elim ( ¬x<0 a)
+        ... | tri≈ ¬a b ¬c = subst (λ k → k o< fmax ) lem12 lem13 where
+           lem11 : { x : Ordinal} → o∅ o< osuc x
+           lem11 {x} with trio< x o∅
+           ... | tri< a ¬b ¬c = ⊥-elim ( ¬x<0 a)
+           ... | tri≈ ¬a b ¬c = subst (λ k → o∅ o< osuc k ) (sym b) <-osuc
+           ... | tri> ¬a ¬b c = ordtrans <-osuc (osucc (b<x→0<x c))
+           lem12 : lem02 y y≤x ≡ o∅
+           lem12 with trio< y o∅
+           ... | tri< a ¬b ¬c = ⊥-elim ( ¬x<0 a)
+           ... | tri≈ ¬a b ¬c = refl
+           ... | tri> ¬a ¬b 0<y = ⊥-elim ( ¬b b )
+           lem13 : lem02 y  y≤x o< fmax
+           lem13 with Oprev-p  x
+           ... | yes0 p = ordtrans (subst (λ k → k o< osuc (& fmax0) ) (sym lem12) lem11 ) ( omax-y _ _  )
+           ... | no0 ¬p = subst (λ k → k o< osuc (& fmax0) ) (sym lem12) lem11 
+        ... | tri> ¬a ¬b 0<y with trio< y x
+        ... | tri< a ¬b ¬c = lem13 where 
+           lem11 : BAU.f (prev y a) y <-osuc o< osuc (& fmax0)
+           lem11 = ordtrans ( odef< (record { value = _ ; value<y = a ; Mv=x = refl })  ) <-osuc
+           lem13 : BAU.f (prev y a) y <-osuc o< fmax
+           lem13 with Oprev-p  x
+           ... | yes0 x = ordtrans lem11 ( omax-y _ _  )
+           ... | no0 x = lem11
+        ... | tri> ¬a ¬b c = ⊥-elim ( o≤> y≤x  c )
+        ... | tri≈ ¬a b ¬c with Oprev-p  y
+        ... | yes0 p = lem11 where 
+           lem03 : Oprev.oprev p o< y
+           lem03 = subst (λ k → Oprev.oprev p o< k) (Oprev.oprev=x p) <-osuc
+           lem14 : Oprev.oprev p o< x
+           lem14 = subst (λ k → Oprev.oprev p o< k) b lem03
+           lem11 : (& ( FuncsSHOD (* (BAU.f (prev _ (ordtrans<-≤ lem03 y≤x ) ) (Oprev.oprev p) <-osuc )) (OS PB) )) o< fmax
+           lem11 with Oprev-p x
+           ... | yes0 p1 = ordtrans (subst (λ k → & (FuncsSHOD (* k) _ ) o< osuc (& ( FuncsSHOD (* (BAU.f (prev _ lem15) (Oprev.oprev p1) <-osuc )) (OS PB) )) )
+                 (sym lem12)  <-osuc) ( omax-x _ _   ) where
+              lem15 : Oprev.oprev p1 o< x
+              lem15 = subst (λ k → Oprev.oprev p1 o< k) (Oprev.oprev=x p1) <-osuc
+              lem16 : Oprev.oprev p1 ≡ Oprev.oprev p
+              lem16 = osuc-inject (trans (Oprev.oprev=x p1) (sym (trans (Oprev.oprev=x p) b ) ) )
+              lem12 : BAU.f (prev _ (ordtrans<-≤ lem03 y≤x ) ) (Oprev.oprev p) <-osuc ≡ BAU.f (prev _ lem15 ) (Oprev.oprev p1) <-osuc 
+              lem12 = BAU-unique3 L PB (prev _ (ordtrans<-≤ lem03 y≤x ) ) (prev _ lem15 ) (sym lem16) (sym lem16) <-osuc <-osuc 
+           ... | no0 ¬p = ⊥-elim (¬p record { oprev = _ ; oprev=x = trans (Oprev.oprev=x p) b } )
+        ... | no0 ¬p with Oprev-p  x
+        ... | yes0 p1 = ⊥-elim ( ¬p record { oprev = Oprev.oprev p1 ; oprev=x = trans (Oprev.oprev=x p1) (sym b)  } )
+        ... | no0 ¬p1 = subst (λ k → k o< osuc (& fmax0 )) (lem11 (sym b))  <-osuc  where
+           lem11 : (x ≡ y ) → & fmax0 ≡ & ( BUnion y (λ z z<y → BAU.f (lem09 y b z z<y) z <-osuc ) (BFlim.bfmax (bflim y) (lem09 y b)) (lem10 y b)  ) 
+           lem11 refl = ==→o≡ ( BUnion-unique1 (λ z z<y → BAU.f (lem09 x refl z z<y) z <-osuc ) (λ z z<y → BAU.f (lem09 y b z z<y) z <-osuc ) 
+              (lem10 x refl )  (lem10 y b) lem12  ) where
+               lem12 : (x₂ : Ordinal) (x<y : x₂ o< x) → BAU.f (lem09 x refl x₂ x<y) x₂ <-osuc ≡ BAU.f (lem09 x b x₂ x<y) x₂ <-osuc
+               lem12 x₂ x<y = BAU-unique1 L PB (lem09 x refl x₂ x<y) (lem09 y b x₂ x<y) refl <-osuc <-osuc
+
+        lem60 : (y : Ordinal) → ((z : Ordinal) → ¬ y ≡ osuc z) → o∅ o< y → (y≤x : y o≤ x) →
+            lem02 y y≤x ≡ & (BUnion y (λ z z<y → lem02 z (ordtrans z<y y≤x)) fmax (λ z z<y → has-fmax z (ordtrans z<y y≤x)))
+        lem60 y ne 0<y y≤x with trio< y o∅ 
+        ... | tri< a ¬b ¬c = ⊥-elim ( ¬x<0 a)
+        ... | tri≈ ¬a b ¬c = ⊥-elim ( ¬c 0<y )
+        ... | tri> ¬a ¬b c with trio< y x
+        ... | tri< a ¬b₀ ¬c = lem20 where
+            lem20 : BAU.f (prev _ a) y <-osuc ≡ & (BUnion y (λ z z<y → lem02 z (ordtrans z<y y≤x)) fmax (λ z z<y → has-fmax z (ordtrans z<y y≤x)))
+            lem20 with Oprev-p  y
+            ... | yes0 p =  ⊥-elim ( ne _ (sym (Oprev.oprev=x p) ))
+            ... | no0 ¬p =  trans (BAU.fp-lim (prev y a) y lim 0<y <-osuc ) (==→o≡ 
+                  record { eq→ = λ {z} lt → record { value = BMOrd.value lt ; value<y = BMOrd.value<y lt 
+                      ; Mv=x = trans (lem31 _ lt)  (BMOrd.Mv=x lt) }  
+                   ; eq← = λ {z} lt → record { value = BMOrd.value lt ; value<y = BMOrd.value<y lt 
+                      ; Mv=x = trans (lem40 _ lt) (BMOrd.Mv=x lt) }} ) where
+                lim :  (z : Ordinal) → ¬ y ≡ osuc z
+                lim z y=oz =  ⊥-elim ( ¬p record { oprev = z ; oprev=x = sym y=oz } )
+                lem31 :  (z : Ordinal) → (lt : BMOrd y (λ z₁ z<y → prev y a .BAU.f z₁ (ordtrans z<y <-osuc)) z ) 
+                   → (lem02 (BMOrd.value lt) (ordtrans (BMOrd.value<y lt) y≤x))
+                        ≡ BAU.f (prev y a)  (BMOrd.value lt) (ordtrans (BMOrd.value<y lt) <-osuc) 
+                lem31 z lt with trio< (BMOrd.value lt) o∅
+                ... | tri< a ¬b ¬c =  ⊥-elim ( ¬x<0 a)  
+                ... | tri≈ ¬a b ¬c = sym (BAU.fp0 (prev y a) _ b (ordtrans (BMOrd.value<y lt) <-osuc) )  
+                ... | tri> ¬a ¬b c with trio< (BMOrd.value lt) x
+                ... | tri< a₁ ¬b ¬c = lem34 where
+                    lem32 : (BMOrd.value lt) o< x
+                    lem32 = a₁ 
+                    lem34 : BAU.f (prev (BMOrd.value lt) a₁) (BMOrd.value lt) <-osuc  
+                        ≡ BAU.f (prev y a)  (BMOrd.value lt) (ordtrans (BMOrd.value<y lt) <-osuc)  
+                    lem34 = trans (BAU-unique L PB (BMOrd.value<y lt) (prev (BMOrd.value lt) a₁) (prev y a) <-osuc ) 
+                       (BAU.fcong (prev y a) _ _ _ _ refl)
+                ... | tri≈ ¬a b ¬c = ⊥-elim ( o<¬≡ b (ordtrans (BMOrd.value<y lt ) a ) )
+                ... | tri> ¬a ¬b c = ⊥-elim ( o<> c (ordtrans (BMOrd.value<y lt ) a)  ) 
+                lem40 : (z : Ordinal) → (lt : BMOrd y (λ z z<y → lem02 z (ordtrans z<y y≤x) ) z)  → prev y a .BAU.f (BMOrd.value lt) (ordtrans (BMOrd.value<y lt) <-osuc) 
+                   ≡ lem02 (BMOrd.value lt) (ordtrans (lt .BMOrd.value<y) y≤x)
+                lem40 z lt with trio< (BMOrd.value lt) o∅
+                ... | tri< a ¬b ¬c =  ⊥-elim ( ¬x<0 a)  
+                ... | tri≈ ¬a b ¬c = BAU.fp0 (prev y a) _ b (ordtrans (BMOrd.value<y lt) <-osuc) 
+                ... | tri> ¬a ¬b c with trio< (BMOrd.value lt) x
+                ... | tri< a₁ ¬b ¬c = lem34 where
+                    lem32 : (BMOrd.value lt) o< y
+                    lem32 = BMOrd.value<y lt
+                    lem34 :  BAU.f (prev y a ) (BMOrd.value lt) (ordtrans (BMOrd.value<y lt) <-osuc)
+                        ≡ BAU.f (prev (BMOrd.value lt) a₁)  (BMOrd.value lt) <-osuc
+                    lem34 = trans (BAU.fcong (prev y a) _ _ _ _ refl)  (sym (BAU-unique L PB lem32 (prev (BMOrd.value lt) a₁) (prev y a )  <-osuc )) 
+                ... | tri≈ ¬a b ¬c = ⊥-elim ( o<¬≡ b (ordtrans (BMOrd.value<y lt ) a ) )
+                ... | tri> ¬a ¬b c = ⊥-elim ( o<> c (ordtrans (BMOrd.value<y lt ) a)  ) 
+        ... | tri> ¬a₁ ¬b₁ c₁ = ⊥-elim ( o≤> y≤x c₁ )
+        ... | tri≈ ¬a₁ b ¬c with Oprev-p  y
+        ... | yes0 p =  ⊥-elim ( ne _ (sym (Oprev.oprev=x p) ))
+        ... | no0 ¬p =  ==→o≡ lem24  where 
+            lem20 : (z : Ordinal) (z<y : z o< y) → BAU.f (lem09 y b z z<y) z <-osuc ≡ lem02 z (ordtrans z<y y≤x)
+            lem20 z z<y with trio< z o∅
+            ... | tri< a ¬b ¬c = ⊥-elim ( ¬x<0 a)
+            ... | tri≈ ¬a b₂ ¬c = BAU.fp0 (lem09 y b z z<y) _ b₂ <-osuc 
+            ... | tri> ¬a ¬b c with trio< z x
+            ... | tri< a ¬b₁ ¬c = lem23 where
+                lem23 : BAU.f (lem09 y b z z<y) z <-osuc ≡ BAU.f (prev z a ) z <-osuc 
+                lem23 = BAU-unique1 L PB (lem09 y b z z<y) (prev z a ) refl <-osuc <-osuc
+            ... | tri> ¬a₁ ¬b₁ c₁ = ⊥-elim ( o≤> (ordtrans z<y y≤x) c₁ )
+            ... | tri≈ ¬a₁ b₂ ¬c with Oprev-p  z
+            ... | yes0 p =  ⊥-elim ( ne _ (trans (sym (trans b₂ (sym b)) ) (sym (Oprev.oprev=x p) )  ))
+            ... | no0 ¬p =  trans ( BAU.fp-lim (lem09 y b z z<y) z lim c <-osuc ) (==→o≡ lem25 ) where 
+                lem25 : 
+                    BUnion z (λ z₁ z<y₁ → BAU.f (lem09 y b z z<y) z₁ (ordtrans z<y₁ <-osuc)) 
+                        (lem09 y b z z<y .BAU.fmax) (λ z₁ z<y₁ → lem09 y b z z<y .BAU.has-fmax z₁ (ordtrans z<y₁ <-osuc))
+                     =h= BUnion z (λ z₁ z<y₁ → BAU.f (lem09 z b₂ z₁ z<y₁) z₁ <-osuc) (BFlim.bfmax (bflim z) (lem09 z b₂)) (lem10 z b₂)
+                lem25 = BUnion-unique1 _ _ (λ z₁ z<y₁ → lem09 y b z z<y .BAU.has-fmax z₁ (ordtrans z<y₁ <-osuc)) (lem10 z b₂ ) 
+                  (λ w w<z → trans (BAU.fcong (lem09 y b z z<y) _ _ ( ordtrans w<z <-osuc) (ordtrans <-osuc (osucc w<z))  refl ) 
+                      (sym (BAU-unique L PB w<z  (lem09 z b₂ _ w<z ) (lem09 y b z z<y) <-osuc ))  ) 
+                lim : (w : Ordinal) → ¬ z ≡ osuc w
+                lim w z=oz =  ⊥-elim ( ¬p record { oprev = w ; oprev=x = sym z=oz } )
+            lem24 : BUnion y (λ z z<y → BAU.f (lem09 y b z z<y) z <-osuc ) (BFlim.bfmax (bflim y) (lem09 y b)) (lem10 y b) =h= 
+                BUnion y (λ z z<y → lem02 z (ordtrans z<y y≤x)) fmax (λ z z<y → has-fmax z (ordtrans z<y y≤x))
+            lem24 = BUnion-unique1 _ _  (lem10 y b) (λ z z<y → has-fmax z (ordtrans z<y y≤x)) lem20 
+
+--B1 : (L : HOD)  (PB : HODBooleanAlgebra L )  (x : Ordinal ) → ( ( y : Ordinal) → y o< x → HOD )  → HOD
+--B1 L PB x V0 with trio< x o∅
+--B1 L PB x V0 | tri< a ¬b ¬c = ⊥-elim ( ¬x<0 a)
+--B1 L PB x V0 | tri≈ ¬a refl ¬c = Ord o∅
+--B1 L PB x V0 | tri> ¬a ¬b c with Oprev-p  x
+--B1 L PB x V0 | tri> ¬a ¬b c | yes0 p = FuncsSHOD (V0 (Oprev.oprev p) ((subst (λ k → _ o< k) (Oprev.oprev=x  p) <-osuc ))) (OS PB)
+--B1 L PB x V0 | tri> ¬a ¬b c | no0 ¬p 
+--  = ? -- BUnion ?  ? ? -- x ? ? ?
+--     record { od = record { def = λ y → (y o< x ) ∧ ((lt : y o< x ) →  odef (V0 y lt) x ) } ; odmax = x; <odmax = λ {x} lt → proj1 lt }
+
+-- ecord MBOrd (L : HOD)  (PB : HODBooleanAlgebra L ) (x : Ordinal) : Set n where
+--   field 
+--     β : Ordinal
+--     ov : (& (TransFinite {λ x → HOD } ? β)) ≡ x 
+
+-- B : (L : HOD)  (PB : HODBooleanAlgebra L ) → OD
+-- B L PB = record { def = λ x → MBOrd L PB x }
+
+-- MB→Func : (L : HOD) → (PB : HODBooleanAlgebra L ) → (x : Ordinal) → MBOrd L PB x  → Func (* x) (OS PB)
+-- MB→Func L PB x record { β = β ; ov = ov } = {! !}
+
+vf : (L : HOD) → (PB : HODBooleanAlgebra L ) → (x : Ordinal) → o∅ o< x →  Func (* x) (OS PB)
+vf L PB x 0<x = record { func = λ _ → elt b1 ; is-func = λ {w} aw → A∋elt b1 ; func-wld = λ _ _ _ →  lem00 } where 
+    open BooleanAlgebra (ba PB)
+    open IsBooleanAlgebra (BooleanAlgebra.isBooleanAlgebra (ba PB))
+    lem00 : elt b1  ≡ elt b1
+    lem00 = trans (sym &iso) ( trans (==→o≡ (brefl {b1})) &iso  )
+
+v : (L : HOD) → (PB : HODBooleanAlgebra L ) → (x : Ordinal) → o∅ o< x →  HOD
+v L PB x 0<x = F→FuncHOD (vf L PB x 0<x) 
+
+-- nterp1 : (L : HOD) → (PB : HODBooleanAlgebra L ) → (an : AN L PB ) (bni : Bni L PB an) → (x : Ordinal ) → ( ( y : Ordinal) → y o< x → HOD )  → HOD
+-- nterp1 L PB an bni x V0 with trio< x o∅
+-- nterp1 L PB an bni x V0 | tri< a ¬b ¬c = ⊥-elim ( ¬x<0 a)
+-- nterp1 L PB an bni x V0 | tri≈ ¬a refl ¬c = Ord o∅
+-- nterp1 L PB an bni x V0 | tri> ¬a ¬b c with Oprev-p  x
+-- nterp1 L PB an bni x V0 | tri> ¬a ¬b c | yes0 p = ? 
+-- nterp1 L PB an bni x V0 | tri> ¬a ¬b c | no0 ¬p = 
+--    record { od = record { def = λ y → (y o< x ) ∧ ((lt : y o< x ) →  odef (V0 y lt) x ) } ; odmax = x; <odmax = λ {x} lt → proj1 lt }
+
+-- ecord interpOrd (L : HOD)  (PB : HODBooleanAlgebra L ) (an : AN L PB ) (bni : Bni L PB an) (x : Ordinal) : Set n where
+--   field 
+--     β : Ordinal
+--     ov : (& (TransFinite {λ x → HOD } (interp1 L PB an bni ) β)) ≡ x 
+-- 
+-- nterp : (L : HOD) → (PB : HODBooleanAlgebra L ) (an : AN L PB ) (bni : Bni L PB an) → OD
+-- nterp L PB an bni = record { def = λ x → interpOrd L PB an bni x }
 

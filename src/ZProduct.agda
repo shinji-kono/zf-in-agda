@@ -228,88 +228,6 @@ zp-iso0 {A} {B} {a} {b} pab = ⟪ subst₂ (λ j k → j ≡ k ) &iso &iso (==�
 zp-iso3 :  { A B : HOD } → {x y : Ordinal } → (ax : odef (ZFP A B) x ) (ay : odef (ZFP A B) y ) → x ≡ y → (zπ1 ax ≡ zπ1 ay) ∧ (zπ2 ax ≡ zπ2 ay)
 zp-iso3 {A} {B} {.(& < * _ , * _ >)} {.(& < * _ , * _ >)} (ab-pair x x₁) (ab-pair x₂ x₃) x=y = prod-≡ x=y
 
--- ZFP⊆⊗ :  {A B : HOD} {x : Ordinal} → odef (ZFP A B) x → odef (A ⊗ B) x
--- ZFP⊆⊗ {A} {B} {px} ( ab-pair {a} {b} ax by ) = product→ (d→∋ A ax) (d→∋ B by)
-
--- ⊗⊆ZFP : {A B x : HOD} → ( A ⊗ B ) ∋ x → odef (ZFP A B) (& x)
--- ⊗⊆ZFP {A} {B} {x} record { owner = owner ; ao = record { z = a ; az = ba ; x=ψz = x=ψa } ; ox = ox } = zfp01 where
---        zfp02 : Replace' A (λ z lz → < z , * a >) record { ≤COD = ? }  ≡ * owner
---        zfp02 = subst₂ ( λ j k → j ≡ k ) *iso refl (sym (cong (*) x=ψa ))
---        zfp01 : odef (ZFP A B) (& x)
---        zfp01 with subst (λ k → odef k (& x) ) (sym zfp02) ox
---        ... | t = ?
---        -- ... | record { z = b ; az = ab ; x=ψz = x=ψb } = subst (λ k → ZFProduct A B k ) (sym x=ψb) (ab-pair ab ba)
-
---  ZPI1 : (A B : HOD) → HOD
---  ZPI1 A B = Replace' (ZFP A B) ( λ x px → * (zπ1 px )) {Union A} record { ≤COD  = lemma1 } where
---      lemma1 : {x : Ordinal } (lt : odef (ZFP A B) x) → * (zπ1 lt) ⊆ Union A
---      lemma1  (ab-pair {a} {b} aa bb) {x} ax = record { owner = _ ; ao = aa ; ox = ax }
--- 
---  ZPI2 : (A B  : HOD) → HOD
---  ZPI2 A B = Replace' (ZFP A B) ( λ x px → * (zπ2 px )) {Union B} record { ≤COD  = lemma1 } where
---      lemma1 : {x : Ordinal } (lt : odef (ZFP A B) x) → * (zπ2 lt) ⊆ Union B
---      lemma1  (ab-pair {a} {b} aa bb) {x} bx = record { owner = _ ; ao = bb ; ox = bx }
--- 
---  ZFProj1-iso : {P Q : HOD} {a b x : Ordinal } ( p : ZFProduct P Q x ) → x ≡ & < * a , * b > → zπ1 p ≡ a
---  ZFProj1-iso {P} {Q} {a} {b} (ab-pair {c} {d} zp zq) eq = ? -- with prod-≡ (subst₂ (λ j k → j ≡ k) *iso *iso (cong (*) eq))
---  --- ... | ⟪ a=c , b=d ⟫ = subst₂ (λ j k → j ≡ k) &iso &iso (cong (&) a=c)
--- 
---  ZFProj2-iso : {P Q : HOD} {a b x : Ordinal } ( p : ZFProduct P Q x ) → x ≡ & < * a , * b > → zπ2 p ≡ b
---  ZFProj2-iso {P} {Q} {a} {b} (ab-pair {c} {d} zp zq) eq = ? -- with prod-≡ (subst₂ (λ j k → j ≡ k) *iso *iso (cong (*) eq))
---  --- ... | ⟪ a=c , b=d ⟫ = subst₂ (λ j k → j ≡ k) &iso &iso (cong (&) b=d)
--- 
---  ZPI1-iso : (A B : HOD) → {b : Ordinal } → odef B b → ZPI1 A B ≡ A
---  ZPI1-iso P Q {q} qq = ? where -- ==→o≡ record { eq→ = ty20 ; eq← = ty22 } where
---       ty21 : {a b : Ordinal } → (pz : odef P a) → (qz : odef Q b) → ZFProduct P Q (& (* (& < * a , * b >)))
---       ty21 pz qz = subst (odef (ZFP P Q)) (sym &iso) (ab-pair pz qz )
---       ty32 : {a b : Ordinal } → (pz : odef P a) → (qz : odef Q b) → zπ1 (ty21 pz qz) ≡ a
---       ty32 {a} {b} pz qz  = ? where -- ty33 (ty21 pz qz) (cong (&) *iso) where
---           ty33 : {a b x : Ordinal } ( p : ZFProduct P Q x ) → x ≡ & < * a , * b > → zπ1 p ≡ a
---           ty33 {a} {b} (ab-pair {c} {d} zp zq) eq = ? -- with prod-≡ (subst₂ (λ j k → j ≡ k) *iso *iso (cong (*) eq))
---           -- ... | ⟪ a=c , b=d ⟫ = subst₂ (λ j k → j ≡ k) &iso &iso (cong (&) a=c)
---       ty20 : {x : Ordinal} → odef (ZPI1 P Q) x → odef P x
---       ty20 {x} record { z = _ ; az = ab-pair {a} {b} pz qz ; x=ψz = x=ψz } = subst (λ k → odef P k) a=x pz  where
---           ty24 : * x  ≡ * a
---           ty24 = begin
---              * x ≡⟨ cong (*) x=ψz ⟩
---              _ ≡⟨ ?  ⟩
---              * (zπ1 (subst (odef (ZFP P Q)) (sym &iso) (ab-pair pz qz))) ≡⟨ cong (*) (ty32 pz qz) ⟩
---              * a ∎ where open ≡-Reasoning
---           a=x : a  ≡ x
---           a=x = subst₂ (λ j k → j ≡ k ) &iso &iso (cong (&) (sym ty24))
---       ty22 : {x : Ordinal} → odef P x → odef (ZPI1 P Q) x
---       ty22 {x} px = record { z = _ ; az = ab-pair px qq ; x=ψz = subst₂ (λ j k → j ≡ k) &iso refl (cong (&) ty12 ) }  where
---           ty12 : * x ≡ * (zπ1 (subst (odef (ZFP P Q)) (sym &iso) (ab-pair px qq )))
---           ty12 = begin
---              * x ≡⟨ sym (cong (*) (ty32 px qq )) ⟩
---              * (zπ1 (subst (odef (ZFP P Q)) (sym &iso) (ab-pair px qq ))) ∎ where open ≡-Reasoning
--- 
---  ZPI2-iso : (A B : HOD) → {b : Ordinal } → odef A b → ZPI2 A B ≡ B
---  ZPI2-iso P Q {p} pp = ? where -- ==→o≡ record { eq→ = ty20 ; eq← = ty22 } where
---       ty21 : {a b : Ordinal } → (pz : odef P a) → (qz : odef Q b) → ZFProduct P Q (& (* (& < * a , * b >)))
---       ty21 pz qz = subst (odef (ZFP P Q)) (sym &iso) (ab-pair pz qz )
---       ty32 : {a b : Ordinal } → (pz : odef P a) → (qz : odef Q b) → zπ2 (ty21 pz qz) ≡ b
---       ty32 {a} {b} pz qz  = ? where -- ty33 (ty21 pz qz) (cong (&) *iso) where
---           ty33 : {a b x : Ordinal } ( p : ZFProduct P Q x ) → x ≡ & < * a , * b > → zπ2 p ≡ b
---           ty33 {a} {b} (ab-pair {c} {d} zp zq) eq = ? -- with prod-≡ (subst₂ (λ j k → j ≡ k) *iso *iso (cong (*) eq))
---           -- ... | ⟪ a=c , b=d ⟫ = subst₂ (λ j k → j ≡ k) &iso &iso (cong (&) b=d)
---       ty20 : {x : Ordinal} → odef (ZPI2 P Q) x → odef Q x
---       ty20 {x} record { z = _ ; az = ab-pair {a} {b} pz qz ; x=ψz = x=ψz } = subst (λ k → odef Q k) a=x qz  where
---           ty24 : * x  ≡ * b
---           ty24 = begin
---              * x ≡⟨ cong (*) x=ψz ⟩
---              _ ≡⟨ ?  ⟩
---              * (zπ2 (subst (odef (ZFP P Q)) (sym &iso) (ab-pair pz qz))) ≡⟨ cong (*) (ty32 pz qz) ⟩
---              * b ∎ where open ≡-Reasoning
---           a=x : b  ≡ x
---           a=x = subst₂ (λ j k → j ≡ k ) &iso &iso (cong (&) (sym ty24))
---       ty22 : {x : Ordinal} → odef Q x → odef (ZPI2 P Q) x
---       ty22 {x} qx = record { z = _ ; az = ab-pair pp qx  ; x=ψz = subst₂ (λ j k → j ≡ k) &iso refl (cong (&) ty12 ) }  where
---           ty12 : * x ≡ * (zπ2 (subst (odef (ZFP P Q)) (sym &iso) (ab-pair pp qx)))
---           ty12 = begin
---              * x ≡⟨ sym (cong (*) (ty32 pp qx  )) ⟩
---              * (zπ2 (subst (odef (ZFP P Q)) (sym &iso) (ab-pair pp qx  ))) ∎ where open ≡-Reasoning
-
 
 --
 --  Projection of subset of ZFP
@@ -516,23 +434,34 @@ FuncComp {A} {B} {C} g f = record {
          lemma1 : {x y : Ordinal} → (ax : odef A x) → (ay : odef A y ) → x ≡ y → Func.func g (Func.is-func f ax) ≡ Func.func g (Func.is-func f ay)
          lemma1 {x} {y} ax ay eq = Func.func-wld g (Func.is-func f ax) (Func.is-func f ay) (Func.func-wld f ax ay eq)
 
+
 --
 --  Set of All function from A to B
 --
 
 -- open import Relation.Binary.HeterogeneousEquality as HE using (_≅_ )
 
-Funcs : (A B : HOD) → HOD
-Funcs A B = record { od = record { def = λ x → FuncHOD A B x } ; odmax = osuc (& (ZFP A B))
-       ; <odmax = λ {y} px → subst ( λ k → k o≤ (& (ZFP A B)) ) &iso (⊆→o≤ (lemma1 px)) } where
-    lemma1 : {y : Ordinal } → FuncHOD A B y → {x : Ordinal} → odef (* y) x → odef (ZFP A B) x
-    lemma1 {y} (felm F) {x} yx with eq→  *iso yx
-    ... | record { z = z ; az = az ; x=ψz = x=ψz } = subst (λ k → ZFProduct A B k) (sym x=ψz) lemma4 where
+--
+-- all functions from A to B
+--
+
+Func<ZFP : (A B : HOD) { y : Ordinal } → FuncHOD A B y → {x : Ordinal} → odef (* y) x → odef (ZFP A B) x
+Func<ZFP A B {y} (felm F) {x} yx with eq→  *iso yx
+... | record { z = z ; az = az ; x=ψz = x=ψz } = subst (λ k → ZFProduct A B k) (sym x=ψz) lemma4 where
         lemma4 : ZFProduct A B (& < * z , * (Func.func F (subst (λ k → odef A k) (sym &iso) az)) > )
         lemma4 = ab-pair az (Func.is-func F (subst (λ k → odef A k) (sym &iso) az))
 
+Funcs : (A B : HOD) → HOD
+Funcs A B = record { od = record { def = λ x → FuncHOD A B x } ; odmax = osuc (& (ZFP A B))
+       ; <odmax = λ {y} px → subst ( λ k → k o≤ (& (ZFP A B)) ) &iso (⊆→o≤ (Func<ZFP A B px)) } 
+
 Funcs∋FuncHOD : {A B : HOD} → {f : Func A B} →  odef (Funcs A B) (& (F→FuncHOD f))
 Funcs∋FuncHOD {a} {b} {f} = felm f 
+
+-- Func-o∅ : {A : HOD}  → o∅ ≡ & (Funcs (* o∅) A )
+-- Func-o∅ {A} = trans (sym ord-od∅ ) ( ==→o≡ record { eq→ = λ {x} ax → ⊥-elim (¬x<0 ax) ; eq← = λ {x} ax → ⊥-elim (lem00 ax) } ) where
+--    lem00 : {x : Ordinal} → ¬ ( FuncHOD (* o∅) A x )
+--    lem00 {x} (felm F) = {! !}    it looks like we have one
 
 TwoHOD : HOD
 TwoHOD = ( od∅ , ( od∅ ,  od∅ ))
