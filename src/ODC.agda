@@ -89,6 +89,11 @@ double-neg-elim  {A} notnot with decp  A                         -- assuming axi
 ... | yes0 p = p
 ... | no0 ¬p = ⊥-elim ( notnot ¬p )
 
+contra-position2  : {A B : Set n} → (¬ A → ¬ B) → B → A      -- we don't have this in intutionistic logic
+contra-position2  {A} {B} f b with decp  A                          -- assuming axiom of choice
+contra-position2  {A} {B} f b | yes0 a = a
+contra-position2  {A} {B} f b | no0 na = ⊥-elim (f na b) 
+
 or-exclude : {A B : Set n} → A ∨ B → A ∨ ( (¬ A)  ∧  B )
 or-exclude {A} {B} ab with p∨¬p A
 or-exclude {A} {B} (case1 a) | case1 a0 = case1 a

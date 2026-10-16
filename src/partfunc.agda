@@ -5,36 +5,36 @@ open import Relation.Nullary
 
 open import Level hiding (zero ; suc)
 open import Ordinals
-import HODBase
-import OD
+-- import HODBase
+-- import OD
 open import Relation.Nullary
-module partfunc {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho< : OD.ODAxiom-ho< O HODAxiom ) where
+module partfunc where -- {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho< : OD.ODAxiom-ho< O HODAxiom ) where
 
 open import  Relation.Binary.PropositionalEquality hiding ( [_] )
 open import Data.Empty
 
-import OrdUtil
+--- import OrdUtil
 
-open Ordinals.Ordinals  O
-open Ordinals.IsOrdinals isOrdinal
-import ODUtil
+--- open Ordinals.Ordinals  O
+--- open Ordinals.IsOrdinals isOrdinal
+--- import ODUtil
 
 open import logic
 open import nat
 
-open OrdUtil O
-open ODUtil O HODAxiom  ho<
+--- open OrdUtil O
+--- open ODUtil O HODAxiom  ho<
 
 open _∧_
 open _∨_
 open Bool
 
-open  HODBase._==_
+--- open  HODBase._==_
 
-open HODBase.ODAxiom HODAxiom  
-open OD O HODAxiom
+--- open HODBase.ODAxiom HODAxiom  
+--- open OD O HODAxiom
 
-open HODBase.HOD
+--- open HODBase.HOD
 
 
 open import Relation.Nullary
@@ -61,6 +61,7 @@ data Two : Set where
 ----
 --
 -- Partial Function without ZF
+--    H(ω , 2)  is List (Maybe Two)
 --
 
 record PFunc {n m l : Level } (Dom : Set n) (Cod : Set m) : Set (Level.suc  (n Level.⊔ m Level.⊔ l)) where

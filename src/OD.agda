@@ -317,6 +317,10 @@ union→ X z u xx =  record { owner = & u ; ao = proj1 xx ; ox = eq← *iso (pro
 union← :  (X z : HOD) (X∋z : Union X ∋ z) →  ¬  ( (u : HOD ) → ¬ ((X ∋  u) ∧ (u ∋ z )))
 union← X z UX∋z not = ⊥-elim ( not (* (Own.owner UX∋z)) ⟪ subst (λ k → odef X k) (sym &iso) ( Own.ao UX∋z) , Own.ox UX∋z ⟫  )
 
+union-cong :  (X Y : HOD) → X =h= Y → Union X =h= Union Y 
+union-cong x y x=y = record { eq→ = λ {z} lt → record { owner = _ ; ao = eq→ x=y (Own.ao lt)  ; ox = Own.ox lt }  
+   ; eq← = λ {z} lt →  record { owner = _ ; ao = eq← x=y (Own.ao lt)  ; ox = Own.ox lt }  }
+
 --
 --  M x = Uinion { M β | β o< x }
 --
@@ -330,6 +334,9 @@ OrdUnion : (M : Ordinal → Ordinal ) (max : Ordinal) (has-max : (x : Ordinal) �
 OrdUnion M max has-max x = record { od = record { def = λ y → MOrd M max has-max x y } ; odmax = max ; <odmax = lem00 }  where
     lem00 : {y : Ordinal} → MOrd M max has-max x y → y o< max
     lem00 {y} mo = subst (λ k → k o< max ) (MOrd.Mv=x mo) (has-max (MOrd.value mo))
+
+Union-0 : & ( Union od∅ ) ≡ o∅ 
+Union-0 = =od∅→≡o∅ record { eq→ = λ {x} lt → ⊥-elim (¬x<0 (Own.ao lt) ) ; eq← = λ {x} lt → ⊥-elim (¬x<0 lt)   }
 
 --
 --

@@ -67,12 +67,22 @@ L＼0=L  = record { eq→ = lem05 ; eq← = lem06 }  where
 ... | yes0 y = case1 ( subst (λ k → odef X k ) &iso (proj1 y)  )
 ... | no0  n = case2 ⟪ Lx , subst (λ k → ¬ odef X k) &iso (λ lt → ⊥-elim ( n ⟪ lt , subst (λ k → odef L k) (sym &iso) Lx ⟫ ) )  ⟫
 
+L＼lem00 : {x : HOD} →  x ⊆ L   → (L ＼ (* (& x ))) =h= (L ＼ x)
+L＼lem00 {x} le = record { eq→ = lem00 ; eq← = lem01 }  where
+    lem00 : {z : Ordinal} → odef (L ＼ (* (& x))) z → odef (L ＼ x) z
+    lem00 {z} ⟪ Lz , nLx ⟫ = ⟪ Lz , (λ lt → nLx (eq← *iso lt))  ⟫ 
+    lem01 : {z : Ordinal} → odef (L ＼ x) z → odef (L ＼ (* (& x))) z
+    lem01 {z} ⟪ Lz , nx ⟫ = ⟪ Lz , (λ lt → nx (eq→ *iso lt))  ⟫
+
 ＼-⊆ : { A B : HOD } →  A ⊆ L → ( A ⊆ B → ( L ＼ B ) ⊆ ( L ＼ A )) ∧ (( L ＼ B ) ⊆ ( L ＼ A ) → A ⊆ B )
 ＼-⊆ {A} {B} A⊆L = ⟪ ( λ a<b {x} pbx → ⟪ proj1 pbx  , (λ ax → proj2 pbx (a<b ax))   ⟫ )  , lem07 ⟫ where
     lem07 : (L ＼ B) ⊆ (L ＼ A) → A ⊆ B
     lem07 pba {x} ax with ∋-p (B ∩ L) proj2 (* x)
     ... | yes0 bx = subst (λ k → odef B k ) &iso (proj1 bx)
     ... | no0 ¬bx = ⊥-elim ( proj2 ( pba ⟪ A⊆L ax  , (λ bx → ¬bx ⟪ d→∋ B bx , subst (λ k → odef L k) (sym &iso) ( A⊆L ax)  ⟫) ⟫ ) ax )
+
+＼⊥ : {a : HOD} {z : Ordinal} → odef  (L ＼ a ) z → odef a z → ⊥
+＼⊥ {a} {z} naz az = proj2 naz az
 
 RC＼ :  RCod (Power (Union L)) (λ z → L ＼ z )
 RC＼ = record { ≤COD = λ {x} lt z xz → lemm {x} lt z xz ; ψ-eq = λ {x} {y} → wdf {x} {y}  } where

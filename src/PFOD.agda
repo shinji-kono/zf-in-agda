@@ -59,7 +59,7 @@ open import ZProduct O HODAxiom ho<
 
 -------
 --    the set of finite partial functions from ω to 2
---
+--    H(ω , 2)
 --
 
 open import Data.List hiding (filter)
@@ -144,21 +144,22 @@ data Two : Set where
   i0 : Two
   i1 : Two
 
+list→hod : List (Maybe Two) → HwStep
+list→hod []  = record { x = o∅ ; i = 0 ; isHw = hφ }
+list→hod (just i0 ∷ t)  = record { x = & (Union ( < nat→ω (HwStep.i pf01) , od∅ >  , * x )) 
+        ; i = suc (HwStep.i pf01) ; isHw = h0 (HwStep.isHw pf01) } where 
+    pf01 : HwStep
+    pf01 = list→hod t 
+    x = HwStep.x pf01
+list→hod (just i1 ∷ t)  = record { x = & (Union ( < nat→ω (HwStep.i pf01) , nat→ω 1 >  , * x )) 
+        ; i = suc (HwStep.i pf01) ; isHw = h1 (HwStep.isHw pf01) } where 
+    pf01 : HwStep
+    pf01 = list→hod t 
+    x = HwStep.x pf01
+list→hod (nothing ∷ t)  = list→hod t 
+
 3→Hω2 : List (Maybe Two) → HOD
-3→Hω2 t = * (HwStep.x (list→hod t))  where
-   list→hod : List (Maybe Two) → HwStep
-   list→hod []  = record { x = o∅ ; i = 0 ; isHw = hφ }
-   list→hod (just i0 ∷ t)  = record { x = & (Union ( < nat→ω (HwStep.i pf01) , od∅ >  , * x )) 
-            ; i = suc (HwStep.i pf01) ; isHw = h0 (HwStep.isHw pf01) } where 
-        pf01 : HwStep
-        pf01 = list→hod t 
-        x = HwStep.x pf01
-   list→hod (just i1 ∷ t)  = record { x = & (Union ( < nat→ω (HwStep.i pf01) , nat→ω 1 >  , * x )) 
-            ; i = suc (HwStep.i pf01) ; isHw = h1 (HwStep.isHw pf01) } where 
-        pf01 : HwStep
-        pf01 = list→hod t 
-        x = HwStep.x pf01
-   list→hod (nothing ∷ t)  = list→hod t 
+3→Hω2 t = * (HwStep.x (list→hod t))  
 
 Hω2→3 : (x :  HOD) → HODω2 ∋ x → List (Maybe Two) 
 Hω2→3 x = lemma where
@@ -173,7 +174,7 @@ Hω2→3 x = lemma where
        lem01 : (y : Ordinal ) → (i : ℕ) → Hω2 i y → i ≡ suc count → List (Maybe Two)
        lem01 _ _ hφ ()
        lem01 _ (suc i) (h0 hw) eq = just i0 ∷ lemma record { count = i ; hω2 =  hw }
-       lem01 _ (suc i) (h1 hw) eq = just i0 ∷ lemma record { count = i ; hω2 =  hw }
+       lem01 _ (suc i) (h1 hw) eq = just i1 ∷ lemma record { count = i ; hω2 =  hw }
        lem01 y (suc i) (he hw) eq = nothing ∷ lemma record { count = i ; hω2 =  hw }
 
 ω→2 : HOD
@@ -243,3 +244,120 @@ fω→2-iso f x = le01 x  where
             le05 : (lt : Omega-d (& (* (& (nat→ω x))))) → f (ω→nato lt) ≡ i1
             le05 lt = trans (cong f (ω→nat-iso0 x lt (==-trans *iso *iso))) fx=1
 
+--
+-- H(ω x ω, 2)
+--   { P | Func p ∧ (dom p ⊆ ω x ω) ∧ (finite (dom p) ∧ ran p ⊆ 2) }
+-- it is ordered by p ≤ q iff q ⊆ p
+--
+-- List (Maybe (List (Maybe Two)))
+
+data Hww2 :  (i : ℕ) ( x : Ordinal  ) → Set n where
+  hjφ :  Hww2 0 o∅
+  hj : {i j : ℕ} {x y : Ordinal  } → Hω2 j y → Hww2 i x  → 
+    Hww2 (suc i) (& (Union (< nat→ω i , * y >  ,  * x )))
+  hej : {i : ℕ} {x : Ordinal  } → Hww2 i x  →
+    Hww2 (suc i) x
+
+record  Hww2r (x : Ordinal) : Set n where
+  field
+    count : ℕ
+    hww2 : Hww2 count x
+
+open Hww2r
+
+hww2⊆POmega :  {x : Ordinal} → Hww2r x → odef (Power (Power (Omega ho< ∪ (Power (Power (Omega ho<)))))) x
+hww2⊆POmega {x} record { count = count ; hww2 = lt } = odmax1 count lt  where
+   A : HOD
+   A = (Omega ho<) ∪ (Power (Power (Omega ho<)))
+   odmax1 : {y : Ordinal} (i : ℕ)  →  Hww2 i y → odef (Power (Power A )) y
+   odmax1 {y} zero lt = odmax3 where
+      odmax2 : (i :  ℕ  ) → i ≡ 0 →  Hww2 i y → y ≡ o∅
+      odmax2 i eq hjφ = refl
+      odmax2 i () (hj _ _)
+      odmax2 i () (hej _ ) 
+      odmax3 : odef (Power (Power A )) y
+      odmax3 = subst (λ k → odef (Power (Power A)) k ) (sym (odmax2 zero refl lt)) (Power∋∅ {Power A}) 
+   odmax1 {y} (suc i) lt  z xz = odmax2 _ refl lt where
+      odmax2 : (j :  ℕ  ) → j ≡ suc i →  Hww2 j y → odef (Power A ) z
+      odmax2 j () hjφ 
+      odmax2 j j=si (hj {i2} {j2} {x2} {y2} lt1 lt2) w lt3 = odmax3 (eq→ *iso xz ) where
+          odmax3 :  odef (Union (< nat→ω i2 , * y2 > , * x2 )) z → odef A w
+          odmax3 record { owner = _ ; ao = case1 refl ; ox = ox } = odmax10 where 
+              odmax10 : odef (Omega ho<) w ∨ odef (Power (Power (Omega ho<))) w
+              odmax10 with eq→ *iso ox 
+              ... | case1 refl = case1 (odmax5 (eq→ *iso lt3  )) where
+                 odmax5 : odef (nat→ω i2 , nat→ω i2) w → Omega-d w 
+                 odmax5 (case1 refl) = ω∋nat→ω {i2 } 
+                 odmax5 (case2 refl) = ω∋nat→ω {i2 }
+              ... | case2 refl with eq→ *iso lt3  
+              ... | case1 refl = case1 (ω∋nat→ω {i2 }  )
+              ... | case2 refl = case2 (subst (λ k → odef (Power (Power (Omega ho<))) k ) (sym &iso)  (hw⊆POmega  record { count = j2 ; hω2 = lt1 }  ) )
+          odmax3 record { owner = owner ; ao = case2 refl ; ox = ox } = odmax10  where
+              odmax10 : odef (Omega ho<) w ∨ odef (Power (Power (Omega ho<))) w
+              odmax10 with eq→ *iso xz 
+              ... | record { owner = ow ; ao = case1 refl ; ox = oz } = odmax11  where
+                 odmax11 : odef (Omega ho<) w ∨ odef (Power (Power (Omega ho<))) w
+                 odmax11 with eq→ *iso oz
+                 ... | case1 refl = case1 (odmax12 (eq→ *iso lt3) ) where
+                    odmax12 : odef (nat→ω i2 , nat→ω i2) w → Omega-d w 
+                    odmax12 (case1 refl) = ω∋nat→ω {i2 } 
+                    odmax12 (case2 refl) = ω∋nat→ω {i2 }
+                 ... | case2 refl = (odmax12 (eq→ *iso lt3 )) where
+                    odmax12 : odef (nat→ω i2 , * y2 ) w → Omega-d w ∨ odef (Power (Power (Omega ho<))) w
+                    odmax12 (case1 refl) = case1 ( ω∋nat→ω {i2 }  )
+                    odmax12 (case2 refl) = case2 (subst (λ k → odef (Power (Power (Omega ho<))) k ) (sym &iso)  (hw⊆POmega  record { count = j2 ; hω2 = lt1 }  ) )
+              ... | record { owner = ow ; ao = case2 refl ; ox = _ } = odmax12  where
+                 odmax12 :  odef (Omega ho<) w ∨ odef (Power (Power (Omega ho<))) w
+                 odmax12 = odmax1 i2 lt2 _ (subst (λ k → odef (* k) z) (&iso) ox)  _ lt3
+      odmax2 j j=si (hej lt) w xw = odmax1 i (subst (λ k → Hww2 k y ) (cong pred j=si) lt)  _　xz w  xw
+
+HODww2 :  HOD
+HODww2 = record { od = record { def = λ x → Hww2r x } ; odmax = & (Power (Power (Omega ho< ∪ (Power (Power (Omega ho<))))))  
+  ; <odmax = λ lt → odef< ( hww2⊆POmega lt) } 
+
+record Hww2Step : Set n where
+   field 
+     x : Ordinal
+     i : ℕ
+     isHw : Hww2 i x
+
+list→hodw2 : List (Maybe (List (Maybe Two) ) ) → Hww2Step
+list→hodw2 []  = record { x = o∅ ; i = 0 ; isHw = hjφ }
+list→hodw2 (just t ∷ ts)  = record { x = & (Union ( < nat→ω (Hww2Step.i pf01) , * y >  , * ( Hww2Step.x pf01  ))) 
+        ; i = suc (Hww2Step.i pf01) ; isHw = hj hw (Hww2Step.isHw pf01) } where 
+    pf01 : Hww2Step
+    pf01 = list→hodw2 ts 
+    y = HwStep.x (list→hod t)
+    j = HwStep.i (list→hod t)
+    hw = HwStep.isHw (list→hod t)
+list→hodw2 (nothing ∷ ts)  = record { x = Hww2Step.x pf01 ; i = suc (Hww2Step.i pf01) ; isHw = hej (Hww2Step.isHw pf01) } where
+   pf01 : Hww2Step
+   pf01 = list→hodw2 ts
+
+3→Hωw2 : List (Maybe (List (Maybe Two) ) ) → HOD
+3→Hωw2 t = * (Hww2Step.x (list→hodw2 t))  
+
+Hωw2→3 : (x :  HOD) → HODww2 ∋ x → List (Maybe (List (Maybe Two) ) )
+Hωw2→3 x h = lemma (& x) h where
+  lemma : ( y : Ordinal ) →  Hww2r y → List (Maybe (List (Maybe Two) ) )
+  lemma x record { count = zero ; hww2 = hw } = lem01 _ zero hw refl  where
+       lem01 : (y : Ordinal ) → (i : ℕ) → Hww2 i y → i ≡ zero → List (Maybe (List (Maybe Two)))
+       lem01 y i hjφ eq = []
+       lem01 y i (hj x hw) ()
+       lem01 y i (hej hw) ()
+  lemma x record { count = suc count ; hww2 = hw } = lem01 _ _ hw refl where 
+       lem01 : (y : Ordinal ) → (i : ℕ) → Hww2 i y → i ≡ suc count → List (Maybe (List (Maybe Two)))
+       lem01 y i hjφ ()
+       lem01 y i (hj {i2} {j2} {x2} {y2} x hw1 ) eq = just lem07 ∷ lemma _ record { count = i2 ; hww2 =  hw1 } where
+          lem08 : Hω2r (& (* y2 ))  -- I don't know why
+          lem08 = record { count = j2 ; hω2 = subst (λ k → Hω2 j2 k ) (sym &iso) x } 
+          lem07 : List (Maybe Two)
+          lem07 = Hω2→3 _ lem08
+       lem01 y i (hej hw1) eq = nothing ∷ lemma _ record { count = _ ; hww2 =  hw1 }
+
+-- Hωw2→3-cong : (x y :  HOD) → (hx : HODww2 ∋ x) (hy : HODww2 ∋ y) → x =h= y →  Hωw2→3 x hx  = Hωw2→3 y hy  
+-- Hωw2→3-cong  = ?
+
+--Hωw2→3-iso : (x :  HOD) → (hx : HODww2 ∋ x ) → 3→Hωw2 (Hωw2→3 x hx )  =h= x
+--Hωw2→3-iso  = ?
+--

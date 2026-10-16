@@ -157,6 +157,18 @@ CS∋x→Clx=x {L} {x} top cx = record { eq→ = cc10 ; eq← = cc11 } where
     cc11 : {y : Ordinal} → odef x y → odef L y ∧ ((c : Ordinal) → odef (CS top) c → x ⊆ * c → odef (* c) y) 
     cc11 {y} xy = ⟪ cs⊆L top cx xy , (λ c oc x⊆c → x⊆c xy ) ⟫
 
+Cl-idem : {L x : HOD} → (top : Topology L) → Cl top ( Cl top x) =h= Cl top x
+Cl-idem {L} {x} top = CS∋x→Clx=x top (CS∋Cl top x)
+
+u⊆Clu : {L : HOD} → (top : Topology L) → (u : HOD) → u  ⊆ L → u ⊆ Cl top u
+u⊆Clu {L} top u u⊆L {x} ux = ⟪ u⊆L ux  , ( λ c csc incl  → incl ux ) ⟫
+
+Cl-cong : {L x y : HOD} → (top : Topology L) → x =h= y →  Cl top x =h= Cl top y
+Cl-cong {L} {x} {y} top x=y = record { 
+     eq→ = λ {z} lt → ⟪ proj1 lt , (λ c cc le → proj2 lt c cc (λ xz → le (eq→ x=y xz) ) ) ⟫ 
+   ; eq← = λ {z} lt → ⟪ proj1 lt , (λ c cc le → proj2 lt c cc (λ xz → le (eq← x=y xz) ) ) ⟫  }
+
+
 -- Subbase P
 --   A set of countable intersection of P will be a base (x ix an element of the base)
 
@@ -687,7 +699,7 @@ Compact→FIP {L} top compact with trio< (& L) o∅
 open Filter
 
 --
--- {v | Neighbor lim v}  set of u ⊆ v ⊆ P where u is an open set u ∋ x
+-- {v | Neighbor u v}  set of u ⊆ v ⊆ P where u is an open set u ∋ x
 --
 record Neighbor {P : HOD} (TP : Topology P) (x v : Ordinal) : Set n where
    field
@@ -696,6 +708,8 @@ record Neighbor {P : HOD} (TP : Topology P) (x v : Ordinal) : Set n where
        ux : odef (* u) x
        v⊆P : * v ⊆ P
        u⊆v : * u ⊆ * v
+   P∋x : odef P x
+   P∋x = v⊆P ( u⊆v ux  )
 
 --
 -- Neighbor on x is a Filter (on Power P)
@@ -724,6 +738,98 @@ NeighborF {P} TP x = record { filter = NF ; f⊆L = NF⊆PP ; filter1 = f1 ; fil
          f20 {x} lt = eq← *iso ⟪ eq→  *iso  (Neighbor.u⊆v Np (proj1 pq))  , eq→ *iso (Neighbor.u⊆v Nq (proj2 pq)) ⟫  where
              pq :  odef (* (Neighbor.u Np) ∩ * (Neighbor.u Nq)) x
              pq = eq→ *iso lt
+
+-- Interior ( set of an element x that there is a set v which is a Neighbor TP x v, and v ⊆ A )
+
+record InteriorR {P : HOD} (TP : Topology P) (A : HOD) (x : Ordinal) : Set n where
+   field
+       v : Ordinal
+       nv : Neighbor TP x v
+       v⊆A : (* v) ⊆ A  
+
+Interior : {L : HOD} → (TP : Topology L) → (A : HOD) → HOD
+Interior {L} TP A = record { od = record { def = λ x → odef L x ∧ ( InteriorR TP A x ) }
+  ; odmax = & L ; <odmax = odef∧< }
+
+IU : {L : HOD} → (TP : Topology L) → (A : HOD) → HOD
+IU {L} TP A = record { od = record { def = λ x → odef (OS TP) x ∧ ( (* x) ⊆ A  ) } ; odmax = & (Power L) ; <odmax = λ lt → odef< (OS⊆PL TP (proj1 lt)) }
+
+Interior⊆A : {L : HOD} → (TP : Topology L) → (A : HOD) → Interior TP A ⊆ A
+Interior⊆A {L} TP A {x} lt = InteriorR.v⊆A (proj2 lt) (Neighbor.u⊆v (InteriorR.nv (proj2 lt)) (Neighbor.ux (InteriorR.nv (proj2 lt)) ))
+
+-- Interior is open and maximal open set contained in A
+--
+Interior∈OS : {L : HOD} → (TP : Topology L) → (A : HOD) → ( OS TP ∋ Interior TP A ) ∧ ({u : Ordinal} → odef (OS TP) u → (* u) ⊆ A  → (* u) ⊆ Interior TP A )
+Interior∈OS {L} TP A = ⟪ subst (λ k → odef (OS TP) k) (==→o≡ Uiu=int) lem00 , lem01 ⟫ where
+    Uiu=int : Union (IU TP A) =h= Interior TP A
+    Uiu=int = record { eq→ = λ lt → ⟪ OS⊆PL TP (proj1 (Own.ao lt)) _ (Own.ox lt) 
+         , record { v = Own.owner lt ; nv = record { u =  Own.owner lt ; ou = proj1 (Own.ao lt) 
+            ; ux = Own.ox lt ; v⊆P = λ vx  →  OS⊆PL TP (proj1 (Own.ao lt)) _ vx  ; u⊆v = λ lt → lt   }  ; v⊆A = proj2 (Own.ao lt) } ⟫
+      ; eq← = λ lt → record { owner = _ ; ao = ⟪ Neighbor.ou (InteriorR.nv (proj2 lt))  
+          , (λ lt2 → InteriorR.v⊆A (proj2 lt) (Neighbor.u⊆v (InteriorR.nv (proj2 lt)) lt2 ) ) ⟫ 
+            ; ox = Neighbor.ux (InteriorR.nv (proj2 lt)) } }
+    lem00 : OS TP ∋  Union  (IU TP A)
+    lem00 = o∪ TP ( λ iux → proj1 iux )
+    lem01 : {u : Ordinal} → odef (OS TP) u → (* u) ⊆ A  → (* u) ⊆ Interior TP A 
+    lem01 {u} ou u⊆A {x} ux = ⟪ OS⊆PL TP ou _ ux , record { v = u 
+       ; nv = record { u = u ; ou = ou ; ux = ux ; v⊆P = OS⊆PL TP ou _ ; u⊆v = λ lt → lt  } ; v⊆A = u⊆A }  ⟫
+
+Interrior-cong : {L : HOD} → (TP : Topology L) → {A B : HOD} → A =h= B → Interior TP A =h= Interior TP B
+Interrior-cong {L} TP {A} {B} a=b = record { 
+    eq→ = λ lt → ⟪ proj1 lt , record { v = InteriorR.v (proj2 lt) ; nv = InteriorR.nv (proj2 lt) 
+       ; v⊆A = λ lt2 → eq→ a=b (InteriorR.v⊆A (proj2 lt) lt2 ) } ⟫ 
+  ; eq← = λ lt → ⟪ proj1 lt , record { v = InteriorR.v (proj2 lt) ; nv = InteriorR.nv (proj2 lt) 
+        ; v⊆A = λ lt2 → eq← a=b (InteriorR.v⊆A (proj2 lt) lt2 ) } ⟫ }
+
+Interior=OS : {L : HOD} → (TP : Topology L) → (A : HOD) → 
+    ( ( OS TP ∋ A ) → Interior TP A =h= A) ∧  (  Interior TP A =h= A →  ( OS TP ∋ A ))
+Interior=OS {L} TP A = ⟪ ( λ oa → record { eq→ = Interior⊆A TP A ; eq← = lem00 oa } ) 
+    , ( λ ia=a → subst (λ k → odef (OS TP) k ) (==→o≡ ia=a) (proj1 (Interior∈OS TP A) ) ) ⟫  where
+       lem00 :  odef (OS TP) (& A ) → A ⊆ Interior TP A 
+       lem00 oa {x} ax = proj2 (Interior∈OS TP A) oa (λ lt → eq→  *iso lt) (eq← *iso ax )
+
+--   Cl-union : {L x : HOD} → (top : Topology L) → Cl top (Union x) =h= Union (Cl top x)
+--   Cl-union = ?
+--
+--   inerior-union : {L x : HOD} → (top : Topology L) → Interior top (Union x) =h= Union (Interior top x)
+--   inerior-union = ?
+--
+--   inerior-int : {L x : HOD} → (top : Topology L) → Interior top (Intersection x) =h= Intersection (Interior top x)
+--   inerior-int = ?
+
+-- we need ZFC 
+--
+Interior-Cl : {L : HOD} → (TP : Topology L) → (A : HOD) 
+   → Interior TP A =h= ( L ＼ Cl TP ( L ＼ A ) )   
+Interior-Cl {L} TP A = record { eq→ = lem00 ; eq← = lem01 } where
+    lem00 : {x : Ordinal} → odef (Interior TP A) x → odef (L ＼ Cl TP (L ＼ A)) x
+    lem00 {x} ⟪ lx , record { v = v ; nv = nv ; v⊆A = v⊆A } ⟫ = ⟪ lx , ( λ clx → lem02 (proj2 clx) ) ⟫ where
+        lem02 : ((c : Ordinal) → odef (CS TP) c → (L ＼ A) ⊆ * c → odef (* c) x) → ⊥ 
+        lem02 clx = proj2 lem03 (Neighbor.ux nv ) where
+            open BAlgebra O HODAxiom ho< L (LDec L)
+            lem04 : odef (OS TP) (& (L ＼ * (& (L ＼ * (Neighbor.u nv))))) 
+            lem04 = subst (λ k → odef (OS TP) k) (trans (sym &iso) (==→o≡ lem05)) (Neighbor.ou nv) where 
+                lem05 :   (* ( Neighbor.u nv))  =h= ( L ＼ * (& (L ＼ * (Neighbor.u nv))))
+                lem05 = ==-trans (==-sym (L＼Lx=x {* (Neighbor.u nv)} (OS⊆PL TP (Neighbor.ou nv) _))) (==-sym (L＼lem00 proj1 ))
+            lem06 : {x : Ordinal} → ¬ odef A x → ¬ odef (* (Neighbor.u nv)) x
+            lem06 = contra-position ( λ nux → v⊆A (Neighbor.u⊆v nv nux ))
+            lem03 :  odef (L ＼ (* (Neighbor.u nv))) x
+            lem03 = eq→ *iso ( clx ( &  (L ＼ (* (Neighbor.u nv))) ) ⟪ (λ lt → proj1 (eq→ *iso lt))  , lem04 ⟫ 
+               (λ lax →  eq← *iso ⟪ proj1 lax , lem06 (proj2 lax) ⟫  ) ) 
+    lem01  : {x : Ordinal} → odef (L ＼ Cl TP (L ＼ A)) x → odef (Interior TP A) x
+    lem01 {x} ⟪ lx , ne ⟫ = ⟪ lx , record { v = & (L ＼ Cl TP (L ＼ A))  ; nv = lem02  ; v⊆A = λ lt → lem03 (eq→ *iso lt) } ⟫ where
+        lem03 : {z : Ordinal} → odef (L ＼ Cl TP (L ＼ A)) z → odef A z
+        lem03 {z} ⟪ lz , cl ⟫ with p∨¬p (odef A z)
+        ... | case1 az = az
+        ... | case2 naz = ⊥-elim (cl ⟪ lz , ( λ u cl2 lt2 → lt2 ⟪ lz , naz ⟫  )  ⟫  )  
+        lem02 : Neighbor TP x ( & (L ＼ Cl TP (L ＼ A)))
+        lem02 = record { u = & (L ＼ Cl TP (L ＼ A)) ; ou = P＼CS=OS TP (CS∋Cl TP (L ＼ A)) 
+           ; ux = eq← *iso ( ⟪ lx , ne ⟫ )  ; v⊆P = λ lt → proj1 (eq→ *iso lt ) ; u⊆v = λ lt → lt  }
+
+record RegularOpenSet {P : HOD} (TP : Topology P) (u : Ordinal) : Set n where
+   field
+       ou : odef (OS TP) u
+       is-regular : ( * u ) =h= Interior TP (Cl TP (* u))
 
 record FuncImage  {P Q : HOD} (func  : Func P Q) (x y : Ordinal) : Set n where
     field
