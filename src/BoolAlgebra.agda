@@ -257,6 +257,16 @@ record IsCompleteBooleanAlgebra {n m : Level} ( L : Set n) (BA : BooleanAlgebra 
        is-sup : (s : BPred L BA) → IsUpperBound s (sup s)
        is-minsup : (s : BPred L BA) → {x : L} → IsUpperBound s x → sup s ≤  x
 
+record NonAtomic {n m : Level} ( L : Set n) (BA : BooleanAlgebra {n} {m} L) (a : L) : Set (n ⊔ suc m) where
+   open BooleanAlgebra BA 
+   field
+       b : L
+       0<b : b0 < b 
+       b<a : b < a 
+
+Atomic : {n m : Level} ( L : Set n) (BA : BooleanAlgebra {n} {m} L) →  Set (n ⊔ suc m) 
+Atomic L BA = (a : L) → ¬ (NonAtomic L BA a)
+
 open import Relation.Binary.Reasoning.Syntax
 
 module BA≤-Reasoning {n m : Level} {L : Set n} (BA : BooleanAlgebra {n} {m} L)  where

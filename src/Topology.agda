@@ -112,43 +112,47 @@ ClL {L} top  =  record { eq→ = λ {x} ic
 
 -- Closure is Closed Set
 
+OCl : {L : HOD} → (top : Topology L) → (A : HOD) → HOD  -- set of open set which it not contains A 
+OCl {L} top A = record { od = record { def = λ o → odef (OS top) o ∧ ( A ⊆ (L ＼ * o) ) } ; odmax = & (OS top) ; <odmax = odef∧< }
+
+OCl⊆OS  : {L : HOD} → (top : Topology L) → (A : HOD) → OCl top A ⊆  OS top 
+OCl⊆OS top A ox  = proj1 ox
+
+UOCl-is-OS : {L : HOD} → (top : Topology L) → (A : HOD) → OS top ∋ Union (OCl top A )
+UOCl-is-OS {L} top A = o∪ top (OCl⊆OS top A)
+
+cc00 : {L : HOD} → (top : Topology L) → (A : HOD) → (L ＼ Union (OCl top A)) =h= Cl top A
+cc00 {L} top A = record { eq→ = cc01 ; eq← = cc03 } where
+    open BAlgebra O HODAxiom ho< L (LDec L)
+    cc01 : {x : Ordinal} → odef (L ＼ Union (OCl top A)) x → odef L x ∧ ((c : Ordinal) → odef (CS top) c → A ⊆ * c → odef (* c) x)
+    cc01 {x} ⟪ Lx , nul ⟫ = ⟪ Lx , ( λ c cc ac → cc02 c cc ac nul ) ⟫ where 
+       cc02 : (c : Ordinal) → odef (CS top) c → A ⊆ * c → ¬ odef (Union (OCl top A)) x  → odef (* c) x
+       cc02 c cc ac nox with ODC.∋-p (* c) (* x)
+       ... | yes0 y = subst (λ k → odef (* c) k) &iso y
+       ... | no0 ncx = ⊥-elim ( nox record { owner = & ( L ＼ * c) ; ao = ⟪ proj2 cc , cc07 ⟫ ; ox = eq← *iso cc06  } ) where
+            cc06 : odef (L ＼ * c) x 
+            cc06 = ⟪ Lx , subst (λ k → ¬ odef (* c) k) &iso ncx ⟫
+            cc08 : * c ⊆ L
+            cc08 = cs⊆L top (subst (λ k → odef (CS top) k ) (sym &iso) cc )
+            cc09 : (L ＼ * (& (L ＼ * c))) =h= (* c)
+            cc09 = begin 
+                L ＼ * (& (L ＼ * c)) ≈⟨ ＼-cong L L (* (& (L ＼ * c))) (L ＼ * c) ==-refl *iso  ⟩
+                L ＼ (L ＼ * c) ≈⟨  L＼Lx=x {* c} cc08 ⟩
+                * c ∎
+                   where open EqHOD ==-Setoid
+            cc07 :  A ⊆ (L ＼ * (& (L ＼ * c)))
+            cc07 {z} az = eq← cc09 ( ac az ) 
+    cc03 : {x : Ordinal}  → odef L x ∧ ((c : Ordinal) → odef (CS top) c → A ⊆ * c → odef (* c) x) → odef (L ＼ Union (OCl top A)) x
+    cc03 {x} ⟪ Lx , ccx ⟫ = ⟪ Lx , cc04 ⟫ where
+       -- if x is in Cl A, it is in some c : CS, OCl says it is not , i.e. L ＼ o ∋ x, so it is in (L ＼ Union OCl) x
+       cc04 : ¬ odef (Union (OCl top A)) x
+       cc04 record { owner = o ; ao = ⟪ oo , A⊆L-o ⟫ ; ox = ox } = proj2 ( eq→ *iso cc05) ox  where
+            cc05 : odef (* (& (L ＼ * o))) x
+            cc05 = ccx (& (L ＼ * o)) (P＼OS=CS top (subst (λ k → odef (OS top) k) (sym &iso) oo)) (λ lt → eq← *iso (A⊆L-o lt)) 
 
 CS∋Cl : {L : HOD} → (top : Topology L) → (A : HOD) → CS top ∋ Cl top A 
-CS∋Cl {L} top A = subst (λ k → odef (CS top)  k) (==→o≡ cc00) (P＼OS=CS top UOCl-is-OS)  where
+CS∋Cl {L} top A = subst (λ k → odef (CS top)  k) (==→o≡ (cc00 top A )) (P＼OS=CS top (UOCl-is-OS top A ))  where
     open BAlgebra O HODAxiom ho< L (LDec L)
-    OCl : HOD  -- set of open set which it not contains A 
-    OCl = record { od = record { def = λ o → odef (OS top) o ∧ ( A ⊆ (L ＼ * o) ) } ; odmax = & (OS top) ; <odmax = odef∧< }
-    OCl⊆OS  : OCl ⊆  OS top 
-    OCl⊆OS ox  = proj1 ox
-    UOCl-is-OS : OS top ∋ Union OCl
-    UOCl-is-OS = o∪ top OCl⊆OS
-    cc00 : (L ＼ Union OCl) =h= Cl top A
-    cc00 = record { eq→ = cc01 ; eq← = cc03 } where
-        cc01 : {x : Ordinal} → odef (L ＼ Union OCl) x → odef L x ∧ ((c : Ordinal) → odef (CS top) c → A ⊆ * c → odef (* c) x)
-        cc01 {x} ⟪ Lx , nul ⟫ = ⟪ Lx , ( λ c cc ac → cc02 c cc ac nul ) ⟫ where 
-           cc02 : (c : Ordinal) → odef (CS top) c → A ⊆ * c → ¬ odef (Union OCl) x  → odef (* c) x
-           cc02 c cc ac nox with ODC.∋-p (* c) (* x)
-           ... | yes0 y = subst (λ k → odef (* c) k) &iso y
-           ... | no0 ncx = ⊥-elim ( nox record { owner = & ( L ＼ * c) ; ao = ⟪ proj2 cc , cc07 ⟫ ; ox = eq← *iso cc06  } ) where
-                cc06 : odef (L ＼ * c) x 
-                cc06 = ⟪ Lx , subst (λ k → ¬ odef (* c) k) &iso ncx ⟫
-                cc08 : * c ⊆ L
-                cc08 = cs⊆L top (subst (λ k → odef (CS top) k ) (sym &iso) cc )
-                cc09 : (L ＼ * (& (L ＼ * c))) =h= (* c)
-                cc09 = begin 
-                    L ＼ * (& (L ＼ * c)) ≈⟨ ＼-cong L L (* (& (L ＼ * c))) (L ＼ * c) ==-refl *iso  ⟩
-                    L ＼ (L ＼ * c) ≈⟨  L＼Lx=x {* c} cc08 ⟩
-                    * c ∎
-                       where open EqHOD ==-Setoid
-                cc07 :  A ⊆ (L ＼ * (& (L ＼ * c)))
-                cc07 {z} az = eq← cc09 ( ac az ) 
-        cc03 : {x : Ordinal}  → odef L x ∧ ((c : Ordinal) → odef (CS top) c → A ⊆ * c → odef (* c) x) → odef (L ＼ Union OCl) x
-        cc03 {x} ⟪ Lx , ccx ⟫ = ⟪ Lx , cc04 ⟫ where
-           -- if x is in Cl A, it is in some c : CS, OCl says it is not , i.e. L ＼ o ∋ x, so it is in (L ＼ Union OCl) x
-           cc04 : ¬ odef (Union OCl) x
-           cc04 record { owner = o ; ao = ⟪ oo , A⊆L-o ⟫ ; ox = ox } = proj2 ( eq→ *iso cc05) ox  where
-                cc05 : odef (* (& (L ＼ * o))) x
-                cc05 = ccx (& (L ＼ * o)) (P＼OS=CS top (subst (λ k → odef (OS top) k) (sym &iso) oo)) (λ lt → eq← *iso (A⊆L-o lt)) 
 
 CS∋x→Clx=x : {L x : HOD} → (top : Topology L) → CS top ∋ x → Cl top x =h= x 
 CS∋x→Clx=x {L} {x} top cx = record { eq→ = cc10 ; eq← = cc11 } where
@@ -167,7 +171,6 @@ Cl-cong : {L x y : HOD} → (top : Topology L) → x =h= y →  Cl top x =h= Cl 
 Cl-cong {L} {x} {y} top x=y = record { 
      eq→ = λ {z} lt → ⟪ proj1 lt , (λ c cc le → proj2 lt c cc (λ xz → le (eq→ x=y xz) ) ) ⟫ 
    ; eq← = λ {z} lt → ⟪ proj1 lt , (λ c cc le → proj2 lt c cc (λ xz → le (eq← x=y xz) ) ) ⟫  }
-
 
 -- Subbase P
 --   A set of countable intersection of P will be a base (x ix an element of the base)
@@ -788,11 +791,33 @@ Interior=OS {L} TP A = ⟪ ( λ oa → record { eq→ = Interior⊆A TP A ; eq�
        lem00 :  odef (OS TP) (& A ) → A ⊆ Interior TP A 
        lem00 oa {x} ax = proj2 (Interior∈OS TP A) oa (λ lt → eq→  *iso lt) (eq← *iso ax )
 
---   Cl-union : {L x : HOD} → (top : Topology L) → Cl top (Union x) =h= Union (Cl top x)
---   Cl-union = ?
+record InteriorR1 {P : HOD} (TP : Topology P) (A : HOD) (x : Ordinal) : Set n where
+   field
+       v : Ordinal
+       ov : odef (OS TP) v
+       nv : odef (* v) x
+       v⊆A : (* v) ⊆ A  
+
+InteriorR1=R : {P : HOD} (TP : Topology P) (A : HOD) (x : Ordinal) → ( InteriorR TP A x ) ⇔ ( InteriorR1 TP A x )
+InteriorR1=R {P} TP A x = ⟪ (λ lt →  record { v = Neighbor.u (InteriorR.nv lt) ; ov = Neighbor.ou (InteriorR.nv lt) 
+      ; nv = Neighbor.ux (InteriorR.nv lt) ; v⊆A = λ lt1 → InteriorR.v⊆A lt ( Neighbor.u⊆v (InteriorR.nv lt) lt1 ) }  ) 
+    , (λ lt → record { v  = InteriorR1.v lt  ; nv = record { u = InteriorR1.v lt  ; ou = InteriorR1.ov lt ; ux = InteriorR1.nv lt  
+          ; v⊆P = λ lt1 → OS⊆PL TP (InteriorR1.ov lt ) _ lt1 ; u⊆v = λ lt → lt }  ; v⊆A = InteriorR1.v⊆A lt  } ) ⟫
+
+--   Cl-union : {L x : HOD} → (top : Topology L) → odef (OS top) (& x) → Cl top (Union x) =h= Union (Cl top x)
+--   Cl-union {L} {x} top ox = record { eq→ = ? ; eq← = ? } where
+--        lem00 : {z : Ordinal} → odef (Cl top (Union x)) z → odef (Union (Cl top x)) z
+--        lem00 {z} ⟪ lx , csl ⟫ = record { owner = z ; ao = ? ; ox = ? } where
+--           lem03 : ?
+--           lem03 = ?
+--        lem01 : {z : Ordinal}  → odef (Union (Cl top x)) z → odef (Cl top (Union x)) z
+--        lem01 {z} record { owner = owner ; ao = ao ; ox = ox } = ⟪ ? , lem02 ⟫ where
+--           lem02 : ((c : Ordinal) → odef (CS top) c → Union x ⊆ * c → odef (* c) z)
+--           lem02 = ?
 --
---   inerior-union : {L x : HOD} → (top : Topology L) → Interior top (Union x) =h= Union (Interior top x)
+--   inerior-union : {L x : HOD} → (top : Topology L) → odef (OS top) (& x) → Interior top (Union x) =h= Union (Interior top x)
 --   inerior-union = ?
+
 --
 --   inerior-int : {L x : HOD} → (top : Topology L) → Interior top (Intersection x) =h= Intersection (Interior top x)
 --   inerior-int = ?

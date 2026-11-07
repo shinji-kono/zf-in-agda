@@ -58,6 +58,9 @@ eq← (*iso∩ {p} {q}) {x} ⟪ px , qx ⟫ = ⟪ eq→ *iso px , eq→ *iso qx 
 eq→ (∩-cong eq1 eq2) {x} lt = ⟪ eq→ eq1 (proj1 lt) , eq→ eq2 (proj2 lt) ⟫
 eq← (∩-cong eq1 eq2) {x} lt = ⟪ eq← eq1 (proj1 lt) , eq← eq2 (proj2 lt) ⟫
 
+⊆→== : {A B : HOD} → A ⊆ B → B ⊆ A → A  =h= B 
+⊆→== AB BA = record { eq→ = λ {x} ax → AB ax ; eq← = λ {x} bx → BA bx }
+
 power→⊆ :  ( A t : HOD) → Power A ∋ t → t ⊆ A
 power→⊆ A t  PA∋t t∋x = subst (λ k → odef A k ) &iso ( t1 (subst (λ k → odef t k ) (sym &iso) t∋x))  where
    t1 : {x : HOD }  → t ∋ x → A ∋ x

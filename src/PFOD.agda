@@ -80,6 +80,8 @@ record  Hω2r (x : Ordinal) : Set n where
     count : ℕ
     hω2 : Hω2 count x
 
+--  [] and [ nothing ] are the same, it has the same Ordimal
+
 open Hω2r
 
 hw⊆POmega :  {x : Ordinal} → Hω2r x → odef (Power (Power (Omega ho<))) x
@@ -257,6 +259,8 @@ data Hww2 :  (i : ℕ) ( x : Ordinal  ) → Set n where
     Hww2 (suc i) (& (Union (< nat→ω i , * y >  ,  * x )))
   hej : {i : ℕ} {x : Ordinal  } → Hww2 i x  →
     Hww2 (suc i) x
+
+-- [ [] , x ] and x are different here. we may add ¬ (y  ≡ o∅ )
 
 record  Hww2r (x : Ordinal) : Set n where
   field
