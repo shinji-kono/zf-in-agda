@@ -17,6 +17,10 @@ record IsZFC {n m : Level }
      choice-func : (X : ZFSet ) → {x : ZFSet } → ¬ ( x ≈ ∅ ) → ( X ∋ x ) → ZFSet
      choice : (X : ZFSet  ) → {A : ZFSet } → ( X∋A : X ∋ A ) → (not : ¬ ( A ≈ ∅ )) → A ∋ choice-func X not X∋A
 
+     -- ∀ a ≠ ∅ → ∃ x ∈ a → x ∩ a = ∅ 
+     -- minimality of choice function in regularity axiom
+
+
 record ZFC {n m : Level } : Set (suc (n ⊔ suc m)) where
   field
      ZFSet : Set n

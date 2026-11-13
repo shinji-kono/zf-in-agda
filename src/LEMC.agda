@@ -9,6 +9,8 @@ open import Ordinals
 import HODBase
 import OD
 open import Relation.Nullary
+open import Relation.Binary  hiding (_⇔_)  -- for tri<
+
 module LEMC {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho< : OD.ODAxiom-ho< O HODAxiom )( p∨¬p : ( p : Set n) → p ∨ ( ¬ p ) ) where
 
 open import  Relation.Binary.PropositionalEquality hiding ( [_] )
@@ -127,46 +129,68 @@ OD→ZFC   = record {
          --
          --  from https://math.stackexchange.com/questions/2973777/is-it-possible-to-prove-regularity-with-transfinite-induction-only
          --
-         record Minimal (x : HOD)  : Set (suc n) where
+         -- ∀ a → ¬ (a =h= od∅ ) → ∃ x ∈ a → (x ∩ a) =h= od∅ )
+         --
+         --
+         record Minimal (a : HOD)  : Set (suc n) where
            field
-               min : HOD
-               x∋min :   x ∋ min 
-               min-empty :  (y : HOD ) → ¬ ( min ∋ y) ∧ (x ∋ y)
-         open Minimal
-         open _∧_
-         induction : {x : HOD} → ({y : HOD} → x ∋ y → (u : HOD ) → (u∋x : u ∋ y) → Minimal u )
-              →  (u : HOD ) → (u∋x : u ∋ x) → Minimal u 
-         induction {x} prev u u∋x with p∨¬p ((y : Ordinal ) → ¬ (odef x y) ∧ (odef u y))
-         ... | case1 P =
-              record { min = x
-                ;     x∋min = u∋x 
-                ;     min-empty = λ y → P (& y)
-              } 
-         ... | case2 NP =  min2 where
-              p : HOD
-              p  = record { od = record { def = λ y1 → odef x  y1 ∧ odef u y1 } ; odmax = omin (odmax x) (odmax u) ; <odmax = lemma } where
-                 lemma : {y : Ordinal} → odef x y ∧ odef u y → y o< omin (odmax x) (odmax u)
-                 lemma {y} lt = min1 (<odmax x (proj1 lt)) (<odmax u (proj2 lt))
-              np : ¬ (p =h= od∅)
-              np p∅ =  NP (λ y p∋y → ∅< {p} {_} (d→∋ p p∋y) p∅ ) 
-              y1choice : choiced (& p)
-              y1choice = choice-func p np
-              y1 : HOD
-              y1 = * (a-choice y1choice)
-              y1prop : (x ∋ y1) ∧ (u ∋ y1)
-              y1prop = oo∋ (is-in y1choice)
-              min2 : Minimal u
-              min2 = prev (proj1 y1prop) u (proj2 y1prop)
-         Min2 : (x : HOD) → (u : HOD ) → (u∋x : u ∋ x) → Minimal u 
-         Min2 x u u∋x = (ε-induction {λ y →  (u : HOD ) → (u∋x : u ∋ y) → Minimal u  } induction x u u∋x ) 
-         cx : {x : HOD} →  ¬ (x =h= od∅ ) → choiced (& x )
-         cx {x} nx = choice-func x nx
-         minimal : (x : HOD  ) → ¬ (x =h= od∅ ) → HOD 
-         minimal x ne = min (Min2 (* (a-choice (cx {x} ne) )) x ( oo∋ (is-in (cx ne))) )
-         x∋minimal : (x : HOD  ) → ( ne : ¬ (x =h= od∅ ) ) → odef x ( & ( minimal x ne ) )
-         x∋minimal x ne = x∋min (Min2 (* (a-choice (cx {x} ne) )) x ( oo∋ (is-in (cx ne))) )
-         is-minimal : (x : HOD  ) → ( ne : ¬ (x =h= od∅ ) ) → (y : HOD ) → ¬ ( odef (minimal x ne) (& y)) ∧ (odef x (&  y) )
-         is-minimal x ne y = min-empty (Min2 (* (a-choice (cx ne) )) x ( oo∋ (is-in (cx ne)))) y
+              mini : Ordinal
+              a∋min :  odef a mini
+              regular :  & ( (* mini )  ∩ a ) ≡  o∅ 
+
+--        regulairty : (a : HOD  ) → ( ne : ¬ (a =h= od∅ ) ) → Minimal a
+--        regulairty a ne = ε-induction {λ a →  ( ne : ¬ (a =h=  od∅ ))  →  Minimal a   }  ind a ne where
+--           ind : {x : HOD} → ({y : HOD} → x ∋ y → ¬ (y =h= od∅) → Minimal y) → ¬ (x =h= od∅) → Minimal x
+--           ind {a} prev ne with trio< (& a) o∅ 
+--           ... | tri< a₁ ¬b ¬c = {! !}
+--           ... | tri≈ ¬a b ¬c = ⊥-elim ?
+--           ... | tri> ¬a ¬b c = {! !}
+         
+-- these are all wrong but agda cannot check the error
+--
+--        record Minimal (x : HOD)  : Set (suc n) where
+--          field
+--              mini : HOD
+--              x∋min :   x ∋ mini
+--              min-empty :  (y : HOD ) → ¬ ( mini ∋ y) ∧ (x ∋ y)
+--
+--        open Minimal
+--        open _∧_
+--        induction : {x : HOD} → ({y : HOD} → x ∋ y → (u : HOD ) → (u∋x : u ∋ y) → Minimal u )
+--             →  (u : HOD ) → (u∋x : u ∋ x) → Minimal u 
+--        induction {x} prev u u∋x with p∨¬p ((y : Ordinal ) → ¬ (odef x y) ∧ (odef u y))
+--        ... | case1 P =     --- this cannot be true, so we have no base case
+--             record { mini = x
+--               ;     x∋min = u∋x 
+--               ;     min-empty = λ y → P (& y)
+--             } 
+--        ... | case2 NP =  min2 where
+--             p : HOD
+--             p  = record { od = record { def = λ y1 → odef x  y1 ∧ odef u y1 } ; odmax = omin (odmax x) (odmax u) ; <odmax = lemma } where
+--                lemma : {y : Ordinal} → odef x y ∧ odef u y → y o< omin (odmax x) (odmax u)
+--                lemma {y} lt = min1 (<odmax x (proj1 lt)) (<odmax u (proj2 lt))
+--             np : ¬ (p =h= od∅)
+--             np p∅ =  NP (λ y p∋y → ∅< {p} {_} (d→∋ p p∋y) p∅ ) 
+--             y1choice : choiced (& p)
+--             y1choice = choice-func p np
+--             y1 : HOD
+--             y1 = * (a-choice y1choice)
+--             y1prop : (x ∋ y1) ∧ (u ∋ y1)
+--             y1prop = oo∋ (is-in y1choice)
+--             min2 : Minimal u
+--             min2 = prev (proj1 y1prop) u (proj2 y1prop)
+--        Min2 : (x : HOD) → (u : HOD ) → (u∋x : u ∋ x) → Minimal u 
+--        Min2 x u u∋x = (ε-induction {λ y →  (u : HOD ) → (u∋x : u ∋ y) → Minimal u  } induction x u u∋x ) 
+--        cx : {x : HOD} →  ¬ (x =h= od∅ ) → choiced (& x )
+--        cx {x} nx = choice-func x nx
+--        minimal : (x : HOD  ) → ¬ (x =h= od∅ ) → HOD 
+--        minimal x ne = mini (Min2 (* (a-choice (cx {x} ne) )) x ( oo∋ (is-in (cx ne))) )
+--        x∋minimal : (x : HOD  ) → ( ne : ¬ (x =h= od∅ ) ) → odef x ( & ( minimal x ne ) )
+--        x∋minimal x ne = x∋min (Min2 (* (a-choice (cx {x} ne) )) x ( oo∋ (is-in (cx ne))) )
+--        -- this wrong we cannot accept any (& y)
+--        --   problem is the reason why we can prove this
+--        is-minimal : (x : HOD  ) → ( ne : ¬ (x =h= od∅ ) ) → (y : HOD ) → ¬ ( odef (minimal x ne) (& y)) ∧ (odef x (&  y) )
+--        is-minimal x ne y = min-empty (Min2 (* (a-choice (cx ne) )) x ( oo∋ (is-in (cx ne)))) y
 
 
 

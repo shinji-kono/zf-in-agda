@@ -72,6 +72,8 @@ record IsZF {n m : Level }
      ε-induction : { ψ : ZFSet → Set (suc m Level.⊔ n)}
               → ( {x : ZFSet } → ({ y : ZFSet } →  x ∋ y → ψ y ) → ψ x )
               → (x : ZFSet ) → ψ x
+     -- reglualrity axiom , ∀ a ≠ ∅ → ∃ x ∈ a → x ∩ a = ∅ , is replaced by ε-induction
+     --
      -- infinity : ∃ A ( ∅ ∈ A ∧ ∀ x ∈ A ( x ∪ { x } ∈ A ) )
      infinity∅ :  ∅ ∈ infinite
      infinity :  ∀( x : ZFSet  ) → x ∈ infinite →  ( x ∪ ｛ x ｝) ∈ infinite 
@@ -81,10 +83,7 @@ record IsZF {n m : Level }
      replacement← : {ψ : ZFSet → ZFSet} → { zψ : ZFunc ZFSet _∋_ _≈_ ψ } → ∀ ( X x : ZFSet  ) → x ∈ X → ψ x ∈  Replace X ψ zψ
      replacement→ : {ψ : ZFSet → ZFSet} → { zψ : ZFunc ZFSet _∋_ _≈_ ψ } → ∀ ( X x : ZFSet  ) 
          →  ( lt : x ∈  Replace X ψ zψ) → ¬ ( ∀ (y : ZFSet)  →  ¬ ( x ≈ ψ y ) )
-     -- ≈→⇔  :  { A B : ZFSet  } → A ≈ B → ( (z : ZFSet) → ( A ∋ z ) ⇔ (B ∋ z)  ) 
-  -- _∩_ : ( A B : ZFSet  ) → ZFSet
-  -- A ∩ B = Select A (  λ x → ( A ∋ x ) ∧ ( B ∋ x )  ) record { ψ-cong = λ x y x≈y 
-  --    → record { proj1 = λ x∋y → ⟪ ? , ? ⟫ ; proj2 = λ x∋y → ⟪ ? , ? ⟫ } } we need ≈-sym
+
 
 record ZF {n m : Level } : Set (suc (n ⊔ suc m)) where
   infixr  210 _,_

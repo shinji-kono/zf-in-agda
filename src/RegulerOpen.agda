@@ -149,8 +149,7 @@ module MBO {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho<
        lem00 : (ex ey : HODElement P) → ey p≤ ex → DownP P OP u (elt ex)  → DownP P OP u (elt ey)
        lem00 ex ey y≤x dux = record { px = A∋elt ey ; is-below =  p≤-trans  y≤x (p≤-resp (p-refl1 refl) p-refl (DownP.is-below dux)) }
 
-    record ROH-lem00 (P : HOD) (OP : OrderedHOD P) (u : HODElement (Power P)) (ou : OpenP P OP (elt u))
-         {x : Ordinal} (ux : odef (* (elt u)) x ) : Set n where
+    record ROH-lem00 (P : HOD) (OP : OrderedHOD P) (u : HODElement (Power P)) (ou : OpenP P OP (elt u)) : Set n where
       field
          p : HODElement P
          dp⊆u : downHOD P OP p ⊆ (* (elt u))
@@ -164,7 +163,7 @@ module MBO {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho<
     --
     down-lem00 : (P : HOD) (OP : OrderedHOD P) (u : HODElement (Power P)) (ou : OpenP P OP (elt u))
         → {x : Ordinal} → (ux : odef (* (elt u)) x)
-        → ROH-lem00 P OP u ou ux
+        → ROH-lem00 P OP u ou
     down-lem00 P OP u (ou @ record { u⊆P = u⊆P ; is-open = is-open }) {x} ux = lem00 where
        open OrderedHOD OP
        open IsStrictPartialOrder PO
@@ -174,7 +173,7 @@ module MBO {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho<
        lem01 {z} d2 = OpenP.is-open ou _ _ ux (DownP.px d2) lem05  where
           lem05 : record { elt = z ; A∋elt = DownP.px d2 } p≤ record { elt = x ; A∋elt = u⊆P ux }
           lem05 = p≤-resp p-refl (p-refl1 refl) ( DownP.is-below d2 )
-       lem00 : ROH-lem00 P OP u ou ux
+       lem00 : ROH-lem00 P OP u ou
        lem00 = record { p = lem02  ; dp⊆u = lem01 }
 
     down-lem02 : (P : HOD) (OP : OrderedHOD P) (u : HODElement (Power P)) (ou : OpenP P OP (elt u))
@@ -203,7 +202,7 @@ module MBO {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho<
 
     down-lem01 : (P : HOD) (OP : OrderedHOD P) (u : HODElement (Power P)) (ou : OpenP P OP (elt u))
         →  Union (ROH-lem05 P OP u ou)  =h= (* ( elt u)  )
-    down-lem01 P OP u ou =  lem03  where
+    down-lem01 P OP u ou =  record { eq→ = λ {y} lt → lem05 lt ; eq← = λ {y} lt → lem06 lt } where
        open OrderedHOD OP
        lem05 : {y : Ordinal} → Own (ROH-lem05 P OP u ou ) y → odef (* (elt u)) y
        lem05 {y} record { owner = owner ; ao = ao ; ox = ox } = ROH-lem00.dp⊆u lem08 lem11  where
@@ -211,15 +210,12 @@ module MBO {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho<
             lem09 = ao
             lem07 : owner  ≡ & (downHOD P OP ( ROH-lem00.p (down-lem00 P OP u ou {ROH-lem03.x ao} (ROH-lem03.ux ao) ) ))
             lem07 = ROH-lem03.up ao
-            lem08 : ROH-lem00 P OP u ou (ROH-lem03.ux ao)
+            lem08 : ROH-lem00 P OP u ou
             lem08 = down-lem00 P OP u ou {ROH-lem03.x ao} (ROH-lem03.ux ao)
             lem11 : odef (downHOD P OP (ROH-lem00.p (down-lem00 P OP u ou {ROH-lem03.x ao} (ROH-lem03.ux ao)  ) )) y
             lem11 = eq→ *iso ( eq→ (o≡→== (ROH-lem03.up ao) ) ox )
        lem06 : {y : Ordinal} → odef (* (elt u)) y → Own (ROH-lem05 P OP u ou) y
        lem06 {y} uy = record { owner = _ ; ao = record { x = _ ; ux = uy ; up = refl }  ; ox = eq← *iso record { px = A∋elt u _ uy ; is-below = case1 p-refl } }
-       lem03 : Union (ROH-lem05 P OP u ou)  =h= (* ( elt u)  )
-       lem03 = record { eq→ = λ {y} lt → lem05 lt ; eq← = λ {y} lt → lem06 lt }
-
 
     TOPP : (P : HOD) → OrderedHOD P → Topology P
     TOPP P OP = record { OS = OpenPHOD P OP  ;
@@ -227,7 +223,7 @@ module MBO {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho<
        ; o∩ = λ {p} {q} op oq → record { u⊆P = λ {x} pqx → OpenP.u⊆P op (eq← *iso (proj1 (eq→ *iso pqx) ))
           ; is-open = λ x y ux py lt → eq←  *iso ⟪
                eq→ *iso (OpenP.is-open op _ _ (eq← *iso (proj1 (eq→  *iso ux))) py lt )
-             , eq→ *iso (OpenP.is-open oq _ _ (eq← *iso (proj2 (eq→  *iso ux))) py 
+             , eq→ *iso (OpenP.is-open oq _ _ (eq← *iso (proj2 (eq→  *iso ux))) py
                   (OrderedHOD.p≤-resp OP (OrderedHOD.p-refl OP) (OrderedHOD.p-refl1 OP refl ) lt ) ) ⟫  }
        ; o∪  = lem00
        ; OS∋od∅ = subst ( λ k → OpenP P OP k) (trans Union-0 (sym ord-od∅ ) ) (lem00 {od∅} (λ lt → ⊥-elim (¬x<0  lt) ) ) } where
@@ -239,7 +235,7 @@ module MBO {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho<
     record UpP (P : HOD) (OP : OrderedHOD P) (u : HODElement P) (x : Ordinal) : Set n where
       field
          px  : odef P x
-         is-above :  OrderedHOD._p<_ OP u record { elt = x ; A∋elt  = px } 
+         is-above :  OrderedHOD._p<_ OP u record { elt = x ; A∋elt  = px }
 
     -- set of an elements above u in P
     upHOD : (P : HOD) (OP : OrderedHOD P) (u : HODElement P) → HOD
@@ -259,24 +255,33 @@ module MBO {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho<
           lem04 = proj1 (eq→ *iso ux)
           lem02 : odef (upHOD P OP u) y → ⊥
           lem02 record { px = py2 ; is-above = u<y } = proj2 (eq→ *iso ux) (eq← *iso record { px = lem04 ; is-above = lem05 y≤x } ) where
-              lem05 : record { elt = y ; A∋elt = py } p≤ record { elt = x ; A∋elt = proj1 (eq→ *iso ux) } → u p< record { elt = x ; A∋elt = lem04 }  
+              lem05 : record { elt = y ; A∋elt = py } p≤ record { elt = x ; A∋elt = proj1 (eq→ *iso ux) } → u p< record { elt = x ; A∋elt = lem04 }
               lem05 (case1 eq) = p<-resp p-refl (p=resp refl refl eq) u<y
-              lem05 (case2 lt) = p<-trans u<y (p<-resp (p-refl1 refl) (p-refl1 refl) lt ) 
+              lem05 (case2 lt) = p<-trans u<y (p<-resp (p-refl1 refl) (p-refl1 refl) lt )
 
-    --
-    -- Cl top A ≡ L \ Union (OCl top A), Union of open set which contains no A
-    --
-    --    record UpP-lem01 (P : HOD) (OP : OrderedHOD P) (u : HODElement (Power P)) : Set n where
-    --       open OrderedHOD OP
-    --       open IsStrictPartialOrder PO
-    --       field
-    --         r : HODElement P
-    --         r<x : {x : HODElement P} →  (ux : odef (* (elt u)) (elt x)) → r  p< x 
-     -- if OP is complete, we have this, but it may not
+    record  CSCond  (L : HOD) (OL : OrderedHOD L) (x : Ordinal )  : Set n where
+        open Topology
+        open OrderedHOD OL
+        field
+          lx : odef L x
+          p :  HODElement L
+          nle :  ¬ ( record { elt = x ; A∋elt = lx }  p≤ p )
 
+    csHOD : (L : HOD) (OL : OrderedHOD L) → HOD
+    csHOD L OL = record { od = record { def = λ x → CSCond L OL x } ; odmax = & L ; <odmax = λ {u} lt → odef< (CSCond.lx lt) }
 
---    OP-transitive : (L : HOD) → (OL : OrderedHOD L) → {x y : Ordinal }  → odef (downHOD L OL) x → odef (* x) y → odef (downHOD L OL) y
---    OP-transitive L OL {x} {y} px xy = ?
+    csc-lem00 : (L : HOD) (OL : OrderedHOD L)  → odef (Topology.CS (TOPP L OL)) (& (csHOD L OL ))
+    csc-lem00 L OL = ⟪ (λ lt → CSCond.lx ( eq→ *iso lt) ) , record { u⊆P = λ lt → proj1 (eq→ *iso lt) ; is-open = lem02 }  ⟫ where
+       open OrderedHOD OL
+       open IsStrictPartialOrder PO
+       lem02 : (x y : Ordinal) (ux : odef (* (& (L ＼ * (& (csHOD L OL))))) x) (py : odef L y)
+           → record { elt = y ; A∋elt = py } p≤ record { elt = x ; A∋elt = proj1 (eq→ *iso ux) } → odef (* (& (L ＼ * (& (csHOD L OL))))) y
+       lem02 x y ux py y≤x = eq← *iso ⟪ py , ( λ lt → lem03 (eq→ *iso lt) ) ⟫ where
+          lem04 : odef (csHOD L OL) x → ⊥
+          lem04 lt = proj2 ( eq→ *iso ux ) (eq← *iso lt)
+          lem03 : odef (csHOD L OL) y → ⊥
+          lem03 record { lx = ly ; p = p ; nle = nle } = lem04 record { lx = proj1 (eq→ *iso ux)  ; p = p
+             ; nle = λ le → nle (p≤-trans ( p≤-resp (p-refl1 refl) (p-refl1 refl) y≤x) le) }
 
     record Separate (P : HOD) (TP : Topology P) (p q : Ordinal ) : Set n where
       field
@@ -314,122 +319,98 @@ module MBO {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho<
               ... | case1 eq = ⊥-elim ( ne (p=resp refl refl (p-sym eq) ))
               ... | case2 lt = p<-resp (p-refl1 refl) p-refl lt
 
-    record  CSCond  (L : HOD) (OL : OrderedHOD L) (x : Ordinal )  : Set n where
-        open Topology 
-        open OrderedHOD OL
-        field
-          lx : odef L x
-          p :  HODElement L
-          nle :  ¬ ( record { elt = x ; A∋elt = lx }  p≤ p )
-
-    csHOD : (L : HOD) (OL : OrderedHOD L) → HOD
-    csHOD L OL = record { od = record { def = λ x → CSCond L OL x } ; odmax = & L ; <odmax = λ {u} lt → odef< (CSCond.lx lt) }
-
-    csc-lem00 : (L : HOD) (OL : OrderedHOD L)  → odef (Topology.CS (TOPP L OL)) (& (csHOD L OL ))
-    csc-lem00 L OL = ⟪ (λ lt → CSCond.lx ( eq→ *iso lt) ) , ? ⟫ where 
-       open OrderedHOD OL
-       open IsStrictPartialOrder PO
-       lem01 :  (L ＼ * (& (csHOD L OL))) =h= downHOD L OL ?
-       lem01 = record { eq→ = λ {x} lt → record { px = CSCond.lx (eq→ *iso ? ) ; is-below = case1 ? } ; eq← = λ {x} lt → ? } -- CSCond.p (eq→ *iso lt) }
-        
-
     -- we can create smaller element ( larger set ) from any element in u
     --   which is not in u
     --
-    
-    record  CCond  (L : HOD) (OL : OrderedHOD L) 
+
+    record  CCond  (L : HOD) (OL : OrderedHOD L)
          (u : HODElement (Power L) ) (ou : odef (Topology.OS (TOPP L OL)) (elt u) ) (q : HODElement L) (nuq : ¬ ( odef (* (elt u)) (elt q) ))
             : Set n where
-        open Topology 
+        open Topology
         open OrderedHOD OL
         field
           r :  HODElement L
           r≤q :  r p≤ q
-          prop : (s : HODElement L) → s p≤ r → ¬ ( odef (* (elt u)) (elt s) ) 
-        -- 
-        -- odef (OS (TOPP L OL)) (elt u) , odef (* (eltu )) (elt q) means that there an element p which q p≤ p
-        --   and the union of them
-        -- 
-        -- odef (CS (TOPP L OL)) (elt u) , odef (* (eltu )) (elt q) means that 
-        --      there is some element p which ¬ (q p≤ p)
-        --      and the intersection of them
-        --
-        -- odef (OS (TOPP L OL)) (elt u) , odef (Cl (TOPP L OL) (* (elt u)) q means that 
-        --    q is not in some open set which not contains u
-        --
-        --     ¬ ( q p≤ r) where ¬ ( donwHOD r ⊆ (* (elt u)) )
-        --         where x p≤ r → ¬ ( x  p≤  p )   ( u is down HOD p )
-        --
-        -- odef (OS (TOPP L OL)) (elt u) , odef (Interior (Cl (TOPP L OL) (* (elt u))) q means that 
-        --     
-        --    p p≤ r → ( p is not in some open set which not contains u ) 
-        --    q p≤ r    
-        --      → 
-        --    q is in u
-        -- 
-        -- cc01 : odef (Cl (TOPP L OL) (* (elt u))) (elt q) → ?
-        -- cc01 = ?
+          prop : (s : HODElement L) → s p≤ r → ¬ ( odef (* (elt u)) (elt s) )
 
-    Hww2-lem01 : (L : HOD) (OL : OrderedHOD L)  (u : HODElement (Power L) ) (ou : odef (Topology.OS (TOPP L OL)) (elt u) ) 
+    CCond-lem01 : (L : HOD) (OL : OrderedHOD L)  (u : HODElement (Power L) ) (ou : odef (Topology.OS (TOPP L OL)) (elt u) )
         → Interior (TOPP L OL) (Cl (TOPP L OL) (* (elt u))) ⊆ (* (elt u))
         → (q : HODElement L) (nuq : ¬ ( odef (* (elt u)) (elt q) )) → CCond L OL u ou q nuq
-    Hww2-lem01 L OL u ou icu x nux = record { r = r ; r≤q = r≤q ; prop = prop } where
-        open Topology 
+    CCond-lem01 L OL u ou icu q nuq = record { r = r ; r≤q = r≤q ; prop = prop } where
+        open Topology
         open OrderedHOD OL
-        --  x is in  L ＼ (* (elt u)), it means x is in UpHOD
-        r : HODElement L   -- r is not in u
-        r = ?
-        r≤q : r p≤ x  -- if there is no r p< x then we use x
-        r≤q = ?
-        lem01 : (s : HODElement L) → s p≤ r → ¬ odef (Interior (TOPP L OL) (Cl (TOPP L OL) (* (elt u)))) (elt s)
-        lem01 s s≤r icus = ? where
-            lem02 : r p< s
-            lem02 = ?
-            lem03 : odef (* (elt u)) (elt s)
-            lem03 = icu icus
-            cl : odef (Cl (TOPP L OL) (* (elt u))) (elt s)
-            cl = InteriorR.v⊆A (proj2 icus) (Neighbor.u⊆v (InteriorR.nv (proj2 icus)) (Neighbor.ux (InteriorR.nv (proj2 icus))  ) )
-            -- cl is close, ∃ t p< s, 
-            lem04 : ¬ (odef (* (elt u)) (elt s))   -- because s p≤ r
-            lem04 = ?
-            lem05 : ?  -- s is not on the boundary of u
-            lem05 = ?
-        lem00 : {x : Ordinal} → odef (* (elt u)) x → odef (Interior (TOPP L OL) (Cl (TOPP L OL) (* (elt u)))) x
-        lem00 {x} ux = ⟪ OS⊆PL (TOPP L OL) ou  _ ux , record { v = elt u ; nv = 
-            record { u = elt u ; ou = ou ; ux = ux ; v⊆P = OS⊆PL (TOPP L OL) ou  _  ; u⊆v = λ lt → lt } 
-               ; v⊆A = u⊆Clu (TOPP L OL) (* (elt u)) (OS⊆PL (TOPP L OL) ou  _  ) }  ⟫
+
+        nIC : ¬ odef (Interior (TOPP L OL) (Cl (TOPP L OL) (* (elt u)))) (elt q)
+        nIC iq = nuq (icu iq)
+
+        ncl=cl : (L ＼ Union (OCl (TOPP L OL) (* (elt u))))  =h= Cl (TOPP L OL) (* (elt u))
+        ncl=cl = cc00 (TOPP L OL) (* (elt u))
+
+        lem02 : ¬ (downHOD L OL q ⊆ Cl (TOPP L OL) (* (elt u)))
+        lem02 le = nIC lem03 where
+           lem03 : odef (Interior (TOPP L OL) (Cl (TOPP L OL) (* (elt u)))) (elt q)
+           lem03  = ⟪ A∋elt q , record { v = & (downHOD L OL q)  ; nv = record { u = & (downHOD L OL q) ; ou = downHOD∈OS L OL q
+              ; ux = eq← *iso record { px = A∋elt q ; is-below = case1 p-refl }  ; v⊆P = λ lt → DownP.px (eq→ *iso lt)
+              ; u⊆v = λ lt → lt } ; v⊆A = λ lt → lem06 (eq→ *iso lt) } ⟫ where
+              lem06 :  {x : Ordinal} → odef (downHOD L OL q) x → odef (Cl (TOPP L OL) (* (elt u))) x
+              lem06 = le
+
+        lem03 : ¬ ((downHOD L OL q) =h= od∅ )
+        lem03 eq = lem02 ( λ lt → ⊥-elim ((¬x<0  ( eq→ eq  lt ))))  -- q
+
+        lem06 : ¬ ( ( downHOD L OL q ∩  (L ＼ (Cl (TOPP L OL) (* (elt u))))) =h= od∅  )
+        lem06 eq = lem02 (lem11 eq) where
+           lem12 : {A B : HOD} → A ⊆ L → ( A ∩  (L ＼ B)) =h= od∅  → A ⊆ B 
+           lem12 {A} {B} al eq {x} ax with p∨¬p (odef B x)
+           ... | case1 bx = bx
+           ... | case2 nbx = ⊥-elim ( ¬x<0 (eq→ eq lem13) )  where
+                lem13 : odef ( A ∩  (L ＼ B)) x
+                lem13 = ⟪ ax , ⟪ al ax  , nbx ⟫ ⟫
+           lem11 : ( downHOD L OL q ∩  (L ＼ (Cl (TOPP L OL) (* (elt u)))))=h= od∅  → (downHOD L OL q ⊆ Cl (TOPP L OL) (* (elt u))) 
+           lem11 eq ax = lem12 {downHOD L OL q} {Cl (TOPP L OL) (* (elt u))} (λ dx → DownP.px dx) eq  ax
+
+        DNCl : HOD
+        DNCl = downHOD L OL q ∩  (L ＼ (Cl (TOPP L OL) (* (elt u))))
+
+        r : HODElement L
+        r = record { elt = & (minimal DNCl lem06 ) ; A∋elt = DownP.px (proj1 (x∋minimal DNCl lem06))  }
+
+        lem04 : odef (downHOD L OL q) (elt r)
+        lem04 = proj1 ( x∋minimal DNCl lem06 )
+
+        r≤q : r p≤ q
+        r≤q = p≤-resp (p-refl1 refl) (p-refl1 refl) (  DownP.is-below lem04 )
+
+        nrCl : ¬ (odef (Cl (TOPP L OL) (* (elt u))) (elt r))
+        nrCl = proj2 (proj2 ( x∋minimal DNCl lem06 ))
+
         prop :  (s : HODElement L) → s p≤ r → ¬ odef (* (elt u)) (elt s)
-        prop s s≤r nus = ? -- ⊥-elim (lem01 s s≤r (lem00 nus) )
-            -- we should have ¬ odef (* (elt u)) (elt s) from icu
+        prop s s≤r us = lem08 where
+           lem07 : odef (L ＼ Union (OCl (TOPP L OL) (* (elt u)))) (elt r) → ⊥
+           lem07 nocl = nrCl ( eq→ ncl=cl nocl )
+           lem05 : odef (Union (OCl (TOPP L OL) (* (elt u)))) (elt r)
+           lem05 with p∨¬p (odef (Union (OCl (TOPP L OL) (* (elt u)))) (elt r) )
+           ... | case1 it = it
+           ... | case2 ne = ⊥-elim ( lem07 ⟪ A∋elt r , ne ⟫ )
+           lem08 : ⊥
+           lem08 with lem05
+           ... | record { owner = v ; ao = ao ; ox = ox } = proj2 (lem09 us ) sv where
+              ov : odef (OS (TOPP L OL)) v
+              ov = proj1 ao
+              sv : odef (* v) (elt s)
+              sv = OpenP.is-open ov (elt r) (elt s) ox (A∋elt s) (p≤-resp (p-refl1 refl) (p-refl1 refl) s≤r )
+              lem09 : * (elt u) ⊆ (L ＼ * v)
+              lem09 = proj2 ao
 
-
-    Hww2-lem00 : (L : HOD) (OL : OrderedHOD L)  (u : HODElement (Power L) ) (ou : odef (Topology.OS (TOPP L OL)) (elt u) ) 
-        → (cc : (q : HODElement L) (nuq : ¬ ( odef (* (elt u)) (elt q) )) → CCond L OL u ou q nuq) 
+    CCond-lem00 : (L : HOD) (OL : OrderedHOD L)  (u : HODElement (Power L) ) (ou : odef (Topology.OS (TOPP L OL)) (elt u) )
+        → (cc : (q : HODElement L) (nuq : ¬ ( odef (* (elt u)) (elt q) )) → CCond L OL u ou q nuq)
         → Interior (TOPP L OL) (Cl (TOPP L OL) (* (elt u))) ⊆ (* (elt u))
-    Hww2-lem00 L OL u ou cc {x} icux with p∨¬p (odef (* (elt u)) x)
-    ... | case1 ux = ux
-    ... | case2 nux with trio< (elt u) o∅ 
-    ... | tri< a ¬b ¬c = {! !}
-    ... | tri≈ ¬a b ¬c = {! !}
-    ... | tri> ¬a ¬b c = ⊥-elim (CCond.prop (cc xe nux)  s s≤r us ) where
-        open Topology 
+    CCond-lem00 L OL u ou cc {x} = lem11 where
+        open Topology
         open OrderedHOD OL
-        lem00 : odef L x
-        lem00 = OS⊆PL (TOPP L OL) (proj1 (Interior∈OS (TOPP L OL) (Cl (TOPP L OL) (* (elt u)))))  _ (eq← *iso icux)
-        xe : HODElement L
-        xe = record { elt = x ; A∋elt = lem00 }
-
-        -- Interior (TOPP L OL) (Cl (TOPP L OL) (* (elt u))) ⊆ (* (elt u))
-        --
-        -- ¬ ( x ∈ u )    this means r p< x 
-        -- x will be out of Interior (Cl  u) (because of icu)
-        -- there is an open set v, v is contained by Cl u
-        --  if x is in v, it will be a contradiction
-        --     element y in v, y p≤ d, have to aboid x
-        --     v is contained by Cl u, r p< v 
 
         lem12 : {q : Ordinal} → ¬ ( odef (* (elt u)) q ) → ¬ ( odef (Interior (TOPP L OL) (Cl (TOPP L OL) (* (elt u)))) q )
-        lem12 {q} nuq ⟪ lq , record { v = v ; nv = record { u = s ; ou = os ; ux = sq ; v⊆P = v⊆P ; u⊆v = u⊆v } ; v⊆A = v⊆A } ⟫ = lem04 lem03 ccd where
+        lem12 {q} nuq ⟪ lq , record { v = v ; nv = record { u = s ; ou = os ; ux = sq ; v⊆P = v⊆P ; u⊆v = u⊆v } ; v⊆A = v⊆A } ⟫ = lem25 lem24 where
             qe : HODElement L
             qe = record { elt = q ; A∋elt = lq }
             ccd : CCond L OL u ou qe nuq
@@ -442,108 +423,39 @@ module MBO {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho<
             ncl=cl = cc00 (TOPP L OL) (* (elt u))
             lem03 : odef ncl q
             lem03 = eq← ncl=cl cl
-            lem04 : odef (L ＼ Union (OCl (TOPP L OL) (* (elt u)))) q → ( ccd : CCond L OL u ou qe nuq) → ⊥
-            lem04 ⟪ lq , ncl1 ⟫ record { r = r ; r≤q = r≤q ; prop = prop } = ncl1 lem05 where
-               lem05 : odef (Union (OCl (TOPP L OL) (* (elt u)))) q 
-               lem05 = record { owner = _ ; ao = ⟪ os , lem07 ⟫ ; ox = sq } where
-                  lem09 : (z : HODElement L) → r p≤ z → ¬ (odef (* (elt u)) (elt z))
-                  lem09 z le uz = ?
-                  lem10 : (z r : HODElement L) → ¬ ( z p≤ r ) → odef (OS (TOPP L OL)) (elt u) → ¬ (odef (* (elt u)) (elt z))
-                  lem10 z r nle ou uz = ?
-                  lem07 : {x : Ordinal} → odef (* (elt u)) x → odef (L ＼ * s) x
-                  lem07 {z} uz = ⟪ OS⊆PL (TOPP L OL) ou _ uz , (λ ls → prop ze (ze≤r ls)  uz )  ⟫ where
-                     ze : HODElement L
-                     ze = record { elt = z ; A∋elt = OS⊆PL (TOPP L OL) ou _ uz  }
-                     ze≤r : odef (* s) z → ze p≤ r
-                     ze≤r sz = ?  where
-                        -- r p≤ q
-                        --    odef u z  →   z p< r
-                        --    odef OS s
-                        --    odef s q     q p≤ sd
-                        --    odef s z     z p≤ sd
-                        --
-                        --    r p≤ z → ¬ (odef u z )
-                        lem08 : odef (* (elt u)) (elt r)
-                        lem08 = OpenP.is-open ou _ _ uz ? ?
-                        --  r p≤ ze → odef (upHOD r) z
+            lem20 : odef (L ＼ (* (elt u))) q
+            lem20 = ⟪ lq , nuq ⟫
+            se : HODElement (Power L)
+            se = record { elt = s ; A∋elt = OS⊆PL (TOPP L OL) os  }
+            r : HODElement L
+            r =  CCond.r ccd
+            lem21 : (q : HODElement L) → odef (* s) (elt q) → r p≤ q → odef (* s) (elt r)
+            lem21 q sq r≤q = OpenP.is-open os _ _ sq (A∋elt r) (p≤-resp (p-refl1 refl) (p-refl1 refl) r≤q )
+            lem23 : (* s)  ⊆ Cl (TOPP L OL) (* (elt u))
+            lem23 sx = v⊆A ( u⊆v sx )
+            lem24 : odef (Cl (TOPP L OL) (* (elt u))) (elt r)
+            lem24 = v⊆A ( u⊆v (lem21 qe sq (CCond.r≤q ccd )))
+            lem25 : ¬  odef (Cl (TOPP L OL) (* (elt u))) (elt r)
+            lem25 clr = proj2 lem27 lem26 where
+                lem27 : odef ncl (elt r)
+                lem27 = eq← ncl=cl clr
+                lem28 : odef (OS (TOPP L OL)) (& (downHOD L OL r))
+                lem28 = downHOD∈OS L OL r
+                lem26 : odef (Union (OCl (TOPP L OL) (* (elt u)))) (elt r)
+                lem26 = record { owner = _ ; ao = ⟪ lem28 , lem29 ⟫ ; ox = eq← *iso record { px = A∋elt r ; is-below = case1 p-refl  } }  where
+                   lem29 : {x : Ordinal} → odef (* (elt u)) x → odef (L ＼ * (& (downHOD L OL r))) x
+                   lem29 {x} ux = ⟪ lxe1 , (λ drx → lem31 (eq→ *iso drx) ux ) ⟫ where
+                      lxe1 : odef L x
+                      lxe1 = OS⊆PL (TOPP L OL) ou _ ux
+                      xe1 : HODElement L
+                      xe1 = record { elt = x ; A∋elt = lxe1 }
+                      lem30 : odef (downHOD L OL r) x → xe1 p≤ r
+                      lem30 drx = p≤-resp (p-refl1 refl) (p-refl1 refl) (DownP.is-below drx )
+                      lem31 : odef (downHOD L OL r) x → ¬ ( odef (* (elt u)) x )
+                      lem31 drx = CCond.prop ccd xe1 ( lem30 drx )
 
-        lem11 : {x : Ordinal} → odef (Interior (TOPP L OL) (Cl (TOPP L OL) (* (elt u)))) x → odef (* (elt u)) x 
+        lem11 : {x : Ordinal} → odef (Interior (TOPP L OL) (Cl (TOPP L OL) (* (elt u)))) x → odef (* (elt u)) x
         lem11 {x} = contra-position2 {odef (* (elt u)) x } {odef (Interior (TOPP L OL) (Cl (TOPP L OL) (* (elt u)))) x }  lem12
-        --
-        -- if (odef (Interior (TOPP L OL) (Cl (TOPP L OL) (* (elt u)))) x )), 
-        --   we have r p≤ x and we can find  s, s p≤ r in u
-        --
-        --  there is an element y in u, y p≤ d, ¬ x p≤ d
-        --  ¬ (odef u x), odef u y
-        --
-        cs : HODElement (Power L)
-        cs = record { elt = & (upHOD L OL (CCond.r (cc xe nux)) ) ; A∋elt = λ z uz → UpP.px ( eq→ *iso uz) } 
-        lem08 : ¬ ( odef (* (elt u)) x)   --  ¬ ( xe p≤ CCond.r (cc xe nux) )
-        lem08 = nux
-        -- ¬ ( xe p≤ CCond.r (cc xe nux) ) 
-        --lem06 : CCond.r (cc xe nux) p≤ xe
-        --lem06 = CCond.r≤q (cc xe nux)
-        -- lem07 : ¬ ( xe p< CCond.r (cc xe nux) )
-        -- lem07 lt = p≤> lem06 lt 
-        -- ncsq : odef (L ＼  (* (elt cs))) x   -- r p≤ xe 
-        -- ncsq  = ⟪ ? , (λ lt → ?) ⟫ 
-        ccs : odef (CS (TOPP L OL)) (elt cs)
-        ccs = upHOD∈CS L OL (CCond.r (cc xe nux))
-        cl : odef (Cl (TOPP L OL) (* (elt u))) x
-        cl = InteriorR.v⊆A (proj2 icux) (Neighbor.u⊆v (InteriorR.nv (proj2 icux)) (Neighbor.ux (InteriorR.nv (proj2 icux))  ) )
-        w : Ordinal
-        w = Neighbor.u (InteriorR.nv (proj2 icux)) 
-        wx : odef (* w) x
-        wx = Neighbor.ux (InteriorR.nv (proj2 icux)) 
-        lem09 : (* w) ⊆ Cl (TOPP L OL) (* (elt u))
-        lem09 = λ lt → InteriorR.v⊆A (proj2 icux) (Neighbor.u⊆v (InteriorR.nv (proj2 icux)) lt) 
-        ncl : HOD
-        ncl = L ＼ Union (OCl (TOPP L OL) (* (elt u)))  
-        ncl=cl : (L ＼ Union (OCl (TOPP L OL) (* (elt u))))  =h= Cl (TOPP L OL) (* (elt u))
-        ncl=cl = cc00 (TOPP L OL) (* (elt u))
-        lem03 : odef ncl x
-        lem03 = eq← ncl=cl cl
-        or : HOD
-        or = downHOD L OL (CCond.r (cc xe nux))
-        cr : HOD
-        cr = upHOD L OL (CCond.r (cc xe nux))
-        crx : odef cr x
-        crx = record { px = lem00 ; is-above = lem10 } where -- CCond.r≤q (cc xe nux) }
-           lem10 : CCond.r (cc xe nux) p< xe
-           lem10 = ?
-        s : HODElement L
-        s = ? 
---       with lem03
---       ... | ⟪ lx , nucl ⟫ = record { elt = ? ; A∋elt = ? } where
---           lem04 : ¬ ((y : Ordinal ) → odef (OCl (TOPP L OL) (* (elt u))) y) → ⊥
---           lem04 ncly = nucl record { owner = _ ; ao = ? ; ox = ? }
-        -- r p≤ x 
-        -- s p≤ r
-        -- d p≤ s
-        s≤r : s p≤ (CCond.r (cc xe nux))  
-        s≤r = ?
-        ors : odef or (elt s)
-        ors = record { px = A∋elt s ; is-below = s≤r }
-        us : odef (* (elt u)) (elt s)  
-        us = ?
-
---       ye : HODElement HODww2
---       ye = record { elt = ? ; A∋elt = ? }
---       u∋y : odef (* (elt u)) (elt ?)
---       u∋y = ?
---       lem04 : ?
---       lem04 with lem03
---       ... | ⟪ lx , nucl ⟫ = {! !} where
---          lem05 : Own (OCl TW (* (elt u))) x → ⊥
---          lem05  = nucl
---       cs∋x : odef (* (elt cs)) x
---       cs∋x = eq← *iso record { px = ? ; is-above = ?  } -- p≤-trans  (CCond.r≤q (cc xe nux)) ?  }
---       lem01 : odef (CS (TW)) (elt cs)
---       lem01 = ?
---       lem02 : * (elt u) ⊆ (* (elt cs)) 
---       lem02 {y} csy = ?
---       ccs : odef (* (elt cs)) (elt s )
---       ccs = proj2 cl _ lem01  lem02
 
     --   H(ω x ω, 2)    finite function  ℕ → ℕ → Bool
     --   { P | Func p ∧ (dom p ⊆ ω x ω) ∧ (finite (dom p) ∧ ran p ⊆ 2) }
@@ -554,24 +466,24 @@ module MBO {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho<
 
     HwwOrder : OrderedHOD HODww2
     HwwOrder = record {
-           _p<_ = λ x y → ((* (elt y)) ⊆  (* (elt x)) ) ∧ ( ¬  ((* (elt x)) =h=  (* (elt y)) )) 
-        ;  _=p=_ =  λ x y → (* (elt x)) =h=  (* (elt y))  
-        ; PO = record {  isEquivalence = record { refl = ==-refl ; sym = ==-sym ; trans = ==-trans   } 
-           ; irrefl = λ {x} {y} → lem00 {x} {y} ; trans = λ {i} {j} {k} → lem01  {i} {j} {k}  
-              ; <-resp-≈ =  and (λ {x} {y} eq x<y → subst ( λ k → ((* k) ⊆ (* (elt x))) ∧ (¬ ((* (elt x)) =h= (* k) ))) (*=h=*→≡  eq) x<y ) 
+           _p<_ = λ x y → ((* (elt y)) ⊆  (* (elt x)) ) ∧ ( ¬  ((* (elt x)) =h=  (* (elt y)) ))
+        ;  _=p=_ =  λ x y → (* (elt x)) =h=  (* (elt y))
+        ; PO = record {  isEquivalence = record { refl = ==-refl ; sym = ==-sym ; trans = ==-trans   }
+           ; irrefl = λ {x} {y} → lem00 {x} {y} ; trans = λ {i} {j} {k} → lem01  {i} {j} {k}
+              ; <-resp-≈ =  and (λ {x} {y} eq x<y → subst ( λ k → ((* k) ⊆ (* (elt x))) ∧ (¬ ((* (elt x)) =h= (* k) ))) (*=h=*→≡  eq) x<y )
                  (λ {x} {y} eq x<y → subst (λ k → ((((* (elt x)) ⊆ (* k)) ) ∧ (¬ ((* k ) =h= (* (elt x)) )))) (*=h=*→≡  eq) x<y ) }
-        ;  p=resp = λ {x} {y} {w} {z} x≡w y≡z x=y → ==-trans (o≡→== (sym x≡w) ) (==-trans x=y (o≡→== y≡z ) )   
+        ;  p=resp = λ {x} {y} {w} {z} x≡w y≡z x=y → ==-trans (o≡→== (sym x≡w) ) (==-trans x=y (o≡→== y≡z ) )
         ;  p<-resp = λ x=w y=z y<x → subst₂ ( λ j k → ((* k) ⊆ (* j)) ∧ (¬ ((* j) =h= (* k) ))) (*=h=*→≡ x=w) (*=h=*→≡ y=z) y<x
       } where
          open import Data.Product renaming ( _,_ to and )
-         lem00 : {x y : HODElement HODww2} → * (elt x) =h= * (elt y) 
+         lem00 : {x y : HODElement HODww2} → * (elt x) =h= * (elt y)
              → ¬ ( * (elt y) ⊆ * (elt x) ∧ (¬ (* (elt x) =h= * (elt y))) )
          lem00 {x} {y} eq  ⟪ y≤x , ne ⟫ = ⊥-elim ( ne eq )
          lem01 : {i j k : HODElement HODww2} →
             * (elt j) ⊆ * (elt i) ∧ (¬ (* (elt i) =h= * (elt j))) →
             * (elt k) ⊆ * (elt j) ∧ (¬ (* (elt j) =h= * (elt k))) →
             * (elt k) ⊆ * (elt i) ∧ (¬ (* (elt i) =h= * (elt k)))
-         lem01 {i} {j} {k} ⟪ i≤j , ne1 ⟫ ⟪ j≤k , ne2 ⟫ = ⟪ ( λ lt → i≤j (j≤k lt )) , ( λ i=k → ⊥-elim ( ne1 (==-sym 
+         lem01 {i} {j} {k} ⟪ i≤j , ne1 ⟫ ⟪ j≤k , ne2 ⟫ = ⟪ ( λ lt → i≤j (j≤k lt )) , ( λ i=k → ⊥-elim ( ne1 (==-sym
             ( ⊆→== {* (elt j)} {* (elt i)} i≤j (λ {x} ix → (j≤k (eq→ i=k ix) ) ) ))))  ⟫
 
     Hww-lem00 : { a b : HODElement HODww2 } → * (elt a) ⊆ * (elt b) →  OrderedHOD._p≤_ HwwOrder b a
@@ -585,20 +497,17 @@ module MBO {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho<
     TW : Topology HODww2
     TW = TOPP HODww2 HwwOrder
 
-    Hww2isRO :  (u : HODElement (Power HODww2) ) (ou : odef (Topology.OS TW) (elt u) ) 
-        → (* (elt u)) =h= Interior TW (Cl TW (* (elt u)))
-    Hww2isRO u ou = record { eq→ = lem00 ; eq← = lem01 } where
-        open Topology 
+    Hww2isCC :  (u : HODElement (Power HODww2) ) (ou : odef (Topology.OS TW) (elt u) )
+        → (q : HODElement HODww2) (nuq : ¬ ( odef (* (elt u)) (elt q) )) → CCond HODww2 HwwOrder u ou q nuq
+    Hww2isCC u ou q nuq = ? where
+        open Topology
         open OrderedHOD HwwOrder
-        lem00 : {x : Ordinal} → odef (* (elt u)) x → odef (Interior TW (Cl TW (* (elt u)))) x
-        lem00 {x} ux = ⟪ OS⊆PL TW ou  _ ux , record { v = elt u ; nv = 
-            record { u = elt u ; ou = ou ; ux = ux ; v⊆P = OS⊆PL TW ou  _  ; u⊆v = λ lt → lt } ; v⊆A = u⊆Clu TW (* (elt u)) (OS⊆PL TW ou  _  ) }  ⟫
         -- first we prove on an open base
-        lem30 : {a b : HOD } →  b ⊆ Union ( a  , b )  
+        lem30 : {a b : HOD } →  b ⊆ Union ( a  , b )
         lem30 {a} {b} bx = record { owner = _ ; ao = case2 refl ; ox = eq← *iso bx }
-        lem20 : {q : Ordinal} → (d : HODElement HODww2) → ¬ ( odef (downHOD HODww2 HwwOrder d)  q ) 
+        lem20 : {q : Ordinal} → (d : HODElement HODww2) → ¬ ( odef (downHOD HODww2 HwwOrder d)  q )
             → ¬ ( odef (Interior TW (Cl TW (downHOD HODww2 HwwOrder d) )) q )
-        lem20 {q} d ndq ⟪ lq , record { v = v ; nv = record { u = w ; ou = ow ; ux = wq ; v⊆P = v⊆P ; u⊆v = u⊆v } ; v⊆A = v⊆A } ⟫ = 
+        lem20 {q} d ndq ⟪ lq , record { v = v ; nv = record { u = w ; ou = ow ; ux = wq ; v⊆P = v⊆P ; u⊆v = u⊆v } ; v⊆A = v⊆A } ⟫ =
               lem40 se s≤r dds where
            -- dd is x p≤ d, it is open
            dd : HOD
@@ -609,14 +518,14 @@ module MBO {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho<
            qe : HODElement HODww2
            qe = record { elt = q ; A∋elt = lq }
            --    with Hww2r.hww2 (A∋elt q ) generate compiler error
-           r : HODElement HODww2 
+           r : HODElement HODww2
            r = record { elt = lem01 ; A∋elt = lem02 }  where
                lem14 : ¬ (qe  p≤ d )   -- ¬ ( d ⊆ qe )  -- ¬ ( (d \ qe) ≡ od∅ )
                lem14 q≤d = ⊥-elim ( ndq record { px = ? ; is-below = ? }  )
                -- we invert the value of something isn (qe \ d), and create union with qe
                -- that's lem01
                lem01 : Ordinal
-               lem01 = & (Union ( < nat→ω (Hww2r.count (A∋elt qe))   , (* o∅)  > , * (elt qe) ) ) 
+               lem01 = & (Union ( < nat→ω (Hww2r.count (A∋elt qe))   , (* o∅)  > , * (elt qe) ) )
                lem02 : Hww2r lem01
                lem02  = record { count = suc ( Hww2r.count (A∋elt qe) ) ; hww2 = hj hφ ( Hww2r.hww2 (A∋elt qe) ) }
            r≤q : r p≤ qe
@@ -631,7 +540,7 @@ module MBO {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho<
            -- we have some open  set, out side of dd which contains se, that is closed set which included in dd
            --
            --     if q is out of u, q is out of Cl u , because
-           --        r ≤ q   
+           --        r ≤ q
            --        ∀ s ≤ r → ¬ (u ∋ s )
            --
            -- r p< q
@@ -641,50 +550,27 @@ module MBO {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho<
            --    q in not in dd, and it is in closure of dd
            lem04 : odef (Cl TW (downHOD HODww2 HwwOrder d) ) q
            lem04 = v⊆A ( u⊆v wq )
-           se : HODElement HODww2 
+           se : HODElement HODww2
            se = ?
            s≤r : se p≤ r   -- r p≤ qe
            s≤r = ?
            s≤q : se p≤ qe
            s≤q = p≤-trans s≤r r≤q
-           dds : odef (downHOD HODww2 HwwOrder d) (elt se)  
+           dds : odef (downHOD HODww2 HwwOrder d) (elt se)
            dds = record { px = ? ; is-below = ? }
-           -- wq : odef (* w) q
-           -- ow : w is open, there is an element qe p≤ ey 
-           --    se p≤ r qe p≤  qe p≤ ey 
-           -- s is every element below r, that is, odef (downHOD HODww2 HwwOrder r) s
-           lem05 : (se : HODElement HODww2) → se p≤ r → odef (downHOD HODww2 HwwOrder r) (elt se)
-           lem05 se s≤r = record { px = A∋elt se ; is-below = s≤r } 
-           -- we determine r to satisfy lem03
-           lem03 : (qe : HODElement HODww2 ) → ¬ ( odef (downHOD HODww2 HwwOrder d)  (elt qe) ) → ( r≤q : r p≤ qe ) 
-              → (se  : HODElement HODww2 ) → se p≤ r → ¬ ( odef (downHOD HODww2 HwwOrder d) (elt se)  )
-           lem03 qe ndq r≤q se s≤r us1 = lem10 us1 where
-               lem11 : ¬ ( odef dd (elt qe) )
-               lem11 dq = ⊥-elim ( ndq dq )
-               lem14 : ¬ (qe  p≤ d )   -- ¬ ( d ⊆ qe )  -- ¬ ( (qe \ d) ≡ od∅ )
-               lem14 q≤d = ⊥-elim ( ndq ?  )
-               lem10 : ¬ ( odef dd (elt se) )
-               lem10 = ?
-               lem12 : * (elt qe) ⊆ * (elt se)
-               lem12 = ?
-               lem13 : se p≤  d
-               lem13 = DownP.is-below us1 
-            -- it will cause q is in dd ( downHOD Hww2 Hwworder d? )
-            --     d 
-           p : HODElement HODww2
-           p = ROH-lem00.p (down-lem00 HODww2 HwwOrder we ow wq  ) 
-           lem06 :  odef ( downHOD HODww2 HwwOrder (ROH-lem00.p (down-lem00 HODww2 HwwOrder we ow wq  ) )  ) q   -- qe p≤ p
-           lem06 = down-lem02 HODww2 HwwOrder we ow wq
-           lem07 :  qe  p≤ ROH-lem00.p (down-lem00 HODww2 HwwOrder we ow wq  )   
-           lem07 = DownP.is-below  lem06 
-           lem08 : odef ( downHOD HODww2 HwwOrder (ROH-lem00.p (down-lem00 HODww2 HwwOrder we ow wq  ) )  ) (elt r)
-           lem08 = eq→ *iso ( OpenP.is-open ( downHOD∈OS HODww2 HwwOrder (ROH-lem00.p (down-lem00 HODww2 HwwOrder we ow wq  ) ) ) _ _ 
-               (eq← *iso lem06) (A∋elt se) s≤q  )
-        -- u is Union of open base
-        lem02 : {q : Ordinal} → ¬ ( odef (* (elt u)) q ) → ¬ ( odef (Interior TW (Cl TW (* (elt u)))) q )
-        lem02 {q} nuq ⟪ lq , record { v = v ; nv = record { u = s ; ou = os ; ux = sq ; v⊆P = v⊆P ; u⊆v = u⊆v } ; v⊆A = v⊆A } ⟫ = ?
-        lem01 : {x : Ordinal} → odef (Interior TW (Cl TW (* (elt u)))) x → odef (* (elt u)) x 
-        lem01 {x} = contra-position2 {odef (* (elt u)) x } {odef (Interior TW (Cl TW (* (elt u)))) x }  lem02
+
+
+    Hww2isRO :  (u : HODElement (Power HODww2) ) (ou : odef (Topology.OS TW) (elt u) )
+        → (* (elt u)) =h= Interior TW (Cl TW (* (elt u)))
+    Hww2isRO u ou = record { eq→ = lem00 ; eq← = lem31 } where 
+        open Topology
+        open OrderedHOD HwwOrder
+        lem31 : Interior (TOPP HODww2 HwwOrder) (Cl (TOPP HODww2 HwwOrder) (* (elt u))) ⊆ (* (elt u))
+        lem31 = CCond-lem00 HODww2 HwwOrder u ou (Hww2isCC u ou) 
+
+        lem00 : {x : Ordinal} → odef (* (elt u)) x → odef (Interior TW (Cl TW (* (elt u)))) x
+        lem00 {x} ux = ⟪ OS⊆PL TW ou  _ ux , record { v = elt u ; nv =
+            record { u = elt u ; ou = ou ; ux = ux ; v⊆P = OS⊆PL TW ou  _  ; u⊆v = λ lt → lt } ; v⊆A = u⊆Clu TW (* (elt u)) (OS⊆PL TW ou  _  ) }  ⟫
 
     -- ( ∀ L ∋ q, u → u is open →  ¬ ( u ∋ q) → ∃ r ≤ q → L ∋ s → (s ≤ r ) → ¬ ( u ∋ s ) ) == (  Interior (Cl top u) ⊆  u )
     --
@@ -693,8 +579,8 @@ module MBO {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho<
     -- record  ROlem03 (L : HOD) (OL : OrderedHOD L) (u : HODElement (Power L) ) (ou : odef (Topology.OS (TOPP L OL)) (elt u) ) : Set n where
     --    open OrderedHOD OL
     --    field
-    --       r : HODElement L 
-    --       prop : (q : HODElement L ) → ¬ ( odef (* (elt u)) (elt q) ) → ( r≤q : r p≤ q ) 
+    --       r : HODElement L
+    --       prop : (q : HODElement L ) → ¬ ( odef (* (elt u)) (elt q) ) → ( r≤q : r p≤ q )
     --          → (s  : HODElement L ) → s p≤ r → ¬ ( odef (* (elt u)) (elt s)  )
 
     --

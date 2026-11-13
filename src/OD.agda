@@ -191,11 +191,17 @@ is-o∅ x | tri< a ¬b ¬c = no0 ¬b
 is-o∅ x | tri≈ ¬a b ¬c = yes0 b
 is-o∅ x | tri> ¬a ¬b c = no0 ¬b
 
+_∩_ : ( A B : HOD ) → HOD
+A ∩ B = record { od = record { def = λ x → odef A x ∧ odef B x }
+        ; odmax = omin (odmax A) (odmax B) ; <odmax = λ y → min1 (<odmax A (proj1 y)) (<odmax B (proj2 y))}
+
 record AxiomOfChoice : Set (suc n) where
  field
   minimal-o< : (x : HOD  ) → o∅ o< & x  → Ordinal
   x∋minimal-o< : (x : HOD  ) → ( ne :  o∅ o< & x ) → odef x ( minimal-o< x ne ) 
   is-minimal-o< : (x : HOD  ) → ( ne :  o∅ o< & x ) → (y : HOD ) → ¬ ( odef (* (minimal-o< x ne)) (& y)) ∧ (odef x (&  y) )
+
+  -- is-minimal-o<` : (x : HOD  ) → ( ne :  o∅ o< & x ) →  & (* (minimal-o< x ne) ∩ x) ≡ o∅ 
   -- mimimul and x∋minimal is an Axiom of choice
  minimal : (x : HOD  ) → ¬ (od x == od od∅ ) → HOD
  minimal x ne = * ( minimal-o< x (ne→o< ne) )
@@ -205,12 +211,11 @@ record AxiomOfChoice : Set (suc n) where
  minimal-cong x ne ne1 = o≡→==  (minimal-o<-cong x (ne→o< ne) (ne→o< ne1) ) 
  x∋minimal : (x : HOD  ) → ( ne : ¬ (od x == od od∅ ) ) → odef x ( & ( minimal x ne ) )
  x∋minimal x ne = subst ( λ k → odef x k) (sym &iso) ( x∋minimal-o< x (ne→o< ne)  )
- is-minimal : (x : HOD  ) → ( ne : ¬ (od x == od od∅ ) ) → (y : HOD ) → ¬ ( odef (minimal x ne) (& y)) ∧ (odef x (&  y) )
- is-minimal x ne = is-minimal-o< x (ne→o< ne)
-
--- we cannot say
--- min-cong : (x y : HOD ) → ( nex : ¬ (od x == od od∅ ) ) → ( ney : ¬ (od y == od od∅ ) ) → od x == od y → od (minimal x nex) == od (minimal y ney )
--- min-cong x y nex ney x=y = ?
+ --
+ -- regularity axiom
+ -- it is replaced by ε-induction
+ --
+ -- -- ∀ a → ¬ (a =h= od∅ ) → ∃ x ∈ a → (x ∩ a) =h= od∅ )
 
 -- _c<_ : ( x a : HOD  ) → Set n
 -- x c< a = a ∋ x
@@ -240,10 +245,6 @@ odmax<& {x} {y} x∋y = odmax x o< & x
 
 in-codomain : (X : HOD  ) → ( ψ : HOD  → HOD  ) → OD
 in-codomain  X ψ = record { def = λ x → ¬ ( (y : Ordinal ) → ¬ ( odef X y ∧  ( x ≡ & (ψ (* y )))))  }
-
-_∩_ : ( A B : HOD ) → HOD
-A ∩ B = record { od = record { def = λ x → odef A x ∧ odef B x }
-        ; odmax = omin (odmax A) (odmax B) ; <odmax = λ y → min1 (<odmax A (proj1 y)) (<odmax B (proj2 y))}
 
 _⊆_ : ( A B : HOD)   → Set n
 _⊆_ A B = { x : Ordinal } → odef A x → odef B x
@@ -284,11 +285,6 @@ infixr  220 _⊆_
          ... | case2 y<x = ⊥-elim ( o<¬≡ b ( (ordtrans (c<→o< lt) y<x)  ))
      ε-induction-hod : (ox : Ordinal) { oy : Ordinal } → oy o< ox → (y : HOD) → & y o< osuc oy  → ψ y
      ε-induction-hod ox {oy} lt = TransFinite {λ oy → (y : HOD) → & y o< osuc oy →  ψ y} induction2 oy
-
--- we cannot prove this...
--- ε-induction0 : { ψ : HOD  → Set n}
---    → ( {x : HOD } → ({ y : HOD } →  x ∋ y → ψ y ) → ψ x )
---    → (x : HOD ) → ψ x
 
 -- Open supreme upper bound leads a contradition, so we use domain restriction on sup
 ¬open-sup : ( sup-o : (Ordinal →  Ordinal ) → Ordinal) → ((ψ : Ordinal →  Ordinal ) → (x : Ordinal) → ψ x  o<  sup-o ψ ) → ⊥
