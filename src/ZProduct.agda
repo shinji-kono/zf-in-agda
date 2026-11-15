@@ -513,6 +513,18 @@ hodbij-sym {a} eq = record {
      ; fcong← = fcong→ eq
     } where open HODBijection
 
+hodbij-trans : { a b c : HOD } →  HODBijection a b → HODBijection b c → HODBijection a c
+hodbij-trans {a} {b} {c} a=b b=c = record {
+       fun←  = λ x cx → fun← a=b _ (funA b=c x cx ) 
+     ; fun→  = λ x ax → fun→  b=c _ (funB a=b x ax ) 
+     ; funA   = λ x cx → funA a=b _ (funA b=c x cx ) 
+     ; funB   = λ x ax → funB b=c _ (funB a=b x ax ) 
+     ; fiso← = λ x ax → trans (fcong← a=b _ _ (funA b=c _ (funB  b=c _ (funB  a=b _ ax ))) (funB a=b _ ax) (fiso← b=c _ (funB  a=b _ ax)  )) (fiso← a=b _ ax) 
+     ; fiso→ = λ x cx → trans (fcong→ b=c _ _ (funB a=b _ (funA  a=b _ (funA  b=c _ cx ))) (funA b=c _ cx) (fiso→ a=b _ (funA  b=c _ cx)  )) (fiso→ b=c _ cx) 
+     ; fcong→ = λ x z ax az x=z → fcong→  b=c _ _ (funB  a=b _ ax )  (funB  a=b _ az ) (fcong→  a=b _ _ ax az x=z )
+     ; fcong← = λ x z cx cz x=z → fcong←  a=b _ _ (funA  b=c _ cx )  (funA  b=c _ cz ) (fcong←  b=c _ _ cx cz x=z )
+    } where open HODBijection
+
 pj12 : (A B : HOD) {x : Ordinal} → (ab : odef (ZFP A B) x ) →
    (zπ1  (subst (odef (ZFP A B)) (sym &iso) ab) ≡ zπ1 ab ) ∧
    (zπ2  (subst (odef (ZFP A B)) (sym &iso) ab) ≡ zπ2 ab )

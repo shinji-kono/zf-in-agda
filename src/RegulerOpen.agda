@@ -464,6 +464,10 @@ module MBO {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho<
     -- Partial Order is proved by set inclusion only
     --
 
+    -- element of H(ω x ω, 2) is a finite set of (ω x w) x Bool
+    -- Hw≤ : (a b : HODElement HODww2) → Set n
+    -- Hw≤ a b = (* (elt a)) ⊆ (* (elt b)) 
+
     HwwOrder : OrderedHOD HODww2
     HwwOrder = record {
            _p<_ = λ x y → ((* (elt y)) ⊆  (* (elt x)) ) ∧ ( ¬  ((* (elt x)) =h=  (* (elt y)) ))
@@ -499,12 +503,28 @@ module MBO {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho<
 
     Hww2isCC :  (u : HODElement (Power HODww2) ) (ou : odef (Topology.OS TW) (elt u) )
         → (q : HODElement HODww2) (nuq : ¬ ( odef (* (elt u)) (elt q) )) → CCond HODww2 HwwOrder u ou q nuq
-    Hww2isCC u ou q nuq = ? where
+    Hww2isCC u ou q nuq with trio< (elt u) o∅ 
+    ... | tri< a ¬b ¬c = {! !}
+    ... | tri≈ ¬a b ¬c = record { r = ? ; r≤q = ? ; prop = ? } 
+    ... | tri> ¬a ¬b 0<u = record { r = ? ; r≤q = ? ; prop = ? } where
         open Topology
         open OrderedHOD HwwOrder
         -- first we prove on an open base
         lem30 : {a b : HOD } →  b ⊆ Union ( a  , b )
         lem30 {a} {b} bx = record { owner = _ ; ao = case2 refl ; ox = eq← *iso bx }
+        a : HODElement HODww2
+        a = ?
+        lem32 : odef (* (elt u)) (elt a)
+        lem32 = ?
+        lem31 : ¬ ( (* (elt u)) ⊆ (* (elt q)) )
+        lem31 uq = nuq ? 
+        lem33 : ¬ ( (HODww2 ＼ (* (elt q))) =h= od∅ )
+        lem33 = ?
+        lem34 : HOD
+        lem34 = minimal (HODww2 ＼ (* (elt q))) lem33
+        r : HODElement HODww2
+        r = record { elt = ? ; A∋elt = ? }  
+
         lem20 : {q : Ordinal} → (d : HODElement HODww2) → ¬ ( odef (downHOD HODww2 HwwOrder d)  q )
             → ¬ ( odef (Interior TW (Cl TW (downHOD HODww2 HwwOrder d) )) q )
         lem20 {q} d ndq ⟪ lq , record { v = v ; nv = record { u = w ; ou = ow ; ux = wq ; v⊆P = v⊆P ; u⊆v = u⊆v } ; v⊆A = v⊆A } ⟫ =
@@ -518,16 +538,16 @@ module MBO {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho<
            qe : HODElement HODww2
            qe = record { elt = q ; A∋elt = lq }
            --    with Hww2r.hww2 (A∋elt q ) generate compiler error
-           r : HODElement HODww2
-           r = record { elt = lem01 ; A∋elt = lem02 }  where
-               lem14 : ¬ (qe  p≤ d )   -- ¬ ( d ⊆ qe )  -- ¬ ( (d \ qe) ≡ od∅ )
-               lem14 q≤d = ⊥-elim ( ndq record { px = ? ; is-below = ? }  )
-               -- we invert the value of something isn (qe \ d), and create union with qe
-               -- that's lem01
-               lem01 : Ordinal
-               lem01 = & (Union ( < nat→ω (Hww2r.count (A∋elt qe))   , (* o∅)  > , * (elt qe) ) )
-               lem02 : Hww2r lem01
-               lem02  = record { count = suc ( Hww2r.count (A∋elt qe) ) ; hww2 = hj hφ ( Hww2r.hww2 (A∋elt qe) ) }
+--          r : HODElement HODww2
+--          r = record { elt = lem01 ; A∋elt = lem02 }  where
+--              lem14 : ¬ (qe  p≤ d )   -- ¬ ( d ⊆ qe )  -- ¬ ( (d \ qe) ≡ od∅ )
+--              lem14 q≤d = ⊥-elim ( ndq record { px = ? ; is-below = ? }  )
+--              -- we invert the value of something isn (qe \ d), and create union with qe
+--              -- that's lem01
+--              lem01 : Ordinal
+--              lem01 = & (Union ( < nat→ω (Hww2r.count (A∋elt qe))   , (* o∅)  > , * (elt qe) ) )
+--              lem02 : Hww2r lem01
+--              lem02  = record { count = suc ( Hww2r.count (A∋elt qe) ) ; hww2 = ?  } -- hj hφ ( Hww2r.hww2 (A∋elt qe) ) }
            r≤q : r p≤ qe
            r≤q = Hww-lem00 {qe} {r} (λ qx → eq← *iso (lem30 qx) )
            -- no extenstion of r is in dd because we inverted the value
