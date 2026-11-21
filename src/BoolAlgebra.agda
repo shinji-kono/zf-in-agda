@@ -53,9 +53,9 @@ record IsBooleanAlgebra {n m : Level} ( L : Set n)
       (a + ( a x b1 )) ≈⟨ +-aab ⟩
       a ∎
    +-dist' : {a b c : L } → (( b x c ) + a) ≈ (( b + a ) x ( c + a ))
-   +-dist' = btrans +-sym ( btrans +-dist (x-resp +-sym +-sym ) ) 
+   +-dist' = btrans +-sym ( btrans +-dist (x-resp +-sym +-sym ) )
    x-dist' : {a b c : L } → (( b + c ) x a) ≈ (( b x a ) + ( c x a ))
-   x-dist' = btrans x-sym ( btrans x-dist (+-resp x-sym x-sym ) ) 
+   x-dist' = btrans x-sym ( btrans x-dist (+-resp x-sym x-sym ) )
 
 open import Data.Product
 open import logic
@@ -101,7 +101,7 @@ record BooleanAlgebra {n m : Level} ( L : Set n) : Set (n ⊔ suc m) where
             isEquivalence = record { refl = brefl ; sym = bsym ; trans = btrans } ; ∙-cong = λ e1 e2 → +-resp e2 e1 }
                ; assoc =  λ x y z → bsym (+-assoc {x} {y} {z}) } ; identity =  ( λ a → btrans +-sym ( a+0 {a}) ) ,  ( λ a → a+0 {a} ) }
       }
-   0≤a : (a : L ) → b0 ≤ a
+   0≤a : (a : L ) → b0 ≤ a   -- b0 x a ≈ b0
    0≤a a = begin
        b0 x a ≈⟨ x-resp brefl (bsym ax-a0) ⟩
        (a x ( - a)) x a ≈⟨ x-resp brefl (x-resp (bsym x-idem) brefl)  ⟩
@@ -126,13 +126,13 @@ record BooleanAlgebra {n m : Level} ( L : Set n) : Set (n ⊔ suc m) where
        c + a  ∎
    x-monoʳ-< : {a b c : L } → a ≤ b → (a x c) ≤ (b x c)
    x-monoʳ-< {a} {b} {c} a≤b = begin
-       (a x c ) x (b x c) ≈⟨ x-resp brefl x-sym ⟩ 
-       (c x a ) x (b x c) ≈⟨ bsym x-assoc ⟩ 
-       c x ( a  x (b x c)) ≈⟨ x-resp x-assoc brefl ⟩ 
-       c x ( (a  x b ) x c) ≈⟨ x-resp (x-resp brefl a≤b) brefl ⟩ 
-       c x ( a x c) ≈⟨ x-assoc ⟩ 
-       (c x  a) x c ≈⟨ x-resp brefl x-sym ⟩ 
-       (a x  c) x c ≈⟨ bsym x-assoc ⟩ 
+       (a x c ) x (b x c) ≈⟨ x-resp brefl x-sym ⟩
+       (c x a ) x (b x c) ≈⟨ bsym x-assoc ⟩
+       c x ( a  x (b x c)) ≈⟨ x-resp x-assoc brefl ⟩
+       c x ( (a  x b ) x c) ≈⟨ x-resp (x-resp brefl a≤b) brefl ⟩
+       c x ( a x c) ≈⟨ x-assoc ⟩
+       (c x  a) x c ≈⟨ x-resp brefl x-sym ⟩
+       (a x  c) x c ≈⟨ bsym x-assoc ⟩
        a x  (c x c) ≈⟨ x-resp x-idem brefl ⟩
        a x c  ∎
    x-monoˡ-< : {a b c : L } → a ≤ b → (c x a)  ≤ (c x b)
@@ -148,13 +148,13 @@ record BooleanAlgebra {n m : Level} ( L : Set n) : Set (n ⊔ suc m) where
    lemma-aa : ∀ a b → (a x b) ≈ b0 → (a + b) ≈ b1 → (- a) ≈ b
    lemma-aa a b axb=b0 a+b=b1 = begin
         - a                ≈⟨ bsym ax1 ⟩
-        (- a) x b1            ≈⟨ x-resp (bsym a+b=b1) brefl  ⟩ 
-        (- a ) x (a + b)      ≈⟨ x-dist  ⟩ 
-        ((- a) x a ) + ((- a) x b)  ≈⟨ +-resp brefl (btrans x-sym ax-a0)  ⟩ 
-        b0 + ((- a) x b)        ≈⟨ +-resp brefl (bsym axb=b0) ⟩ 
-        (a x b ) + ( (- a) x b )   ≈⟨ bsym x-dist' ⟩ 
-        (a + (- a)) x b      ≈⟨  x-resp brefl  a+-a1 ⟩ 
-        b1 x b              ≈⟨ btrans x-sym  ax1  ⟩ 
+        (- a) x b1            ≈⟨ x-resp (bsym a+b=b1) brefl  ⟩
+        (- a ) x (a + b)      ≈⟨ x-dist  ⟩
+        ((- a) x a ) + ((- a) x b)  ≈⟨ +-resp brefl (btrans x-sym ax-a0)  ⟩
+        b0 + ((- a) x b)        ≈⟨ +-resp brefl (bsym axb=b0) ⟩
+        (a x b ) + ( (- a) x b )   ≈⟨ bsym x-dist' ⟩
+        (a + (- a)) x b      ≈⟨  x-resp brefl  a+-a1 ⟩
+        b1 x b              ≈⟨ btrans x-sym  ax1  ⟩
         b                  ∎
    double-negation : {a : L } → (- (- a)) ≈ a
    double-negation {a} = lemma-aa _ _ (btrans x-sym ax-a0)  (btrans +-sym a+-a1)
@@ -163,25 +163,25 @@ record BooleanAlgebra {n m : Level} ( L : Set n) : Set (n ⊔ suc m) where
        a x b0 ≈⟨ x-resp brefl (bsym  a+0) ⟩
        (a + b0) x b0 ≈⟨ btrans x-sym (x-resp +-sym brefl )  ⟩
        b0 x (b0 + a) ≈⟨ x-aab  ⟩
-       b0  ∎ 
+       b0  ∎
    +1=1 : {a : L} → (a + b1) ≈ b1
    +1=1 {a} =  begin
        a + b1 ≈⟨ +-resp brefl (bsym   ax1 ) ⟩
        (a x b1) + b1 ≈⟨ btrans +-sym (+-resp x-sym brefl )  ⟩
        b1 + (b1 x a) ≈⟨ +-aab  ⟩
-       b1  ∎ 
+       b1  ∎
    demorgan0 : {a b  : L } → (- (a x b)) ≈ ((- a) + (- b) )
    demorgan0 {a} {b} = begin
-       - (a x b)  ≈⟨ lemma-aa _ _ 
+       - (a x b)  ≈⟨ lemma-aa _ _
           (begin (a x b) x ((- a) + (- b))          ≈⟨  x-dist ⟩
             ((a x b) x (- a)) + ((a x b) x (- b))  ≈⟨ +-resp brefl (x-resp brefl x-sym )  ⟩
             ((b x a) x (- a)) + ((a x b) x (- b))  ≈⟨ +-resp (bsym x-assoc) (bsym x-assoc ) ⟩
             (b x (a x (- a))) + (a x (b x (- b)))  ≈⟨ +-resp (x-resp  ax-a0 brefl) (x-resp  ax-a0 brefl ) ⟩
             (b x b0) + (a x b0)              ≈⟨ +-resp x0=0 x0=0  ⟩
             b0 + b0                          ≈⟨ +-idem ⟩
-          b0 ∎ ) 
+          b0 ∎ )
           ( begin (a x b) + ((- a) + (- b))   ≈⟨ +-assoc ⟩
-            ((a x b) + (- a)) + (- b)  ≈⟨ +-resp brefl ( begin 
+            ((a x b) + (- a)) + (- b)  ≈⟨ +-resp brefl ( begin
                 (a x b) + (- a)          ≈⟨  +-dist' ⟩
                 (a + (- a)) x (b + (- a))  ≈⟨ x-resp brefl  a+-a1  ⟩
                 b1 x (b + (- a))          ≈⟨ btrans x-sym ax1 ⟩
@@ -197,9 +197,9 @@ record BooleanAlgebra {n m : Level} ( L : Set n) : Set (n ⊔ suc m) where
           - (a + b) ≈⟨ neg-resp ( +-resp (bsym  double-negation) (bsym  double-negation) ) ⟩
           - ((- ( - a)) + (- ( - b) )) ≈⟨ neg-resp ( bsym demorgan0)  ⟩
           - ( - ( ( - a) x ( - b))) ≈⟨  double-negation ⟩
-          (- a) x (- b)   ∎ 
+          (- a) x (- b)   ∎
    neg-mono-≤ : {a b : L } → a ≤ b → (- b) ≤ (- a)
-   neg-mono-≤ {a} {b} a≤b = begin  -- a x b ≈ a   -- ( -a ) + (- b) ≈ -a 
+   neg-mono-≤ {a} {b} a≤b = begin  -- a x b ≈ a   -- ( -a ) + (- b) ≈ -a
        ( - b ) x ( - a ) ≈⟨ x-resp (bsym (neg-resp a≤b)) brefl ⟩
        ( - b ) x ( - (a x b) ) ≈⟨ x-resp demorgan0 brefl ⟩
        ( - b ) x ( (- a) + ( - b) ) ≈⟨ x-resp +-sym  brefl ⟩
@@ -207,7 +207,7 @@ record BooleanAlgebra {n m : Level} ( L : Set n) : Set (n ⊔ suc m) where
        - b ∎
    ≤0→≈  : {a : L } → a ≤ b0 → a ≈ b0
    ≤0→≈ {a} eq  = btrans (bsym eq) (btrans x-sym (0≤a _))
-   ≈→≤ : {a b : L } → a ≈ b →  a ≤ b 
+   ≈→≤ : {a b : L } → a ≈ b →  a ≤ b
    ≈→≤ {a} {b} a=b = begin
          a x b ≈⟨ x-resp (bsym a=b) brefl ⟩
          a x a ≈⟨ x-idem ⟩
@@ -220,7 +220,7 @@ record BooleanAlgebra {n m : Level} ( L : Set n) : Set (n ⊔ suc m) where
        i x j ≈⟨ i≤j  ⟩
        i ∎
    resp-≤ : {i j k l : L} → i ≈ k → j ≈ l → i ≤ j → k ≤ l
-   resp-≤ {i} {j} {k} {l} i=k j=l i≤j =  btrans (btrans (x-resp (bsym j=l ) (bsym i=k) ) i≤j   ) i=k 
+   resp-≤ {i} {j} {k} {l} i=k j=l i≤j =  btrans (btrans (x-resp (bsym j=l ) (bsym i=k) ) i≤j   ) i=k
    ≤≥→≈ : {i j : L} → i ≤ j → j ≤ i → i ≈ j
    ≤≥→≈ {i} {j} i≤j j≤i = begin
          i ≈⟨ bsym i≤j ⟩
@@ -233,13 +233,17 @@ record BooleanAlgebra {n m : Level} ( L : Set n) : Set (n ⊔ suc m) where
        a ≈⟨ bsym a≤b ⟩
        a x b ≈⟨ x-sym ⟩
        b x a ≈⟨ b≤a  ⟩
-       b ∎  
+       b ∎
    bool-<> : {a b : L } → a < b → ¬ ( b < a  )
    bool-<> {a} {b} a<b b<a = proj1 a<b ( begin
        a ≈⟨ bsym (proj2 a<b) ⟩
        a x b ≈⟨ x-sym ⟩
        b x a ≈⟨ proj2 b<a  ⟩
-       b ∎ ) 
+       b ∎ )
+   -- we need LEM to prove these
+   --   lem-11 : {a : L } → (b0 ≈ a) ∨ (b0 < a)
+   --   lem-11 = ?
+   --   <-and  : {a b : L } → b0 < a → b0 < b → b0 < (a x b) we cannot say this on Boolean Algebra
 
 record BPred {n m : Level} ( L : Set n) (BA : BooleanAlgebra {n} {m} L) : Set (n ⊔ suc m) where
    open BooleanAlgebra BA using (_≈_)
@@ -247,24 +251,40 @@ record BPred {n m : Level} ( L : Set n) (BA : BooleanAlgebra {n} {m} L) : Set (n
        pred : L → Set m
        pcong : ( x y : L ) → x ≈ y → ( pred x ⇔ pred y )
 
+BPredEq : {n m : Level} ( L : Set n) (BA : BooleanAlgebra {n} {m} L) →  (p q : BPred L BA) → Set (n ⊔ m)
+BPredEq L BA p q = ( {x : L } → BPred.pred p  x → BPred.pred q  x) ∧  ( {x : L} → BPred.pred q  x → BPred.pred p  x)
+
 
 record IsCompleteBooleanAlgebra {n m : Level} ( L : Set n) (BA : BooleanAlgebra {n} {m} L) : Set (n ⊔ suc m ) where
-   open BooleanAlgebra BA using (_≤_)
+   open BooleanAlgebra BA 
    IsUpperBound : (s : BPred L BA) → L → Set (n ⊔ m )
    IsUpperBound s u = (x : L) → BPred.pred s x → x ≤ u
    field
        sup : BPred L BA  → L
        is-sup : (s : BPred L BA) → IsUpperBound s (sup s)
        is-minsup : (s : BPred L BA) → {x : L} → IsUpperBound s x → sup s ≤  x
+   sup-cong : (p q : BPred L BA ) → BPredEq L BA p q → sup p ≈ sup q
+   sup-cong p q eq = lem00 where
+       open BPred
+       open  _∧_
+       lem01 : (y : L ) → pred p y → y ≤ sup q
+       lem01 y pax = is-sup q y (proj1 eq pax ) 
+       lem02 : (y : L ) → pred q y → y ≤ sup p
+       lem02 y pax = is-sup p y (proj2 eq pax ) 
+       lem00 : sup p ≈ sup q
+       lem00 =  bool-≤≥→≈ {sup p} {sup q}
+          (is-minsup p {sup q} lem01 )
+          (is-minsup q {sup p} lem02 )
+
 
 record NonAtomic {n m : Level} ( L : Set n) (BA : BooleanAlgebra {n} {m} L) (a : L) : Set (n ⊔ suc m) where
-   open BooleanAlgebra BA 
+   open BooleanAlgebra BA
    field
        b : L
-       0<b : b0 < b 
-       b<a : b < a 
+       0<b : b0 < b
+       b<a : b < a
 
-Atomic : {n m : Level} ( L : Set n) (BA : BooleanAlgebra {n} {m} L) →  Set (n ⊔ suc m) 
+Atomic : {n m : Level} ( L : Set n) (BA : BooleanAlgebra {n} {m} L) →  Set (n ⊔ suc m)
 Atomic L BA = (a : L) → ¬ (NonAtomic L BA a)
 
 open import Relation.Binary.Reasoning.Syntax
@@ -279,16 +299,16 @@ module BA≤-Reasoning {n m : Level} {L : Set n} (BA : BooleanAlgebra {n} {m} L)
    BAPreorder :   Preorder n m m
    BAPreorder  = record { Carrier = L
        ; _≈_  = _≈_
-       ; _≲_ = _≤_  
+       ; _≲_ = _≤_
        ; isPreorder   = record {
-            isEquivalence = IsBooleanAlgebra.isEquivalence (isBooleanAlgebra) 
-            ; reflexive     = λ eq →  btrans (x-resp (bsym eq) brefl ) x-idem 
+            isEquivalence = IsBooleanAlgebra.isEquivalence (isBooleanAlgebra)
+            ; reflexive     = λ eq →  btrans (x-resp (bsym eq) brefl ) x-idem
             ; trans         = ≤-trans
          }
      }
 
    resp-< : _<_ Respects₂ _≈_
-   resp-< =   record { fst =  λ {i} {j} {k} j=k i<j → ⟪ (λ i=k → proj1 i<j (btrans i=k (bsym j=k))  ) , btrans (x-resp (bsym j=k) brefl ) (proj2 i<j) ⟫  
+   resp-< =   record { fst =  λ {i} {j} {k} j=k i<j → ⟪ (λ i=k → proj1 i<j (btrans i=k (bsym j=k))  ) , btrans (x-resp (bsym j=k) brefl ) (proj2 i<j) ⟫
        ; snd = λ {i} {j} {k} j=k i<j → ⟪ (λ i=k → proj1 i<j (btrans j=k i=k)  ) , btrans (x-resp brefl (bsym j=k) ) (btrans (proj2 i<j) j=k ) ⟫   }
 
    trans1 : {i j k : L} → i < j → j ≤ k → i < k
@@ -301,10 +321,10 @@ module BA≤-Reasoning {n m : Level} {L : Set n} (BA : BooleanAlgebra {n} {m} L)
         (Preorder.isPreorder BAPreorder)
         (λ {x} {y} x<y y<x → proj1 x<y (btrans (bsym (proj2 x<y)) (btrans x-sym (proj2 y<x) ) )  )
         (λ {i} {j} {k} i<j j<k → ⟪ (λ i=k → proj1 (i<j) (btrans (bsym (proj2 i<j)) (btrans (btrans x-sym (x-resp i=k brefl) ) (proj2 j<k)) ) )  , ≤-trans (proj2 i<j) (proj2 j<k) ⟫  )
-        record { fst = λ {x} {y} {z} y=z x<y → ⟪ (λ x=z → proj1 x<y (btrans x=z (bsym y=z) )) , btrans (x-resp (bsym y=z) brefl) (proj2 x<y) ⟫  
-               ; snd = λ {x} {y} {z} y=z x<y → ⟪ (λ z=x → proj1 x<y (btrans y=z z=x )) , btrans (btrans (x-resp brefl (bsym y=z) ) (proj2 x<y)) y=z ⟫ } 
-        (λ x → proj2 x ) 
-        trans1 
+        record { fst = λ {x} {y} {z} y=z x<y → ⟪ (λ x=z → proj1 x<y (btrans x=z (bsym y=z) )) , btrans (x-resp (bsym y=z) brefl) (proj2 x<y) ⟫
+               ; snd = λ {x} {y} {z} y=z x<y → ⟪ (λ z=x → proj1 x<y (btrans y=z z=x )) , btrans (btrans (x-resp brefl (bsym y=z) ) (proj2 x<y)) y=z ⟫ }
+        (λ x → proj2 x )
+        trans1
         trans2
         public
         hiding (step-≈; step-≈˘; step-≈-⟩; step-≈-⟨)

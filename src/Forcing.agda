@@ -31,10 +31,18 @@ open import Relation.Nullary
 open import Data.Empty
 open import Relation.Binary.PropositionalEquality
 open import Data.Nat renaming ( _<_  to _n<_  ; _+_ to _n+_ ; _≤_ to _n≤_ )
-open import Data.Nat.Properties
+open import Data.Nat.Properties using ( <-cmp ; ≤-<-trans ; <-trans ;  ≤-trans ; <-≤-trans )
 open import BoolAlgebra
 
-import Relation.Binary.Reasoning.Setoid as EqHOD
+import Relation.Binary.Reasoning.Setoid as EqR
+
+--
+--   M is a coutable model of ZF
+--   M ∋ B is complete M Boolean Algebra
+--   G ⊆ B is a gerative filter including B ∋ b, b ≠ od∅
+--
+--   An = { M∋Ai : (Ai ⊆ B)  ∧ Ai ≠ od∅ }
+--       M is a Union An
 
 module MBA {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho< : OD.ODAxiom-ho< O HODAxiom )
            (AC : OD.AxiomOfChoice O HODAxiom ) where
@@ -55,13 +63,7 @@ module MBA {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho<
     open  HODBase._==_
     open import ZProduct O HODAxiom ho<
     open import filter O HODAxiom ho< AC
-
     open import bijection hiding ( b1 )
-
-    -- LDec : (L : HOD) (P : HOD) → P ⊆ L → (x : HOD) → Dec0 (x ∈ P)
-    -- LDec L P _ x = ∋-p P x
-
-    -- open import Data.Nat
     open import ZEquiv O HODAxiom ho<
 
     open HODElement
@@ -71,7 +73,7 @@ module MBA {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho<
     -- 補題 23.1 Bの任意の要素 b ≠ 0 に対して、bを含む M-生成超フィルターが存在する
 
     --
-    -- Original Paper uses Boolean Algebra on a HOD Set
+    -- Original Book uses Boolean Algebra on a HOD Set
     -- but we only have a definition of a filter on HOD Set
     -- so we use Boolean Algebra on a subset of L
 
@@ -99,17 +101,27 @@ module MBA {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho<
        o- = HBAR.o- H
        open BooleanAlgebra ba
        open IsBooleanAlgebra (BooleanAlgebra.isBooleanAlgebra ba )
-       ⊆→≤  :　{ p q : HODElement (HBAR.OS H) } → * (elt p) ⊆ * (elt q) → p ≤ q
+       ⊆→≤  :　{ p q :  B } → * (elt p) ⊆ * (elt q) → p ≤ q
        ⊆→≤ {p} {q}  = proj1 ( HBA-⊆ L LDec H p q )
-       ≤→⊆  :　{ p q : HODElement (HBAR.OS H) }  → p ≤ q → * (elt p) ⊆ * (elt q)
+       ≤→⊆  :　{ p q : B }  → p ≤ q → * (elt p) ⊆ * (elt q)
        ≤→⊆  {p} {q}  = proj2 ( HBA-⊆ L LDec H p q )
-       0<b→¬b≈od∅ : {a : HODElement (HBAR.OS H)} → b0 < a → ¬ ( (* (elt a))  =h= od∅ )
+       0<b→¬b≈od∅ : {a : B } → b0 < a → ¬ ( (* (elt a))  =h= od∅ )
        0<b→¬b≈od∅ {a} 0<a eq = ⊥-elim (proj1 0<a (==-sym (==-trans eq (==-sym o∅==od∅ ) ) ) )
+       a=0∨0<a : {a : B } → (b0 ≈ a) ∨ (b0 < a)
+       a=0∨0<a {a} with p∨¬p (b0 ≈ a)
+       ... | case1 eq = case1 eq
+       ... | case2 ne = case2 ⟪ ne , 0≤a a ⟫
+       ≈→≡  : {a b : B } → a ≈ b → elt a ≡ elt b
+       ≈→≡ {a} {b} a=b  = *=h=*→≡ a=b
+       x=∩  : {a b : B } → * ( elt (a x b )) =h= ( (* ( elt a )) ∩ (* ( elt b ) ))
+       x=∩  {a} {b} = record { eq→ = λ ab → eq→ *iso ab ; eq← = λ ab → eq← *iso ab } 
+       +=∪  : {a b : B } → * ( elt (a + b )) =h= ( (* ( elt a )) ∪ (* ( elt b ) ))
+       +=∪  {a} {b} = record { eq→ = λ ab → eq→ *iso ab ; eq← = λ ab → eq← *iso ab } 
+       -- <-and  : {a b : B } → b0 < a → b0 < b → b0 < (a x b), we cannot say this
 
-
-    record CM : Set (Suc (Suc n)) where
-      field
-          countable : Bijection ℕ (Ordinals.Ordinal O)
+--    record CM : Set (Suc (Suc n)) where
+--      field
+--          countable : Bijection ℕ (Ordinals.Ordinal O)
 
 module MBB {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho< : OD.ODAxiom-ho< O HODAxiom )
            (AC : OD.AxiomOfChoice O HODAxiom ) where
@@ -133,9 +145,6 @@ module MBB {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho<
 
     open import bijection hiding ( b1 )
 
-    -- LDec : (L : HOD) (P : HOD) → P ⊆ L → (x : HOD) → Dec0 (x ∈ P)
-    -- LDec L P _ x = ∋-p P x
-
     -- open import Data.Nat
     open import ZEquiv O HODAxiom ho<
 
@@ -148,44 +157,34 @@ module MBB {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho<
     --
     -- a_n  = ∧ An (An ≠ ∅ )
     --
-    --
-
-    -- ba0 : {P : HOD} → HODElement (Power P)
-    -- ba0 {P} = record { elt = ? ; A∋elt = ? }
 
     -- we cannot have a bijection here. Only a part of subset of Boolean Algebra is in our HOD Set.
     -- we are working on countable model, so only countable number of set of Power B is in M
     --
-    record AN  (L : HOD) (PB : HODBooleanAlgebra L ) : Set n where
+    -- M は可算なので整列可能
+    --
+    -- { A ∈  M : ∅ ≠ A ⊆ B } = { A0 , A1, A2, ... An }
+    --
+    record AN  (L : HOD) (PB : HODBooleanAlgebra L ) : Set (Level.suc n) where
        field
           ip : ℕ → HODElement (Power (BAlgebra.HBAR.OS (H PB) ))
           ip-inject : (i j : ℕ ) → elt (ip i) ≡ elt (ip j ) → i ≡ j
           ip=0 : elt (ip 0) ≡  o∅
+          --  this is come from M is coutable, but it's Ok
+          abi : (A : HOD) → (A ⊆ (BAlgebra.HBAR.OS (H PB) )) → ℕ
+          is-abi : (A : HOD) → (ab : A ⊆ (BAlgebra.HBAR.OS (H PB) )) → elt (ip (abi A ab )) ≡ & A
        imap : ℕ → HODElement (Power (BAlgebra.HBAR.OS (H PB) ))
        imap i = ip (suc i)
        imap>0 : (i : ℕ) → ¬ ( elt (imap i) ≡ o∅ )
        imap>0 i eq = nat-<≡ (subst (λ k → k n≤ i) (ip-inject _ _ (trans ip=0 (sym eq)) ) z≤n )
        imap-ne : (i : ℕ) → od (* (elt (imap i))) == od od∅ → ⊥
        imap-ne i eq = imap>0 i (trans (sym &iso) (trans (==→o≡  eq) ord-od∅)  )
-
-    record OAn (L : HOD) (PB : HODBooleanAlgebra L ) (an : AN L PB) (oa : Ordinal) : Set n where
-       field
-         i : ℕ
-         peq : oa ≡ elt (AN.imap an i)
-       pa : odef (Power (BAlgebra.HBAR.OS (H PB))) oa
-       pa = subst (λ k → odef (Power (BAlgebra.HBAR.OS (H PB))) k) (sym peq) ( A∋elt (AN.imap an i) )
-         -- pan : BPred.pred (PAn L PB an i) record { elt = oa ; A∋elt = pa }
-       poa : {x : Ordinal} → odef (* oa) x → odef (BAlgebra.HBAR.OS (H PB)) x
-       poa {x} lt = pa _ lt
-       a : {x : Ordinal} → odef (* oa) x → HODBooleanAlgebra.B PB
-       a {x} lt = record { elt = x ; A∋elt = poa lt }
-
-    -- M は可算なので整列可能
-    --
-    -- { A ∈  M : ∅ ≠ A ⊆ B } = { A0 , A1, A2, ... An }
-    --
-    An : (L : HOD) → (PB : HODBooleanAlgebra L ) → AN L PB → HOD
-    An L PB an = record { od = record { def = λ x → OAn L PB an x } ; odmax = & (Power (BAlgebra.HBAR.OS (H PB))) ; <odmax = λ lt → odef< (OAn.pa lt) }
+       abi>0 : (A : HOD) → (ab : A ⊆ (BAlgebra.HBAR.OS (H PB) )) → o∅ o< (& A) → 0 Data.Nat.< abi A ab
+       abi>0 A ab 0<A with  <-cmp 0 (abi A ab)
+       ... | tri< a ¬b ¬c = a
+       ... | tri≈ ¬a b ¬c = ⊥-elim ( o<¬≡ (sym lem00) 0<A ) where
+           lem00 : (& A) ≡ o∅ 
+           lem00 = trans (sym (is-abi A ab)) (subst (λ k → elt (ip k) ≡ o∅ ) b ip=0 )
 
     PAn : (L : HOD) → (PB : HODBooleanAlgebra L ) → AN L PB → ℕ → BPred (HODBooleanAlgebra.B PB) (ba PB)
     PAn L PB an i = record { pred = λ p → odef (* (elt (AN.imap an i))) (elt p)
@@ -195,29 +194,27 @@ module MBB {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho<
     -- BはM完備なので最小上界が存在する
     --
     -- ∧ an
-    ∧An : (L : HOD) → (PB : HODBooleanAlgebra L ) → AN L PB → ℕ → B PB
-    ∧An L PB an i = IsCompleteBooleanAlgebra.sup ( bc PB ) (PAn L PB an i)
+    ∧an : (L : HOD) → (PB : HODBooleanAlgebra L ) → AN L PB → ℕ → B PB
+    ∧an L PB an i = IsCompleteBooleanAlgebra.sup ( bc PB ) (PAn L PB an i)
 
-    ∧An-cong : (L : HOD) → (PB : HODBooleanAlgebra L ) → (an : AN L PB) → (i j : ℕ) → i ≡ j → BooleanAlgebra._≈_ (ba PB) (∧An L PB an i) (∧An L PB an j)
-    ∧An-cong L PB an i j eq = lem00 where
+    ∧an-cong : (L : HOD) → (PB : HODBooleanAlgebra L ) → (an : AN L PB) → (i j : ℕ) → i ≡ j → BooleanAlgebra._≈_ (ba PB) (∧an L PB an i) (∧an L PB an j)
+    ∧an-cong L PB an i j eq = lem00 where
        open BooleanAlgebra (ba PB)
        open IsBooleanAlgebra (BooleanAlgebra.isBooleanAlgebra (ba PB))
-       lem00 : (∧An L PB an i) ≈ (∧An L PB an j)
-       lem00 = subst (λ k → (∧An L PB an i) ≈ (∧An L PB an k) ) eq (brefl {∧An L PB an i})
+       lem00 : (∧an L PB an i) ≈ (∧an L PB an j)
+       lem00 = subst (λ k → (∧an L PB an i) ≈ (∧an L PB an k) ) eq (brefl {∧an L PB an i})
 
     record AAn (L : HOD) (PB : HODBooleanAlgebra L )  (bi : HODBooleanAlgebra.B PB) (an : AN L PB) : Set n where
        open BooleanAlgebra (ba PB)
        open IsBooleanAlgebra (BooleanAlgebra.isBooleanAlgebra (ba PB))
        field
-         oan oa : Ordinal
-         pan : odef (An L PB an) oan
-         pa : odef (* oan) oa
+         oa : Ordinal
+         pan : odef (OS PB) oa
        a : B PB
-       a = record { elt = oa ; A∋elt = OAn.poa pan pa }
+       a = record { elt = oa ; A∋elt = pan  }
        field
          eq1 :  b0 < ( bi x ( - a ))
 
-    import Relation.Binary.Reasoning.Setoid as EqR
 
     --
     --   b_0 = b
@@ -237,25 +234,25 @@ module MBB {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho<
     --  if ( bn ∙ an = 0 ) then we have   An ∋ a such that a = bn- a > 0
     --
     b-ai→a1 :  (L : HOD)  (PB : HODBooleanAlgebra L ) (an : AN L PB )
-        (i : ℕ) (b : HODBooleanAlgebra.B PB) (bnz : BooleanAlgebra._<_ (ba PB) (BooleanAlgebra.b0 (ba PB)) b) (yy :  BooleanAlgebra._≈_ (ba PB) (( BooleanAlgebra._x_ (ba PB) b ( ∧An L PB an i ))) (BooleanAlgebra.b0 (ba PB)))
+        (i : ℕ) (b : HODBooleanAlgebra.B PB) (bnz : BooleanAlgebra._<_ (ba PB) (BooleanAlgebra.b0 (ba PB)) b) (yy :  BooleanAlgebra._≈_ (ba PB) (( BooleanAlgebra._x_ (ba PB) b ( ∧an L PB an i ))) (BooleanAlgebra.b0 (ba PB)))
           → AAn L PB b an
-    b-ai→a1 L PB an i b bnz yy = record { oa = _ ; oan = _ ; pan = aion  i ; pa = ayy1 i ; eq1 = lem10 } where
+    b-ai→a1 L PB an i b bnz yy = record { oa = _ ;  pan = pan ;  eq1 = lem10 } where
        open BooleanAlgebra (ba PB)
        open IsBooleanAlgebra (BooleanAlgebra.isBooleanAlgebra (ba PB))
-       ai-is-sup : (y : B PB) → (i : ℕ) → (ay : odef (* (elt (AN.imap an i))) (elt y)) → y ≤ ∧An L PB an i
-       ai-is-sup y i ay = IsCompleteBooleanAlgebra.is-sup ( bc PB ) (PAn L PB an i) y  ay
        yy1 : (i : ℕ) → HOD
        yy1 i = minimal (* (elt (AN.imap an i))) (AN.imap-ne an i)
        ayy1 : (i : ℕ) → odef (* (elt (AN.imap an i))) (& (yy1 i))
        ayy1 i = x∋minimal (* (elt (AN.imap an i))) (AN.imap-ne an i)
-       aion :  (i : ℕ) →  OAn L PB an (elt (AN.imap an i))
-       aion i = record { i = i ; peq = refl }
        pbb : odef (OS PB) (elt b)
        pbb = A∋elt b
+       ai-is-sup : (y : B PB) → (i : ℕ) → (ay : odef (* (elt (AN.imap an i))) (elt y)) → y ≤ ∧an L PB an i
+       ai-is-sup y i ay = IsCompleteBooleanAlgebra.is-sup ( bc PB ) (PAn L PB an i) y  ay
        yy0 : (i : ℕ) → HODBooleanAlgebra.B PB
        yy0 i = record { elt = & (yy1 i) ; A∋elt = A∋elt (AN.imap an i) _ (ayy1 i) }
+       pan : odef (OS PB) (elt (yy0 i))
+       pan = A∋elt (yy0 i)
        bi = b
-       ai = ∧An L PB an i
+       ai = ∧an L PB an i
        lem02 : b0 < bi  -- (¬ ( b0 ≈ bi )) ∧ ((b0 x bi) ≈ b0)
        lem02 = bnz
        lem03 : (ai x bi) ≈ b0
@@ -273,16 +270,16 @@ module MBB {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho<
            begin
            b0 x ( bi x ( - ai )) ≈⟨ 0≤a ( bi x ( - ai )) ⟩
            b0 ∎ ) ⟫ where open EqR bSetoid
-       lem12 : (b x (- ∧An L PB an i)) ≤  (b x (- (yy0 i)))
-       lem12 = x-monoˡ-< { - ∧An L PB an i } { - (yy0 i)} {b} ( neg-mono-≤ { yy0 i }{ ∧An L PB an i} (ai-is-sup (yy0 i ) i (ayy1 i) ) )
-       lem11 :  b0 ≈ (b x (- (yy0 i))) → b0 ≈ (b x (- ∧An L PB an i))
+       lem12 : (b x (- ai )) ≤  (b x (- (yy0 i)))
+       lem12 = x-monoˡ-< { - ai } { - (yy0 i)} {b} ( neg-mono-≤ { yy0 i }{ ai } (ai-is-sup (yy0 i ) i (ayy1 i) ) )
+       lem11 :  b0 ≈ (b x (- (yy0 i))) → b0 ≈ (b x (- ai ))
        lem11 eq = begin
-           b0 ≈⟨ bsym {b x ( - ∧An L PB an i)} {b0} ( ≤0→≈ {b x (- ∧An L PB an i)} ( resp-≤ {b x (- ∧An L PB an i)} {b x (- (yy0 i))} {b x (- ∧An L PB an i)} {b0} (brefl {b x (- ∧An L PB an i)}) (bsym {b0} {b x (- (yy0 i))} eq) lem12  ) ) ⟩
-           b x (- ∧An L PB an i) ∎ where open EqR bSetoid
+           b0 ≈⟨ bsym {b x ( - ai) } {b0} ( ≤0→≈ {b x (- ai )} ( resp-≤ {b x (- ai )} {b x (- (yy0 i))} {b x (- ai )} {b0} (brefl {b x (- ai )}) (bsym {b0} {b x (- (yy0 i))} eq) lem12  ) ) ⟩
+           b x (- ai ) ∎ where open EqR bSetoid
        lem10 :  b0 < ( b x ( - (yy0 i) ))
        lem10  = ⟪ (λ eq → ⊥-elim (proj1 abn (lem11 eq)  ) ) , (
              begin b0 ≤⟨ proj2 abn ⟩
-             b x  (- ∧An L PB an i ) ≤⟨ x-monoˡ-< { - ∧An L PB an i } { - (yy0 i)} {b} ( neg-mono-≤ { yy0 i }{ ∧An L PB an i} (ai-is-sup (yy0 i) i (ayy1 i)) )  ⟩
+             b x  (- ai ) ≤⟨ x-monoˡ-< { - ai } { - (yy0 i)} {b} ( neg-mono-≤ { yy0 i }{ ai } (ai-is-sup (yy0 i) i (ayy1 i)) )  ⟩
              b x ( - (yy0 i) ) ∎
           ) ⟫ where
              open BA≤-Reasoning (ba PB)
@@ -290,8 +287,8 @@ module MBB {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho<
     ai→a1-cong :  (L : HOD)  (PB : HODBooleanAlgebra L ) (an : AN L PB )
         (i j : ℕ) (bi bj : HODBooleanAlgebra.B PB) (bnzi : BooleanAlgebra._<_ (ba PB) (BooleanAlgebra.b0 (ba PB)) bi)
            (bnzj : BooleanAlgebra._<_ (ba PB) (BooleanAlgebra.b0 (ba PB)) bj)
-        (yyi :  BooleanAlgebra._≈_ (ba PB) (( BooleanAlgebra._x_ (ba PB) bi ( ∧An L PB an i ))) (BooleanAlgebra.b0 (ba PB)))
-        (yyj :  BooleanAlgebra._≈_ (ba PB) (( BooleanAlgebra._x_ (ba PB) bj ( ∧An L PB an j ))) (BooleanAlgebra.b0 (ba PB)))
+        (yyi :  BooleanAlgebra._≈_ (ba PB) (( BooleanAlgebra._x_ (ba PB) bi ( ∧an L PB an i ))) (BooleanAlgebra.b0 (ba PB)))
+        (yyj :  BooleanAlgebra._≈_ (ba PB) (( BooleanAlgebra._x_ (ba PB) bj ( ∧an L PB an j ))) (BooleanAlgebra.b0 (ba PB)))
         →  i ≡ j
         →  BooleanAlgebra._≈_ (ba PB) (AAn.a (b-ai→a1 L PB an i bi bnzi yyi ) ) (AAn.a (b-ai→a1 L PB an j bj bnzj yyj ) )
     ai→a1-cong L PB an i i bi bn bnzi bnzj yyi yyj refl = brefl {(AAn.a (b-ai→a1 L PB an i bi bnzi yyi ) )} where
@@ -312,10 +309,10 @@ module MBB {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho<
           bnz : (j : ℕ) → b0 < b j
           bzero : (j : ℕ) → j ≡ zero → b j ≡ Bni.b bn0
           bmono :  (j : ℕ) → j Data.Nat.≤ i → b i ≤ b j
-          eq1 : (j : ℕ) → j Data.Nat.< i → (eq : ((b j) x (∧An L PB an j)) ≈ b0 )
+          eq1 : (j : ℕ) → j Data.Nat.< i → (eq : ((b j) x (∧an L PB an j)) ≈ b0 )
               → (b (suc j)) ≈ ( (b j) x ( - (AAn.a (b-ai→a1 L PB an j (b j) (bnz j ) eq ) )))
-          eq2 : (j : ℕ) → j Data.Nat.< i → (neq : ¬ (((b j) x (∧An L PB an j)) ≈ b0 ))
-              → (b (suc j)) ≈  ( (b j) x (∧An L PB an j)  )
+          eq2 : (j : ℕ) → j Data.Nat.< i → (neq : ¬ (((b j) x (∧an L PB an j)) ≈ b0 ))
+              → (b (suc j)) ≈  ( (b j) x (∧an L PB an j)  )
        bcong : (i j : ℕ) → i ≡ j →  b i ≈ b j   -- uniqueness of b on the induction Bn1
        bcong i j eq = subst ( λ k → b i ≈ b k ) eq ( brefl {b i} )
        bin2-lem00 : (a b : HODBooleanAlgebra.B PB) → (a x b) ≤ a
@@ -343,13 +340,13 @@ module MBB {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho<
        obni : Bni2 L PB an bn0 i
        obni  = Bn1 L PB an i bn0
        bi : (j : ℕ) → HODBooleanAlgebra.B PB
-       bi j with  p∨¬p ( (  (Bni2.b (Bn1 L PB an i bn0) i) x (∧An L PB an i)) ≈ b0 )
+       bi j with  p∨¬p ( (  (Bni2.b (Bn1 L PB an i bn0) i) x (∧an L PB an i)) ≈ b0 )
        ... | case1 eq = ( Bni2.b obni i) x ( - (AAn.a (b-ai→a1 L PB an i (Bni2.b obni i) (Bni2.bnz obni i ) eq ) ))
-       ... | case2 ne = ( Bni2.b obni i) x (∧An L PB an i)
+       ... | case2 ne = ( Bni2.b obni i) x (∧an L PB an i)
        bnzi : (j : ℕ) → b0 < bi j
-       bnzi j with  p∨¬p ( (  (Bni2.b (Bn1 L PB an i bn0) i) x (∧An L PB an i)) ≈ b0 )
+       bnzi j with  p∨¬p ( (  (Bni2.b (Bn1 L PB an i bn0) i) x (∧an L PB an i)) ≈ b0 )
        ... | case1 eq = AAn.eq1 (b-ai→a1 L PB an i (Bni2.b obni i) (Bni2.bnz obni i ) eq )
-       ... | case2 ne = ⟪ (λ eq → ne (bsym {b0} {( Bni2.b obni i) x (∧An L PB an i) } eq) ) , 0≤a (( Bni2.b obni i) x (∧An L PB an i) )  ⟫
+       ... | case2 ne = ⟪ (λ eq → ne (bsym {b0} {( Bni2.b obni i) x (∧an L PB an i) } eq) ) , 0≤a (( Bni2.b obni i) x (∧an L PB an i) )  ⟫
        bi-cong : (j k : ℕ) → j ≡ k → bi j ≈ bi k
        bi-cong j k refl = brefl  {bi j}
        b : (j : ℕ) → HODBooleanAlgebra.B PB
@@ -367,7 +364,7 @@ module MBB {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho<
        ... | tri< a ¬b ¬c = Bni2.bzero obni j eq
        ... | tri≈ ¬a b ¬c = ⊥-elim (⊥-elim (nat-≡< (sym eq) (subst (λ k → 1 n≤ k) (sym b) (s≤s z≤n))))
        ... | tri> ¬a ¬b c = ⊥-elim (⊥-elim (nat-≡< (sym eq) (≤-<-trans z≤n c)))
-       eq1 : (j k : ℕ) → k ≡ suc j → j Data.Nat.< suc i → (eq : ((b j) x (∧An L PB an j)) ≈ b0 )
+       eq1 : (j k : ℕ) → k ≡ suc j → j Data.Nat.< suc i → (eq : ((b j) x (∧an L PB an j)) ≈ b0 )
               → (b k) ≈ ( (b j) x ( - (AAn.a (b-ai→a1 L PB an j (b j) (bnz j) eq ) )))
        eq1 j k k=sj lt eq with Data.Nat.<-cmp k (suc i)
        ... | tri< a ¬b ¬c = lem00  where
@@ -379,13 +376,13 @@ module MBB {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho<
            ... | tri≈ ¬a b ¬c = ⊥-elim ( nat-≤> (refl-≤≡ (sym b)) lt )
            ... | tri> ¬a ¬b c = ⊥-elim ( nat-≤> (<-trans (s≤s refl-≤) c) lt )
        ... | tri≈ ¬a b₁ ¬c = lem00 j refl eq where -- k ≡ suc i, k ≡ suc j
-           lem00 : (m : ℕ) → m ≡ j → (eq2 : ((b m) x (∧An L PB an m)) ≈ b0 )→ (bi k ) ≈ ( (b m) x ( - (AAn.a (b-ai→a1 L PB an m (b m ) (bnz m) eq2 ) )))
+           lem00 : (m : ℕ) → m ≡ j → (eq2 : ((b m) x (∧an L PB an m)) ≈ b0 )→ (bi k ) ≈ ( (b m) x ( - (AAn.a (b-ai→a1 L PB an m (b m ) (bnz m) eq2 ) )))
            lem00 m m=j eq2 with Data.Nat.<-cmp m (suc i)
            ... | tri< a ¬b ¬c = lem03 where
                i=m : i ≡ m
                i=m = trans (cong pred (trans (sym b₁) k=sj ) ) (sym m=j )
                lem03 : (bi k ) ≈ ( (Bni2.b obni m) x ( - (AAn.a (b-ai→a1 L PB an m (Bni2.b obni m ) (Bni2.bnz obni m) eq2 ) )))
-               lem03 with  p∨¬p ( (  (Bni2.b (Bn1 L PB an i bn0) i) x (∧An L PB an i)) ≈ b0 )
+               lem03 with  p∨¬p ( (  (Bni2.b (Bn1 L PB an i bn0) i) x (∧an L PB an i)) ≈ b0 )
                ... | case1 eq3 = begin
                    ((Bni2.b obni i) x ( - (AAn.a (b-ai→a1 L PB an i (Bni2.b obni i ) (Bni2.bnz obni i) eq3 ) )))
                       ≈⟨ x-resp { - (AAn.a (b-ai→a1 L PB an i (Bni2.b obni i ) (Bni2.bnz obni i) eq3 ) )}
@@ -396,47 +393,47 @@ module MBB {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho<
                    ((Bni2.b obni m) x ( - (AAn.a (b-ai→a1 L PB an m (Bni2.b obni m ) (Bni2.bnz obni m) eq2 ) )))  ∎ where
                       open EqR bSetoid
                ... | case2 ne = ⊥-elim ( ne ( begin
-                  (  (Bni2.b (Bn1 L PB an i bn0) i) x (∧An L PB an i)) ≈⟨ x-resp
-                      {∧An L PB an i} {∧An L PB an m} {Bni2.b (Bn1 L PB an i bn0) i} {Bni2.b (Bn1 L PB an i bn0) m}
-                      (∧An-cong L PB an _ _ i=m ) (Bni2.bcong (Bn1 L PB an i bn0) _ _ i=m ) ⟩
-                  (  (Bni2.b (Bn1 L PB an i bn0) m) x (∧An L PB an m)) ≈⟨ eq2 ⟩
+                  (  (Bni2.b (Bn1 L PB an i bn0) i) x (∧an L PB an i)) ≈⟨ x-resp
+                      {∧an L PB an i} {∧an L PB an m} {Bni2.b (Bn1 L PB an i bn0) i} {Bni2.b (Bn1 L PB an i bn0) m}
+                      (∧an-cong L PB an _ _ i=m ) (Bni2.bcong (Bn1 L PB an i bn0) _ _ i=m ) ⟩
+                  (  (Bni2.b (Bn1 L PB an i bn0) m) x (∧an L PB an m)) ≈⟨ eq2 ⟩
                   b0 ∎ ) ) where
                       open EqR bSetoid
            ... | tri≈ ¬a b₁ ¬c = ⊥-elim ( nat-≡< b₁ (<-≤-trans (refl-≤≡ (cong suc m=j)) lt ) )
            ... | tri> ¬a ¬b c = ⊥-elim ( nat-≡< (trans (trans (sym b₁) k=sj ) (cong suc (sym m=j) )) (<-trans c a<sa) )
        ... | tri> ¬a ¬b c = ⊥-elim (nat-≤> (subst (λ k →  k n≤ suc i) (sym k=sj) lt ) c )
-       eq2 : (j k : ℕ) → k ≡ suc j → j Data.Nat.< suc i → (ne : ¬ (((b j) x (∧An L PB an j)) ≈ b0 ))
-              → (b k) ≈ ( (b j) x ( (∧An L PB an j)  ))
+       eq2 : (j k : ℕ) → k ≡ suc j → j Data.Nat.< suc i → (ne : ¬ (((b j) x (∧an L PB an j)) ≈ b0 ))
+              → (b k) ≈ ( (b j) x ( (∧an L PB an j)  ))
        eq2 j k k=sj lt ne with Data.Nat.<-cmp k (suc i)
        ... | tri< a ¬b ¬c = lem00  where
-           lem00 : (Bni2.b obni k) ≈ ( (b j) x ( (∧An L PB an j)  ))
+           lem00 : (Bni2.b obni k) ≈ ( (b j) x ( (∧an L PB an j)  ))
            lem00 with Data.Nat.<-cmp j (suc i)
            ... | tri< a₁ ¬b ¬c = subst (λ w → (Bni2.b obni w)
-                ≈ ( (Bni2.b obni j) x (∧An L PB an j)) ) (sym k=sj) ( Bni2.eq2 obni j (sx≤py→x≤y (subst (λ w → w Data.Nat.< (suc i)) k=sj a)) ne )
+                ≈ ( (Bni2.b obni j) x (∧an L PB an j)) ) (sym k=sj) ( Bni2.eq2 obni j (sx≤py→x≤y (subst (λ w → w Data.Nat.< (suc i)) k=sj a)) ne )
            ... | tri≈ ¬a b ¬c = ⊥-elim ( nat-≤> (refl-≤≡ (sym b)) lt )
            ... | tri> ¬a ¬b c = ⊥-elim ( nat-≤> (<-trans (s≤s refl-≤) c) lt )
        ... | tri≈ ¬a b₁ ¬c = lem00 j refl ne where -- k ≡ suc i, k ≡ suc j
-           lem00 : (m : ℕ) → m ≡ j → (eq2 : ¬ (((b m) x (∧An L PB an m)) ≈ b0 ))→ (bi k ) ≈ ( (b m) x  (∧An L PB an j) )
+           lem00 : (m : ℕ) → m ≡ j → (eq2 : ¬ (((b m) x (∧an L PB an m)) ≈ b0 ))→ (bi k ) ≈ ( (b m) x  (∧an L PB an j) )
            lem00 m m=j neq2 with Data.Nat.<-cmp m (suc i)
            ... | tri< a ¬b ¬c = lem03 where
                i=m : i ≡ m
                i=m = trans (cong pred (trans (sym b₁) k=sj ) ) (sym m=j )
                i=j : i ≡ j
                i=j = cong pred (trans (sym b₁) k=sj ) 
-               lem03 : (bi k ) ≈ ( (Bni2.b obni m) x (∧An L PB an j) )
-               lem03 with  p∨¬p ( (  (Bni2.b (Bn1 L PB an i bn0) i) x (∧An L PB an i)) ≈ b0 )
+               lem03 : (bi k ) ≈ ( (Bni2.b obni m) x (∧an L PB an j) )
+               lem03 with  p∨¬p ( (  (Bni2.b (Bn1 L PB an i bn0) i) x (∧an L PB an i)) ≈ b0 )
                ... | case1 eq3 = ⊥-elim (neq2 (begin
-                  ((Bni2.b (Bn1 L PB an i bn0) m) x (∧An L PB an m)) ≈⟨ x-resp {∧An L PB an m} {∧An L PB an i}
+                  ((Bni2.b (Bn1 L PB an i bn0) m) x (∧an L PB an m)) ≈⟨ x-resp {∧an L PB an m} {∧an L PB an i}
                          {Bni2.b (Bn1 L PB an i bn0) m} {Bni2.b (Bn1 L PB an i bn0) i}
-                     (∧An-cong L PB an _ _ (sym i=m) )  (Bni2.bcong (Bn1 L PB an i bn0) _ _ (sym i=m) ) ⟩
-                  ((Bni2.b (Bn1 L PB an i bn0) i) x (∧An L PB an i)) ≈⟨ eq3 ⟩
+                     (∧an-cong L PB an _ _ (sym i=m) )  (Bni2.bcong (Bn1 L PB an i bn0) _ _ (sym i=m) ) ⟩
+                  ((Bni2.b (Bn1 L PB an i bn0) i) x (∧an L PB an i)) ≈⟨ eq3 ⟩
                   b0 ∎ )) where
                      open EqR bSetoid
                ... | case2 ne3 = begin
-                   ((Bni2.b (Bn1 L PB an i bn0) i) x  (∧An L PB an i))
-                     ≈⟨  x-resp {∧An L PB an i} {∧An L PB an j} {Bni2.b (Bn1 L PB an i bn0) i} {Bni2.b (Bn1 L PB an i bn0) m}
-                         (∧An-cong L PB an _ _ i=j ) (Bni2.bcong (Bn1 L PB an i bn0) _ _ i=m ) ⟩
-                  ( (Bni2.b (Bn1 L PB an i bn0) m) x  (∧An L PB an j) )  ∎ where
+                   ((Bni2.b (Bn1 L PB an i bn0) i) x  (∧an L PB an i))
+                     ≈⟨  x-resp {∧an L PB an i} {∧an L PB an j} {Bni2.b (Bn1 L PB an i bn0) i} {Bni2.b (Bn1 L PB an i bn0) m}
+                         (∧an-cong L PB an _ _ i=j ) (Bni2.bcong (Bn1 L PB an i bn0) _ _ i=m ) ⟩
+                  ( (Bni2.b (Bn1 L PB an i bn0) m) x  (∧an L PB an j) )  ∎ where
                      open EqR bSetoid
            ... | tri≈ ¬a b₁ ¬c = ⊥-elim ( nat-≡< b₁ (<-≤-trans (refl-≤≡ (cong suc m=j)) lt ) )
            ... | tri> ¬a ¬b c = ⊥-elim ( nat-≡< (trans (trans (sym b₁) k=sj ) (cong suc (sym m=j) )) (<-trans c a<sa) )
@@ -452,7 +449,7 @@ module MBB {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho<
                lem04 : m n≤ i
                lem04 =  px≤py a
                lem03 : (bi k ) ≤  (Bni2.b obni m)
-               lem03 with  p∨¬p ( (  (Bni2.b (Bn1 L PB an i bn0) i) x (∧An L PB an i)) ≈ b0 )
+               lem03 with  p∨¬p ( (  (Bni2.b (Bn1 L PB an i bn0) i) x (∧an L PB an i)) ≈ b0 )
                ... | case1 eq3 = begin
                   ((Bni2.b obni i) x ( - (AAn.a (b-ai→a1 L PB an i (Bni2.b obni i ) (Bni2.bnz obni i) eq3 ) )))
                       ≤⟨ Bni2.bin2-lem00 obni (Bni2.b obni i) ( - (AAn.a (b-ai→a1 L PB an i (Bni2.b obni i ) (Bni2.bnz obni i) eq3 ) ))  ⟩
@@ -460,7 +457,7 @@ module MBB {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho<
                   ( Bni2.b obni m)   ∎ where
                      open BA≤-Reasoning (ba PB)
                ... | case2 ne3 = begin
-                  ((Bni2.b obni i) x (∧An L PB an i)) ≤⟨ Bni2.bin2-lem00 obni (Bni2.b obni i)  (∧An L PB an i)  ⟩
+                  ((Bni2.b obni i) x (∧an L PB an i)) ≤⟨ Bni2.bin2-lem00 obni (Bni2.b obni i)  (∧an L PB an i)  ⟩
                   ( Bni2.b obni i)   ≤⟨  Bni2.bmono obni _ lem04 ⟩
                   ( Bni2.b obni m) ∎ where
                      open BA≤-Reasoning (ba PB)
@@ -504,11 +501,11 @@ module MBB {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho<
           lem03 : Bni2.b bi m ≈  Bni2.b bj m
           lem03 = lem00 m (Data.Nat.Properties.≤-trans a≤sa m≤i)
           lem04 : Bni2.b bi (suc m) ≈ Bni2.b bj (suc m)
-          lem04 with p∨¬p ( (  (Bni2.b bj m) x (∧An L PB an m)) ≈ b0 )
+          lem04 with p∨¬p ( (  (Bni2.b bj m) x (∧an L PB an m)) ≈ b0 )
           ... | case1 eq = lem05 where
-                lem06 :  ((Bni2.b bi m) x (∧An L PB an m)) ≈ b0
-                lem06 = btrans {(Bni2.b bi m) x (∧An L PB an m)} {(Bni2.b bj m) x (∧An L PB an m)} {b0}
-                    (x-resp  {∧An L PB an m} {∧An L PB an m} {Bni2.b bi m} {Bni2.b bj m} (brefl {∧An L PB an m} ) lem03 ) eq
+                lem06 :  ((Bni2.b bi m) x (∧an L PB an m)) ≈ b0
+                lem06 = btrans {(Bni2.b bi m) x (∧an L PB an m)} {(Bni2.b bj m) x (∧an L PB an m)} {b0}
+                    (x-resp  {∧an L PB an m} {∧an L PB an m} {Bni2.b bi m} {Bni2.b bj m} (brefl {∧an L PB an m} ) lem03 ) eq
                 lem05 : Bni2.b bi (suc m) ≈ Bni2.b bj (suc m)
                 lem05 = begin
                    Bni2.b bi (suc m)   ≈⟨ Bni2.eq1 bi  m m≤i lem06 ⟩
@@ -522,14 +519,14 @@ module MBB {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho<
                    Bni2.b bj (suc m)  ∎ where
                       open EqR bSetoid
           ... | case2 ne = lem05 where
-                lem06 :  ¬ ( ((Bni2.b bi m) x (∧An L PB an m)) ≈ b0  )
-                lem06 eq = ⊥-elim ( ne (btrans {(Bni2.b bj m) x (∧An L PB an m)} {(Bni2.b bi m) x (∧An L PB an m)} {b0}
-                    (x-resp {∧An L PB an m} {∧An L PB an m} {Bni2.b bj m} {Bni2.b bi m}  (brefl {∧An L PB an m}) (bsym {Bni2.b bi m} {Bni2.b bj m} lem03) ) eq ))
+                lem06 :  ¬ ( ((Bni2.b bi m) x (∧an L PB an m)) ≈ b0  )
+                lem06 eq = ⊥-elim ( ne (btrans {(Bni2.b bj m) x (∧an L PB an m)} {(Bni2.b bi m) x (∧an L PB an m)} {b0}
+                    (x-resp {∧an L PB an m} {∧an L PB an m} {Bni2.b bj m} {Bni2.b bi m}  (brefl {∧an L PB an m}) (bsym {Bni2.b bi m} {Bni2.b bj m} lem03) ) eq ))
                 lem05 : Bni2.b bi (suc m) ≈ Bni2.b bj (suc m)
                 lem05 = begin
                    Bni2.b bi (suc m)   ≈⟨ Bni2.eq2 bi  m m≤i lem06 ⟩
-                   (Bni2.b bi m) x (∧An L PB an m) ≈⟨ x-resp { ∧An L PB an m } { ∧An L PB an m } {Bni2.b bi m} {Bni2.b bj m} ==-refl  lem03 ⟩
-                   (Bni2.b bj m) x (∧An L PB an m) ≈⟨ ==-sym ( Bni2.eq2 bj m (Data.Nat.Properties.≤-trans m≤i i≤j) ne ) ⟩
+                   (Bni2.b bi m) x (∧an L PB an m) ≈⟨ x-resp { ∧an L PB an m } { ∧an L PB an m } {Bni2.b bi m} {Bni2.b bj m} ==-refl  lem03 ⟩
+                   (Bni2.b bj m) x (∧an L PB an m) ≈⟨ ==-sym ( Bni2.eq2 bj m (Data.Nat.Properties.≤-trans m≤i i≤j) ne ) ⟩
                    Bni2.b bj (suc m)  ∎ where
                       open EqR bSetoid
 
@@ -618,6 +615,155 @@ module MBB {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho<
        lem00 = ∈∅< (o∪ PB {od∅} lem03 )
        lem01 : odef (Filter.filter (BnFilter L PB an bni)) (elt (Bni.b bni))
        lem01 = record { i = zero ; bx = A∋elt (Bni.b bni) ; bn≤x = λ lt → lt  }
+
+    open Filter
+
+    A∧P : (L : HOD) → (PB : HODBooleanAlgebra L ) → (an : AN L PB ) (bni : Bni L PB an) → (A : HOD)
+       → BPred (HODBooleanAlgebra.B PB) (ba PB)
+    A∧P L PB an bni A = record { pred = λ bp → odef A (elt bp)  ; pcong = λ a b eq → ⟪ (λ aa → lem00 {a} {b} eq aa )  , (λ bb → lem00 {b} {a} (==-sym eq) bb)  ⟫  } where
+       lem00 : {a b : HODElement (OS PB)} → (* (elt a)) =h= (* (elt b)) → odef A (elt a) → odef A (elt b)
+       lem00 {a} {b} eq aa = subst (λ k → odef A k ) ( subst₂ (λ j k → j ≡ k  ) &iso &iso (==→o≡ eq)  ) aa
+
+    A∧ : (L : HOD) → (PB : HODBooleanAlgebra L ) → (an : AN L PB ) (bni : Bni L PB an) → (A : HOD) → HODElement (OS PB)
+    A∧ L PB an bni A = IsCompleteBooleanAlgebra.sup ( bc PB ) (A∧P L PB an bni A )
+
+    A∧-cong : (L : HOD) → (PB : HODBooleanAlgebra L ) → (an : AN L PB ) (bni : Bni L PB an) → (A B : HOD) → A =h= B
+        → elt (A∧ L PB an bni A ) ≡ elt (A∧ L PB an bni B )
+    A∧-cong L PB an bni A B A=B = subst₂ (λ j k → j ≡ k ) &iso &iso ( ==→o≡ lem00) where
+       open BooleanAlgebra (ba PB)
+       open IsBooleanAlgebra (BooleanAlgebra.isBooleanAlgebra (ba PB))
+       a : HODElement (OS PB)
+       a = A∧ L PB an bni A
+       b : HODElement (OS PB)
+       b = A∧ L PB an bni B
+       lem01 : (y : HODElement (OS PB)) → BPred.pred (A∧P L PB an bni A) y → y ≤ (A∧ L PB an bni B )
+       lem01 y pax = IsCompleteBooleanAlgebra.is-sup (bc PB) (A∧P L PB an bni B) y (eq→ A=B pax)
+       lem02 : (y : HODElement (OS PB)) → BPred.pred (A∧P L PB an bni B) y → y ≤ (A∧ L PB an bni A )
+       lem02 y pax = IsCompleteBooleanAlgebra.is-sup (bc PB) (A∧P L PB an bni A) y (eq→ (==-sym A=B) pax)
+       lem00 : a ≈ b
+       lem00 =  bool-≤≥→≈ {a} {b}
+          (IsCompleteBooleanAlgebra.is-minsup (bc PB) (A∧P L PB an bni A ) {b} lem01 )
+          (IsCompleteBooleanAlgebra.is-minsup (bc PB) (A∧P L PB an bni B ) {a} lem02 )
+
+    A∧-∧an-cong : (L : HOD) → (PB : HODBooleanAlgebra L ) → (an : AN L PB ) (bni : Bni L PB an) 
+           → (i : ℕ) → 0 Data.Nat.< i → (* (elt (A∧ L PB an bni (* (elt (AN.ip an i) ))))) =h= (* (elt ( ∧an L PB an (Data.Nat.pred i ))))
+    A∧-∧an-cong L PB an bni zero () 
+    A∧-∧an-cong L PB an bni (suc i) 0<i = IsCompleteBooleanAlgebra.sup-cong (bc PB) (A∧P L PB an bni (* (elt (AN.ip an (suc i))))) (PAn L PB an (Data.Nat.pred (suc i))) 
+      ⟪ (λ {x} lt → lem00 {x} lt ) , (λ {x} lt → lem01 {x} lt ) ⟫ where
+           lem00 :  {x : HODElement (OS PB)} → BPred.pred (A∧P L PB an bni (* (elt (AN.ip an (suc i))))) x → BPred.pred (PAn L PB an (Data.Nat.pred (suc i))) x
+           lem00 {x} lt =  lt
+           lem01 :  {x : HODElement (OS PB)} → BPred.pred (PAn L PB an (Data.Nat.pred (suc i))) x → BPred.pred (A∧P L PB an bni (* (elt (AN.ip an (suc i))))) x
+           lem01 {x} lt = lt 
+
+    genericf : (L : HOD) → (PB : HODBooleanAlgebra L ) → (an : AN L PB ) (bni : Bni L PB an)
+        → {A : HOD} → (A⊆F : A ⊆ filter (mf L PB an bni)) → odef (OS PB) (& A) → o∅ o< (& A) → odef (filter (mf L PB an bni)) (elt (A∧ L PB an bni A ))
+    genericf L PB an bni {A} A⊆mf oa 0<A = lem01 where
+       open BooleanAlgebra (ba PB)
+       open IsBooleanAlgebra (BooleanAlgebra.isBooleanAlgebra (ba PB))
+
+       lem05 : ¬ ( odef A (& od∅ ))
+       lem05 a0 = MaximumFilter.proper (maxf L PB an bni) (A⊆mf a0)
+       lem00 : {a : Ordinal } → odef A a → odef (filter (mf L PB an bni)) a
+       lem00 aa = A⊆mf aa
+       lem03 : {a : Ordinal} → odef A a → odef (OS PB) a
+       lem03 aa = f⊆L (mf L PB an bni) (A⊆mf aa )
+       i : ℕ
+       i = AN.abi an A lem03
+       ab : A ⊆ OS PB
+       ab lt =  f⊆L (mf L PB an bni) ( A⊆mf  lt )
+       0<i : 0 Data.Nat.< i
+       0<i = AN.abi>0 an A ab 0<A  
+       lem50 : A =h= od∅ → ⊥ 
+       lem50 = 0<P→ne 0<A
+       lem04 : elt (AN.ip an i ) ≡ & A
+       lem04 = AN.is-abi an A lem03
+       lem13 : (* (elt (AN.ip an i ))) =h= A
+       lem13 = ord→== (trans &iso lem04 )
+       lem17 : (* (elt (AN.imap an (pred i) ))) =h= A
+       lem17 = ==-trans (lem18 i 0<i ) lem13   where    -- imap = suc ip 
+           lem18 : (i : ℕ) → 0 Data.Nat.< i → (* (elt (AN.imap an (pred i) ))) =h= (* (elt (AN.ip an i )))
+           lem18 zero ()
+           lem18 (suc i) 0<i = ==-refl
+       bn : Bni2 L PB an bni (suc i)
+       bn = Bn1 L PB an (suc i) bni 
+       bi' : B PB
+       bi'  = Bni2.b bn (suc (Data.Nat.pred i))
+       bi3 : B PB
+       bi3  = Bni2.b bn (Data.Nat.pred i)
+       ai : B PB
+       ai = A∧ L PB an bni (* (elt (AN.ip an i) ))
+       ai3 : B PB
+       ai3 = ∧an L PB an (Data.Nat.pred i) 
+       ai=ai3 : ai ≈ ai3
+       ai=ai3 = A∧-∧an-cong  L PB an bni i 0<i 
+       lem37 : (i : ℕ) → 0 Data.Nat.< i → suc (pred i) n≤ suc i
+       lem37 zero ()
+       lem37 (suc i) 0<i = a≤sa 
+       lem14 : (bi3 x ai) ≤ ai
+       lem14 = ⊆→≤ PB {bi3 x ai} {ai} (λ lt → proj2 (eq→ *iso lt) )
+       lem38 : odef (filter (mf L PB an bni)) (elt bi3)
+       lem38 = MaximumFilter.F⊆mf (maxf L PB an bni) ( record { i = pred i ; bx = A∋elt bi3 ; bn≤x = lem39  } ) where
+           lem40 : (Bni2.b (Bn1 L PB an (pred i) bni) (pred i)) ≈ (Bni2.b (Bn1 L PB an (suc i) bni) (pred i))
+           lem40 = bni2unique L PB an bni _ _ (pred i) (Data.Nat.Properties.≤-trans a≤sa (lem37 i 0<i )) 
+               (Bn1 L PB an (pred i) bni) (Bn1 L PB an (suc i) bni) refl-≤  
+           lem39 : {x : Ordinal } 
+              → odef ( * (elt (Bni2.b (Bn1 L PB an (pred i) bni) (pred i)))) x 
+              → odef ( * (elt (Bni2.b (Bn1 L PB an (suc  i) bni) (pred i)))) x
+           lem39 {x} lt = eq→ lem40 lt
+
+       lem34 : ¬ ( ( bi3 x ai3 ) ≈ b0 )
+       lem34 bxa=0 = MaximumFilter.proper (maxf L PB an bni) lem42 where
+           lem44 : (a : B PB) → odef A (elt a) → odef (* (elt (AN.imap an (pred i)))) (elt a)
+           lem44 a aa = eq← lem17 aa
+           lem43 : (a : B PB) → odef A (elt a) → a ≤ ai3    -- come from the completness
+           lem43 a aa = IsCompleteBooleanAlgebra.is-sup (bc PB) (PAn L PB an (Data.Nat.pred i)) a (lem44 a aa)
+           lem40 : (a : B PB) → odef A (elt a) → (bi3 x a)  ≈ b0 
+           lem40 a aa = begin    -- a ≤ ai3 means   ( a x ai3 ) ≈ a
+              bi3 x a ≈⟨ x-resp {a} {a x ai3} {bi3} {bi3} (bsym {a x ai3} {a} (lem43 a aa)) (brefl {bi3}) ⟩ 
+              bi3 x (a x ai3 ) ≈⟨ x-assoc {bi3} {a} {ai3} ⟩ 
+              (bi3 x a) x ai3  ≈⟨ x-resp {ai3} {ai3} {bi3 x a} {a x bi3} (brefl {ai3}) (x-sym {bi3} {a} ) ⟩ 
+              (a x bi3 ) x ai3  ≈⟨ bsym {a x (bi3 x ai3) } {(a x bi3) x ai3} ( x-assoc {a} {bi3} {ai3} )  ⟩ 
+              a x ( bi3  x ai3 )  ≈⟨ x-resp {bi3 x ai3} {b0} {a} {a} bxa=0 (brefl {a}) ⟩ 
+              a x b0  ≈⟨ x-sym {a} {b0} ⟩ 
+              b0 x a  ≈⟨ 0≤a a ⟩ 
+              b0 ∎ where open EqR bSetoid 
+           lem46 : (a : B PB) → odef (OS PB) (& (* (elt bi3) ∩ * (elt a)))
+           lem46 a = o∩ PB (subst (λ k → odef (OS PB) k ) (sym &iso) (A∋elt bi3)) (subst (λ k → odef (OS PB) k ) (sym &iso) (A∋elt a))
+           lem45 : (a : B PB ) →  & (* (elt bi3) ∩ * (elt a)) ≡ elt (bi3 x a)
+           lem45 a = trans (==→o≡ record { eq→ = λ ab → eq← *iso ab  ; eq← = λ ab → eq→ *iso ab  }  )  &iso
+           -- bi3 x a is in the filter, because of ∩ 
+           lem41 : (a : B PB) → odef A (elt a) → odef (filter (mf L PB an bni)) (elt (bi3 x a) )
+           lem41 a aa = subst (λ k → odef (filter (mf L PB an bni)) k ) (lem45 a) ( filter2 (mf L PB an bni) 
+               (subst (λ k → odef (filter (mf L PB an bni)) k ) (sym &iso) lem38)  
+               (subst (λ k → odef (filter (mf L PB an bni)) k ) (sym &iso) (lem00 aa)) (lem46 a) )
+           am : B PB
+           am = record { elt = & (minimal A lem50 ) ; A∋elt = ab (x∋minimal A lem50) }
+           is-am : odef A (elt am)
+           is-am = x∋minimal A lem50 
+           lem42 : odef (filter (mf L PB an bni)) (& od∅ )
+           lem42 = subst ( λ k → odef (filter (mf L PB an bni)) k ) (trans (≈→≡ PB {bi3 x am} {b0} (lem40 am is-am )) (sym ord-od∅)  ) ( lem41 am is-am  )
+       lem33 : bi' ≈ ( bi3 x ai3 )    -- difinition of the filter
+       lem33 = Bni2.eq2 bn (Data.Nat.pred i) (lem37 i 0<i) lem34  
+
+       lem12 : odef (filter (BnFilter L PB an bni)) (elt bi')
+       lem12 = record { i = suc (Data.Nat.pred i) ; bx = A∋elt bi' ; bn≤x = lem35   } where
+           lem36 : (Bni2.b (Bn1 L PB an (suc (pred i)) bni) (suc (pred i))) ≈ (Bni2.b (Bn1 L PB an (suc i) bni) (suc (pred i)))
+           lem36 = bni2unique L PB an bni _ _ (suc (pred i)) (lem37 i 0<i ) (Bn1 L PB an (suc (pred i)) bni) (Bn1 L PB an (suc i) bni) refl-≤ 
+           lem35 : {x : Ordinal } 
+               → odef ( * (elt (Bni2.b (Bn1 L PB an (suc (pred i)) bni) (suc (pred i))))) x 
+               → odef ( * (elt (Bni2.b (Bn1 L PB an (suc i)        bni) (suc (pred i))))) x
+           lem35 {x} lt = eq→ lem36 lt
+       lem16 : odef (filter (BnFilter L PB an bni)) (elt (bi3 x ai))
+       lem16 = subst ( λ k → odef (filter (BnFilter L PB an bni)) k) (≈→≡ PB {bi'} {bi3 x ai} 
+             (btrans {bi'} {bi3 x ai3} {bi3 x ai} lem33 (x-resp {ai3} {ai} {bi3} {bi3} (bsym {ai} {ai3} ai=ai3) (brefl {bi3} ) ) ) ) lem12
+       --  (bi3 x ai) is in the filter, then (bi3 x ai) ≤ ai makes ai is in the filter
+       lem15 : odef (filter (BnFilter L PB an bni)) (elt ai)
+       lem15 = filter1 (BnFilter L PB an bni) (A∋elt ai) (subst (λ k → odef (filter (BnFilter L PB an bni)) k ) (sym &iso) lem16 )
+          ( λ bix → eq→ *iso (≤→⊆ PB {bi3 x ai} {ai} lem14 bix ) )
+       lem021 : odef (filter (mf L PB an bni)) (elt ai)
+       lem021 = MaximumFilter.F⊆mf (maxf L PB an bni) lem15
+       lem01 : odef (filter (mf L PB an bni))  (elt (A∧ L PB an bni A ))
+       lem01 = subst (λ k → odef (filter (mf L PB an bni)) k) (A∧-cong L PB an bni (* (elt (AN.ip an i))) A lem13 ) lem021
 
 module MBU {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho< : OD.ODAxiom-ho< O HODAxiom )
            (AC : OD.AxiomOfChoice O HODAxiom ) where

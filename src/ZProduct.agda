@@ -525,6 +525,15 @@ hodbij-trans {a} {b} {c} a=b b=c = record {
      ; fcong← = λ x z cx cz x=z → fcong←  a=b _ _ (funA  b=c _ cx )  (funA  b=c _ cz ) (fcong←  b=c _ _ cx cz x=z )
     } where open HODBijection
 
+--
+--  a =h= b 
+--  record _==_  ( a b :  OD  ) : Set n where
+--    field
+--       eq→ : ∀ { x : Ordinal  } → def a x → def b x
+--       eq← : ∀ { x : Ordinal  } → def b x → def a x
+--
+-- this is a speical case of HODBijection, fun← and fun→ is are identities, other properties are obvious
+
 pj12 : (A B : HOD) {x : Ordinal} → (ab : odef (ZFP A B) x ) →
    (zπ1  (subst (odef (ZFP A B)) (sym &iso) ab) ≡ zπ1 ab ) ∧
    (zπ2  (subst (odef (ZFP A B)) (sym &iso) ab) ≡ zπ2 ab )

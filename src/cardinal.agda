@@ -570,5 +570,18 @@ Cantor2 : (u : HOD) → ¬ ( u =c=  Power u )
 Cantor2 u =  c<¬= (Cantor1 u )
 
 
+--
+-- Continuum Hypothesis
+--     ℵ₁ = ℵ_0² 
+--
+--  this means there are no set N ,  ℕ c< N c<  Power ℕ 
+
+Continuum : (N : HOD) → Set n
+Continuum N = ¬  ( (Omega ho< c< N) ∧ (N c< Power (Omega ho< )))
+
+GenContinuum : (M N : HOD) → Set n
+GenContinuum M N = ¬ ( (M c< N) ∧ (N c< Power M) )
+
+
 
 

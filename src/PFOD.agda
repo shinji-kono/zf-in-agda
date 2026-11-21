@@ -45,7 +45,7 @@ open import ODC O HODAxiom AC as ODC
 open import Level hiding ( suc ; zero )
 open import Ordinals
 
-import filter 
+open import filter O HODAxiom ho< AC 
 
 open import Relation.Nullary 
 -- open import Relation.Binary hiding ( _⇔_ )
@@ -371,3 +371,13 @@ Hωw2→3 x h = lemma (& x) h where
 --Hωw2→3-iso : (x :  HOD) → (hx : HODww2 ∋ x ) → 3→Hωw2 (Hωw2→3 x hx )  =h= x
 --Hωw2→3-iso  = ?
 --
+--
+
+-- Hw2isFilter : Filter {HODω2} {ω→2}  hw⊆POmega
+-- Hw2isFilter = record { filter = ? ; f⊆L = ? ; filter1 = ? ; filter2 = ? }
+
+-- Hw2isFilter1 : Filter {?} {?}  ?
+-- Hw2isFilter1 = record { filter = HODω2 ; f⊆L = ? ; filter1 = ? ; filter2 = ? }
+--
+-- Hw2isFilter : Filter {HODω2} {?}  ?
+-- Hw2isFilter = record { filter = ? ; f⊆L = ? ; filter1 = ? ; filter2 = ? }

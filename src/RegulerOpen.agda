@@ -592,19 +592,19 @@ module MBO {n : Level } (O : Ordinals {n} ) (HODAxiom : HODBase.ODAxiom O)  (ho<
         lem00 {x} ux = ⟪ OS⊆PL TW ou  _ ux , record { v = elt u ; nv =
             record { u = elt u ; ou = ou ; ux = ux ; v⊆P = OS⊆PL TW ou  _  ; u⊆v = λ lt → lt } ; v⊆A = u⊆Clu TW (* (elt u)) (OS⊆PL TW ou  _  ) }  ⟫
 
-    -- ( ∀ L ∋ q, u → u is open →  ¬ ( u ∋ q) → ∃ r ≤ q → L ∋ s → (s ≤ r ) → ¬ ( u ∋ s ) ) == (  Interior (Cl top u) ⊆  u )
-    --
-    -- we are unable to prove this without completeness of OP.
-    --
-    -- record  ROlem03 (L : HOD) (OL : OrderedHOD L) (u : HODElement (Power L) ) (ou : odef (Topology.OS (TOPP L OL)) (elt u) ) : Set n where
-    --    open OrderedHOD OL
-    --    field
-    --       r : HODElement L
-    --       prop : (q : HODElement L ) → ¬ ( odef (* (elt u)) (elt q) ) → ( r≤q : r p≤ q )
-    --          → (s  : HODElement L ) → s p≤ r → ¬ ( odef (* (elt u)) (elt s)  )
+    record Hww2NonAtomic (a : HODElement HODww2 ) : Set n where
+        open OrderedHOD HwwOrder
+        ww2∅ : HODElement HODww2
+        ww2∅ = record { elt = o∅ ; A∋elt = ? } 
+        field
+           b : HODElement HODww2
+           0<b : ww2∅ p< b 
+           b<a : b p< a 
 
-    --
-    -- Interior is a minimum open set containing x
+    Hww2isNonAtomic :  (u : HODElement HODww2 )  → Hww2NonAtomic  u
+    Hww2isNonAtomic = ?
+
+    -- Complete Boolean Algera from Regular Open Set
     --
     ROH : (P : HOD) → (TP : Topology P) → HOD  -- regular open set of P
     ROH P TP = record { od = record { def = λ x → ((* x) ⊆ P )∧ (x ≡ & (Interior TP (Cl TP (* x)))) } ; odmax = osuc (& P )
